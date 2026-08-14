@@ -23,6 +23,8 @@ import type { Part } from "@/db/schema";
 import { calculateAdaptiveReorderPlan } from "@/lib/procurement-intelligence";
 import { formatCurrency } from "@/lib/utils/currency";
 import { toast } from "sonner";
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 
 type InventoryPart = Part & {
     orderCount?: number;
@@ -40,34 +42,34 @@ type TrendMeta = {
     narrative: string;
 };
 
-function getTrendMeta(part: InventoryPart): TrendMeta {
+function getTrendMeta(part: InventoryPart, ts: ReturnType<typeof t>): TrendMeta {
     const sharedNarrative = "Source: Axiom internal benchmark and recent pricing snapshot.";
 
     switch (part.marketTrend?.toLowerCase()) {
         case 'up':
             return {
-                label: 'Rising',
+                label: ts.rising,
                 badgeClassName: 'text-red-500 border-red-200 bg-red-50',
                 Icon: TrendingUp,
                 narrative: `This SKU is running above its recent baseline. Review fresh supplier quotes before placing the next order. ${sharedNarrative}`,
             };
         case 'down':
             return {
-                label: 'Falling',
+                label: ts.falling,
                 badgeClassName: 'text-green-600 border-green-200 bg-green-50',
                 Icon: TrendingDown,
                 narrative: `Recent pricing is easing for this SKU. This is a good candidate for re-bid or volume negotiation. ${sharedNarrative}`,
             };
         case 'volatile':
             return {
-                label: 'Volatile',
+                label: ts.volatile,
                 badgeClassName: 'text-amber-600 border-amber-200 bg-amber-50',
                 Icon: AlertTriangle,
                 narrative: `Pricing is inconsistent across recent benchmarks. Keep this item in an RFQ-driven workflow instead of auto-awarding it. ${sharedNarrative}`,
             };
         default:
             return {
-                label: 'Stable',
+                label: ts.stable,
                 badgeClassName: 'text-blue-600 border-blue-200 bg-blue-50',
                 Icon: Minus,
                 narrative: `Pricing is tracking close to the current baseline, so standard reorder logic is safe here. ${sharedNarrative}`,
@@ -123,7 +125,7 @@ function getSuggestedReorders(parts: InventoryPart[]) {
 
 export function PartsClient({ initialParts }: { initialParts: InventoryPart[] }) {
     return (
-        <Suspense fallback={<div className="p-20 text-center">Loading inventory...</div>}>
+        <Suspense fallback={<div className="p-20 text-center">{ts.loadingInventory}</div>}>
             <PartsTable initialParts={initialParts} />
         </Suspense>
     );
@@ -132,6 +134,8 @@ export function PartsClient({ initialParts }: { initialParts: InventoryPart[] })
 function PartsTable({ initialParts }: { initialParts: InventoryPart[] }) {
     const searchParams = useSearchParams();
     const router = useRouter();
+    const { language } = useLanguage();
+    const ts = t(language, "sourcing");
     const filterParam = searchParams.get('filter');
     const partParam = searchParams.get('part');
     const supplierParam = searchParams.get('supplier');
@@ -212,10 +216,10 @@ function PartsTable({ initialParts }: { initialParts: InventoryPart[] }) {
                 setReviewOpen(false);
                 router.refresh();
             } else {
-                toast.error(result.error || "Failed to create reorder drafts");
+                toast.error(result.error || ts.failedCreateReorders);
             }
         } catch (_error) {
-            toast.error("An unexpected error occurred while creating draft reorders.");
+            toast.error(ts.unexpectedReorderError);
         } finally {
             setIsProcessingReorders(false);
         }
@@ -227,16 +231,16 @@ function PartsTable({ initialParts }: { initialParts: InventoryPart[] }) {
                 <div className="border-b bg-muted/20 p-6">
                     <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                         <div>
-                            <h2 className="text-lg font-semibold">Parts Inventory</h2>
+                            <h2 className="text-lg font-semibold">{ts.partsInventory}</h2>
                             <p className="mt-1 text-sm text-muted-foreground">
-                                Review stock health, benchmark pricing signals, and linked sourcing activity in one place.
+                                {ts.partsInventoryDesc}
                             </p>
                         </div>
                         <div className="flex w-full flex-col gap-2 lg:flex-row xl:w-auto">
                             <div className="relative flex-1 lg:min-w-[240px] xl:w-64">
                                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
-                                    placeholder="Search by part, SKU, or category..."
+                                    placeholder={ts.searchPlaceholderParts}
                                     value={searchQuery}
                                     onChange={(event) => setSearchQuery(event.target.value)}
                                     className="bg-background pl-9"
@@ -261,7 +265,7 @@ function PartsTable({ initialParts }: { initialParts: InventoryPart[] }) {
                                     onClick={() => router.push('/sourcing/parts')}
                                     className="h-10 gap-2 px-3 text-xs font-bold"
                                 >
-                                    <X size={14} /> Clear Status: {filterParam.toUpperCase()}
+                                    <X size={14} /> {ts.clearStatus}: {filterParam.toUpperCase()}
                                 </Button>
                             )}
                             <Button
@@ -271,7 +275,7 @@ function PartsTable({ initialParts }: { initialParts: InventoryPart[] }) {
                                 className="h-10 gap-2 border-amber-200 bg-amber-50 px-4 font-bold text-amber-700 hover:bg-amber-100"
                             >
                                 <Repeat className="h-4 w-4" />
-                                Review {reorderSuggestions.length} Suggested Reorders
+                                {ts.reviewSuggestedReorders} {reorderSuggestions.length}
                             </Button>
                         </div>
                     </div>
@@ -281,19 +285,19 @@ function PartsTable({ initialParts }: { initialParts: InventoryPart[] }) {
                     <table className="w-full min-w-[980px]">
                         <thead className="border-b bg-muted/50">
                             <tr>
-                                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest text-muted-foreground">SKU</th>
-                                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest text-muted-foreground">Part Name</th>
-                                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest text-muted-foreground">Category</th>
-                                <th className="px-6 py-4 text-center text-xs font-bold uppercase tracking-widest text-muted-foreground">Stock</th>
-                                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest text-muted-foreground">Current Price</th>
-                                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest text-muted-foreground">Market Trend</th>
-                                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest text-muted-foreground">Status</th>
-                                <th className="sticky right-0 z-10 bg-muted px-6 py-4 text-right text-xs font-bold uppercase tracking-widest text-muted-foreground shadow-[-5px_0_10px_-5px_rgba(0,0,0,0.1)]">Actions</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest text-muted-foreground">{ts.sku}</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest text-muted-foreground">{ts.partName}</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest text-muted-foreground">{ts.category}</th>
+                                <th className="px-6 py-4 text-center text-xs font-bold uppercase tracking-widest text-muted-foreground">{ts.stock}</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest text-muted-foreground">{ts.currentPrice}</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest text-muted-foreground">{ts.marketTrend}</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest text-muted-foreground">{ts.status}</th>
+                                <th className="sticky right-0 z-10 bg-muted px-6 py-4 text-right text-xs font-bold uppercase tracking-widest text-muted-foreground shadow-[-5px_0_10px_-5px_rgba(0,0,0,0.1)]">{ts.actions}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border">
                             {paginatedParts.map((part) => {
-                                const trendMeta = getTrendMeta(part);
+                                const trendMeta = getTrendMeta(part, ts);
                                 const stockIsCritical = part.stockLevel <= (part.minStockLevel || 20);
                                 const stockIsLow = !stockIsCritical && part.stockLevel <= (part.reorderPoint || 50);
                                 const trendExpanded = expandedTrendPartId === part.id;
@@ -341,16 +345,16 @@ function PartsTable({ initialParts }: { initialParts: InventoryPart[] }) {
                                             <div className="flex flex-col gap-1">
                                                 <div className="flex items-center gap-2 text-xs font-black uppercase">
                                                     <div className={`h-2 w-2 rounded-full ${stockIsCritical ? 'bg-red-500 animate-pulse' : stockIsLow ? 'bg-amber-500' : 'bg-green-500'}`} />
-                                                    {stockIsCritical ? 'Critical' : stockIsLow ? 'Low Stock' : 'Available'}
+                                                    {stockIsCritical ? ts.criticalStatus : stockIsLow ? ts.lowStockStatus : ts.available}
                                                 </div>
                                                 <div className="text-[10px] font-bold uppercase tracking-tighter text-muted-foreground">
                                                     Min: {part.minStockLevel || 20} | Reorder: {part.reorderPoint || 50}
                                                 </div>
                                                 {(part.delayedOrderCount || part.forecastDemand) ? (
                                                     <div className="text-[10px] font-medium text-muted-foreground">
-                                                        {part.delayedOrderCount ? `${part.delayedOrderCount} delayed shipment signal` : null}
+                                                         {part.delayedOrderCount ? `${part.delayedOrderCount} ${ts.delayedShipment} signal` : null}
                                                         {part.delayedOrderCount && part.forecastDemand ? ' / ' : null}
-                                                        {part.forecastDemand ? `${part.forecastDemand} forecasted units` : null}
+                                                         {part.forecastDemand ? `${part.forecastDemand} ${ts.forecastedUnits}` : null}
                                                     </div>
                                                 ) : null}
                                             </div>
@@ -366,8 +370,8 @@ function PartsTable({ initialParts }: { initialParts: InventoryPart[] }) {
                                     <td colSpan={8} className="py-20 text-center text-muted-foreground">
                                         <div className="flex flex-col items-center gap-2">
                                             <Search size={48} className="opacity-20" />
-                                            <p className="text-xl font-bold">No parts found</p>
-                                            <p className="text-sm">Try adjusting your search or filters.</p>
+                                            <p className="text-xl font-bold">{ts.noPartsFound}</p>
+                                            <p className="text-sm">{ts.tryAdjusting}</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -378,9 +382,12 @@ function PartsTable({ initialParts }: { initialParts: InventoryPart[] }) {
 
                 {totalPages > 1 && (
                     <div className="flex flex-col gap-3 border-t bg-muted/20 px-6 py-4 md:flex-row md:items-center md:justify-between">
-                        <p className="text-sm font-medium text-muted-foreground">
-                            Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredParts.length)} of {filteredParts.length} entries
-                        </p>
+                            <p className="text-sm font-medium text-muted-foreground">
+                                {ts.showingEntries
+                                    .replace("{from}", String(((currentPage - 1) * itemsPerPage) + 1))
+                                    .replace("{to}", String(Math.min(currentPage * itemsPerPage, filteredParts.length)))
+                                    .replace("{total}", String(filteredParts.length))}
+                            </p>
                         <div className="flex items-center gap-2">
                             <Button
                                 variant="outline"
@@ -389,7 +396,7 @@ function PartsTable({ initialParts }: { initialParts: InventoryPart[] }) {
                                 disabled={currentPage === 1}
                                 className="h-8 px-3"
                             >
-                                Previous
+                                {ts.previous}
                             </Button>
                             <div className="flex items-center gap-1">
                                 {Array.from({ length: Math.min(5, totalPages) }, (_, index) => {
@@ -421,7 +428,7 @@ function PartsTable({ initialParts }: { initialParts: InventoryPart[] }) {
                                 disabled={currentPage === totalPages}
                                 className="h-8 px-3"
                             >
-                                Next
+                                {ts.next}
                             </Button>
                         </div>
                     </div>
@@ -431,15 +438,15 @@ function PartsTable({ initialParts }: { initialParts: InventoryPart[] }) {
             <Dialog open={reviewOpen} onOpenChange={setReviewOpen}>
                 <DialogContent className="max-w-3xl">
                     <DialogHeader>
-                        <DialogTitle>Suggested Reorders Review</DialogTitle>
+                        <DialogTitle>{ts.suggestedReordersReview}</DialogTitle>
                         <DialogDescription>
-                            Axiom reviewed current stock against reorder thresholds. Draft requisitions are only created after you confirm this list.
+                            {ts.suggestedReordersDesc}
                         </DialogDescription>
                     </DialogHeader>
 
                     {reorderSuggestions.length === 0 ? (
                         <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
-                            Inventory is healthy right now. No reorder drafts are required.
+                            {ts.inventoryHealthy}
                         </div>
                     ) : (
                         <div className="show-scrollbar max-h-[55vh] space-y-3 overflow-y-auto pr-1">
@@ -451,7 +458,7 @@ function PartsTable({ initialParts }: { initialParts: InventoryPart[] }) {
                                                 <p className="font-semibold text-foreground">{part.name}</p>
                                                 <Badge variant="outline" className="font-mono text-[10px]">{part.sku}</Badge>
                                                 <Badge className={part.severity === 'critical' ? 'bg-red-100 text-red-700 hover:bg-red-100' : 'bg-amber-100 text-amber-700 hover:bg-amber-100'}>
-                                                    {part.severity === 'critical' ? 'Critical attention' : 'Low stock'}
+                                                     {part.severity === 'critical' ? ts.criticalAttention : ts.lowStock2}
                                                 </Badge>
                                             </div>
                                             <p className="mt-1 text-sm text-muted-foreground">
@@ -462,10 +469,10 @@ function PartsTable({ initialParts }: { initialParts: InventoryPart[] }) {
                                                     {part.riskLevel} signal
                                                 </Badge>
                                                 {(part.delayedOrderCount || 0) > 0 && (
-                                                    <Badge variant="outline">{part.delayedOrderCount} delayed shipment{part.delayedOrderCount === 1 ? '' : 's'}</Badge>
+                                                    <Badge variant="outline">{part.delayedOrderCount} {ts.delayedShipment}{part.delayedOrderCount === 1 ? '' : 's'}</Badge>
                                                 )}
                                                 {(part.forecastDemand || 0) > 0 && (
-                                                    <Badge variant="outline">{part.forecastDemand} forecasted units</Badge>
+                                                    <Badge variant="outline">{part.forecastDemand} {ts.forecastedUnits}</Badge>
                                                 )}
                                             </div>
                                             <div className="mt-3 space-y-1 text-xs text-muted-foreground">
@@ -475,7 +482,7 @@ function PartsTable({ initialParts }: { initialParts: InventoryPart[] }) {
                                             </div>
                                         </div>
                                         <div className="rounded-xl border bg-background px-4 py-3 text-right">
-                                            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-muted-foreground">Recommended Qty</p>
+                                             <p className="text-[10px] font-black uppercase tracking-[0.16em] text-muted-foreground">{ts.recommendedQty}</p>
                                             <p className="text-2xl font-black text-foreground">{part.recommendedQty}</p>
                                         </div>
                                     </div>
@@ -485,16 +492,16 @@ function PartsTable({ initialParts }: { initialParts: InventoryPart[] }) {
                     )}
 
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setReviewOpen(false)}>
-                            Close
-                        </Button>
+                         <Button variant="outline" onClick={() => setReviewOpen(false)}>
+                             {ts.close}
+                         </Button>
                         <Button
                             onClick={handleProcessReorders}
                             disabled={reorderSuggestions.length === 0 || isProcessingReorders}
                             className="bg-amber-600 text-white hover:bg-amber-700"
                         >
                             {isProcessingReorders ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Repeat className="mr-2 h-4 w-4" />}
-                            Create Draft Requisitions
+                             {ts.createDraftRequisitions}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

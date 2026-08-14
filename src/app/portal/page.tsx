@@ -21,13 +21,18 @@ import {
     ShieldAlert,
 } from "lucide-react";
 import { openOrDownloadFile } from "@/lib/client/download";
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 
 type SupplierDashboardSnapshot = NonNullable<Awaited<ReturnType<typeof getSupplierDashboardSnapshot>>>;
 
 export default function SupplierDashboard() {
     const { data: session } = useSession();
+    const { language } = useLanguage();
+    const tc = t(language, "portal");
     const [snapshot, setSnapshot] = useState<SupplierDashboardSnapshot | null>(null);
     const [loading, setLoading] = useState(true);
+    const [dateTime, setDateTime] = useState("");
 
     useEffect(() => {
         let cancelled = false;
@@ -47,12 +52,34 @@ export default function SupplierDashboard() {
         };
     }, []);
 
+    useEffect(() => {
+        const locale = language === "de" ? "de-DE" : "en-US";
+        const updateClock = () => {
+            const now = new Date();
+            setDateTime(
+                now.toLocaleString(locale, {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                }),
+            );
+        };
+
+        updateClock();
+        const interval = setInterval(updateClock, 1000);
+        return () => clearInterval(interval);
+    }, [language]);
+
     if (loading) {
         return (
             <div className="flex h-[80vh] items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
                     <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-                    <p className="font-medium text-muted-foreground">Loading supplier workspace...</p>
+                    <p className="font-medium text-muted-foreground">{tc.loadingWorkspace}</p>
                 </div>
             </div>
         );
@@ -62,9 +89,9 @@ export default function SupplierDashboard() {
         return (
             <div className="flex h-[80vh] items-center justify-center">
                 <div className="max-w-md space-y-2 text-center">
-                    <h1 className="text-2xl font-bold tracking-tight">Workspace unavailable</h1>
+                    <h1 className="text-2xl font-bold tracking-tight">{tc.workspaceUnavailable}</h1>
                     <p className="text-muted-foreground">
-                        The supplier workspace could not be loaded for this account. Refresh the page or contact the Axiom team if the issue persists.
+                        {tc.unavailableBody}
                     </p>
                 </div>
             </div>
@@ -80,28 +107,29 @@ export default function SupplierDashboard() {
             ? 'border-amber-200 bg-amber-50 text-amber-800'
             : 'border-emerald-200 bg-emerald-50 text-emerald-800';
     const healthTitle = healthStatus === 'attention'
-        ? 'Attention required'
+        ? tc.attentionRequired
         : healthStatus === 'watch'
-            ? 'Monitor live workflows'
-            : 'Operating clean';
+            ? tc.monitorLive
+            : tc.operatingClean;
     const healthDescription = healthStatus === 'attention'
-        ? `${counts.overdueRequests} overdue supplier request(s) are blocking the queue.`
+        ? `${counts.overdueRequests} ${tc.overdueBlocking}`
         : healthStatus === 'watch'
-            ? `${counts.openRequests} open request(s) and ${counts.dueThisWeekOrders} order(s) land in the next seven days.`
-            : 'No overdue requests and no immediate delivery pressure in the current workspace snapshot.';
-
+            ? `${counts.openRequests} ${tc.openDueNext7}`
+            : tc.noOverdue;
     return (
         <div className="flex min-h-full flex-col bg-background p-4 lg:p-8 space-y-8">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Supplier Command Center</h1>
-                    <p className="mt-1 text-muted-foreground">Manage live bids, active orders, compliance tasks, and the shared thread with Axiom.</p>
+                    <p className="mb-1 text-lg text-muted-foreground">{tc.welcome}, <span className="font-bold text-foreground">{session?.user?.name || 'User'}</span></p>
+                    <h1 className="text-3xl font-bold tracking-tight">{tc.supplierCommandCenter}</h1>
+                    <p className="mt-1 text-muted-foreground">{tc.portalSubtitle}</p>
                 </div>
                 <div className="flex gap-2">
+                    <span className="hidden items-center rounded-md border border-border/60 bg-muted/30 px-3 py-2 text-xs text-muted-foreground lg:flex">{dateTime}</span>
                     <Button variant="outline" className="gap-2 relative" asChild>
                         <Link href="/portal/requests">
                             <Bell className="h-4 w-4" />
-                            Action Queue
+                            {tc.actionQueue}
                             {notificationCount > 0 ? (
                                 <span className="absolute -top-2 -right-2 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
                                     {notificationCount}
@@ -116,10 +144,10 @@ export default function SupplierDashboard() {
                 <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/30 flex gap-3 items-start">
                     <ShieldAlert className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
                     <div className="flex-1 space-y-2">
-                        <p className="text-sm font-medium text-amber-900">Secure your account with two-factor authentication</p>
-                        <p className="text-xs text-amber-800">Two-factor authentication (2FA) adds an extra security layer to your account. You'll be prompted to set it up on your next login.</p>
+                        <p className="text-sm font-medium text-amber-900">{tc.secureAccount}</p>
+                        <p className="text-xs text-amber-800">{tc.twoFactorBody}</p>
                         <Link href="/portal/security">
-                            <Button size="sm" variant="outline" className="h-7 mt-1">Learn more</Button>
+                            <Button size="sm" variant="outline" className="h-7 mt-1">{tc.learnMore}</Button>
                         </Link>
                     </div>
                 </div>
@@ -128,15 +156,15 @@ export default function SupplierDashboard() {
             <div className="grid gap-6 md:grid-cols-3">
                 <Card className="border-none bg-gradient-to-br from-amber-600 to-amber-700 text-white shadow-lg">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-bold uppercase tracking-wider">New Invitations</CardTitle>
+                        <CardTitle className="text-sm font-bold uppercase tracking-wider">{tc.newInvitations}</CardTitle>
                         <Sparkles className="h-4 w-4 opacity-80" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-4xl font-black">{counts.invitedRFQs}</div>
-                        <p className="mt-2 text-xs opacity-80">Live RFQs currently waiting for your quote.</p>
+                        <p className="mt-2 text-xs opacity-80">{tc.liveRfqsWaiting}</p>
                         <Button variant="secondary" size="sm" className="mt-4 w-full font-bold border-none transition-colors" asChild>
                             <Link href="/portal/rfqs">
-                                View Invitations <ChevronRight className="ml-1 h-3 w-3" />
+                                {tc.viewInvitations} <ChevronRight className="ml-1 h-3 w-3" />
                             </Link>
                         </Button>
                     </CardContent>
@@ -144,7 +172,7 @@ export default function SupplierDashboard() {
 
                 <Card className="hover:shadow-md transition-shadow">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium uppercase text-muted-foreground">Active Orders</CardTitle>
+                        <CardTitle className="text-sm font-medium uppercase text-muted-foreground">{tc.activeOrders}</CardTitle>
                         <ShoppingCart className="h-4 w-4 text-primary" />
                     </CardHeader>
                     <CardContent>
@@ -152,31 +180,31 @@ export default function SupplierDashboard() {
                         <p className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
                             <Clock className="h-3 w-3" />
                             {counts.dueThisWeekOrders > 0
-                                ? `${counts.dueThisWeekOrders} order(s) due in the next 7 days`
-                                : 'No deliveries due in the next 7 days'}
+                                ? `${counts.dueThisWeekOrders} ${tc.ordersDueNext7}`
+                                : tc.noDeliveries}
                         </p>
                         <Button variant="outline" size="sm" className="mt-4 w-full font-bold" asChild>
-                            <Link href="/portal/orders">Track Orders</Link>
+                            <Link href="/portal/orders">{tc.trackOrders}</Link>
                         </Button>
                     </CardContent>
                 </Card>
 
                 <Card className="hover:shadow-md transition-shadow">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium uppercase text-muted-foreground">Action Queue</CardTitle>
+                        <CardTitle className="text-sm font-medium uppercase text-muted-foreground">{tc.actionQueue}</CardTitle>
                         <ClipboardList className="h-4 w-4 text-primary" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold">{counts.openRequests}</div>
                         <p className="mt-2 text-xs text-muted-foreground">
                             {counts.overdueRequests > 0
-                                ? `${counts.overdueRequests} overdue request(s) need a response`
+                                ? `${counts.overdueRequests} ${tc.overdueRequests}`
                                 : counts.openRequests > 0
-                                    ? 'Outstanding buyer requests are ready for response'
-                                    : 'No open buyer tasks at the moment'}
+                                    ? tc.outstandingReady
+                                    : tc.noOpenTasks}
                         </p>
                         <Button variant="outline" size="sm" className="mt-4 w-full font-bold" asChild>
-                            <Link href="/portal/requests">Open Requests</Link>
+                            <Link href="/portal/requests">{tc.openRequests}</Link>
                         </Button>
                     </CardContent>
                 </Card>
@@ -187,22 +215,22 @@ export default function SupplierDashboard() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <FileText className="h-5 w-5 text-primary" />
-                            Active Sourcing Requests
+                            {tc.activeSourcingRequests}
                         </CardTitle>
-                        <CardDescription>Recent RFQ invitations that are open in your supplier workspace.</CardDescription>
+                        <CardDescription>{tc.recentRfqsDesc}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
                             {snapshot.recentRfqs.length === 0 ? (
                                 <div className="rounded-xl border-2 border-dashed py-12 text-center italic text-muted-foreground">
-                                    No active invitations at this time.
+                                    {tc.noActiveInvites}
                                 </div>
                             ) : (
                                 snapshot.recentRfqs.map((rfq) => (
                                     <div key={rfq.id} className="group flex items-center justify-between rounded-xl border p-4 transition-colors hover:bg-muted/50">
                                         <div className="flex flex-col">
                                             <span className="font-bold text-foreground transition-colors group-hover:text-primary">{rfq.title}</span>
-                                            <span className="text-xs text-muted-foreground">Received {new Date(rfq.createdAt).toLocaleDateString()}</span>
+                                            <span className="text-xs text-muted-foreground">{tc.received} {new Date(rfq.createdAt).toLocaleDateString()}</span>
                                         </div>
                                         <div className="flex items-center gap-3">
                                             <Badge variant={rfq.status === 'invited' ? 'default' : 'secondary'} className="text-[10px] font-bold uppercase">
@@ -226,7 +254,7 @@ export default function SupplierDashboard() {
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-lg">
                                 <TriangleAlert className="h-5 w-5" />
-                                Workspace Status
+                                {tc.workspaceStatus}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2 text-sm">
@@ -239,15 +267,15 @@ export default function SupplierDashboard() {
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-lg">
                                 <MessageSquare className="h-5 w-5 text-primary" />
-                                Support Desk
+                                {tc.supportDesk}
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
                             <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
-                                Need technical help, clarification on an RFQ, or coordination around an order? Open an auditable support thread with the Axiom team.
+                                {tc.supportBody}
                             </p>
                             <Button className="w-full font-bold shadow-md" asChild>
-                                <Link href="/support">Open Support Workspace</Link>
+                                <Link href="/support">{tc.openSupportWorkspace}</Link>
                             </Button>
                         </CardContent>
                     </Card>
@@ -256,15 +284,15 @@ export default function SupplierDashboard() {
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-sm font-bold uppercase text-muted-foreground">
                                 <FileCheck className="h-4 w-4 text-primary" />
-                                Recent Documents
+                                {tc.recentDocuments}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3">
                             {snapshot.recentDocuments.length === 0 ? (
                                 <>
-                                    <p className="text-sm text-muted-foreground">No documents have been uploaded to your vault yet.</p>
+                                    <p className="text-sm text-muted-foreground">{tc.noDocumentsVault}</p>
                                     <Button variant="outline" className="w-full font-bold" asChild>
-                                        <Link href="/portal/documents">Open Document Vault</Link>
+                                        <Link href="/portal/documents">{tc.openDocumentVault}</Link>
                                     </Button>
                                 </>
                             ) : (
@@ -290,7 +318,7 @@ export default function SupplierDashboard() {
                                         </button>
                                     ))}
                                     <Button variant="outline" className="w-full font-bold" asChild>
-                                        <Link href="/portal/documents">View All Documents</Link>
+                                        <Link href="/portal/documents">{tc.viewAllDocuments}</Link>
                                     </Button>
                                 </>
                             )}
@@ -299,11 +327,11 @@ export default function SupplierDashboard() {
 
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-sm font-bold uppercase text-muted-foreground">Latest Buyer Requests</CardTitle>
+                            <CardTitle className="text-sm font-bold uppercase text-muted-foreground">{tc.latestBuyerRequests}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3">
                             {snapshot.recentRequests.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">No outstanding buyer requests at the moment.</p>
+                                <p className="text-sm text-muted-foreground">{tc.noBuyerRequests}</p>
                             ) : (
                                 snapshot.recentRequests.map((request) => (
                                     <div key={request.id} className="rounded-lg border p-3">
@@ -320,14 +348,14 @@ export default function SupplierDashboard() {
                                         </div>
                                         {request.dueDate ? (
                                             <p className="mt-2 text-[11px] text-muted-foreground">
-                                                Due {new Date(request.dueDate).toLocaleDateString()}
+                                                {tc.dueLabel} {new Date(request.dueDate).toLocaleDateString()}
                                             </p>
                                         ) : null}
                                     </div>
                                 ))
                             )}
                             <Button variant="outline" className="w-full font-bold" asChild>
-                                <Link href="/portal/requests">Open Request Queue</Link>
+                                <Link href="/portal/requests">{tc.openRequestQueue}</Link>
                             </Button>
                         </CardContent>
                     </Card>

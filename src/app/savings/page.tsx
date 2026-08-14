@@ -13,10 +13,14 @@ import { getSavingsData } from "@/app/actions/savings";
 import { toast } from "sonner";
 import { formatCurrencyByCode } from "@/lib/utils/currency";
 import { downloadCsvFile } from "@/lib/client/download";
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
 export default function SavingsPage() {
+    const { language } = useLanguage();
+    const tc = t(language, "misc");
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
@@ -50,7 +54,7 @@ export default function SavingsPage() {
             ['Month', 'Spend', 'Savings'],
             ...(data.savingsTrend || []).map((row: any) => [row.month, row.spend, row.savings]),
         ]);
-        toast.success("Savings report exported");
+            toast.success(tc.savingsReportExported);
     };
 
     if (loading) return (
@@ -59,21 +63,21 @@ export default function SavingsPage() {
         </div>
     );
 
-    if (!data) return <div className="p-8 text-muted-foreground">Failed to load savings data.</div>;
+    if (!data) return         <div className="p-8 text-muted-foreground">{tc.failedToLoadSavings}</div>;
 
     return (
         <div className="flex min-h-full flex-col bg-muted/40 p-4 lg:p-8 space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
-                        <PiggyBank className="h-8 w-8 text-emerald-600" /> Savings Intelligence
-                    </h1>
-                    <p className="text-muted-foreground mt-1 font-medium">
-                        Track negotiated savings, cost avoidance, and procurement efficiency without live FX conversion.
-                    </p>
-                </div>
-                <div className="flex gap-2 items-center">
-                    <Button variant="outline" onClick={exportCSV} className="gap-2"><Download className="h-4 w-4" /> Export</Button>
+                        <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
+                            <PiggyBank className="h-8 w-8 text-emerald-600" /> {tc.savingsTitle}
+                        </h1>
+                        <p className="text-muted-foreground mt-1 font-medium">
+                            {tc.savingsSubtitle}
+                        </p>
+                    </div>
+                    <div className="flex gap-2 items-center">
+                        <Button variant="outline" onClick={exportCSV} className="gap-2"><Download className="h-4 w-4" /> {tc.export}</Button>
                 </div>
             </div>
 
@@ -81,42 +85,42 @@ export default function SavingsPage() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Card className="border-l-4 border-l-emerald-500">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Total Savings</CardTitle>
+                        <CardTitle className="text-sm font-medium">{tc.totalSavings}</CardTitle>
                         <TrendingDown className="h-4 w-4 text-emerald-600" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-black text-emerald-700">{fmt(data.totalNegotiatedSavings)}</div>
-                        <p className="text-xs text-muted-foreground mt-1">Negotiated below initial quote</p>
+                        <p className="text-xs text-muted-foreground mt-1">{tc.negotiatedBelowQuote}</p>
                     </CardContent>
                 </Card>
                 <Card className="border-l-4 border-l-blue-500">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Actual Spend</CardTitle>
+                        <CardTitle className="text-sm font-medium">{tc.actualSpend}</CardTitle>
                         <DollarSign className="h-4 w-4 text-blue-600" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-black">{fmt(data.totalActualSpend)}</div>
-                        <p className="text-xs text-muted-foreground mt-1">Total procurement spend</p>
+                        <p className="text-xs text-muted-foreground mt-1">{tc.totalProcurementSpend}</p>
                     </CardContent>
                 </Card>
                 <Card className="border-l-4 border-l-amber-500">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Savings Rate</CardTitle>
+                        <CardTitle className="text-sm font-medium">{tc.savingsRate}</CardTitle>
                         <Target className="h-4 w-4 text-amber-600" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-black text-amber-700">{data.savingsRate}%</div>
-                        <p className="text-xs text-muted-foreground mt-1">Of total procurement value</p>
+                        <p className="text-xs text-muted-foreground mt-1">{tc.ofTotalProcurementValue}</p>
                     </CardContent>
                 </Card>
                 <Card className="border-l-4 border-l-violet-500">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Orders with Savings</CardTitle>
+                        <CardTitle className="text-sm font-medium">{tc.ordersWithSavings}</CardTitle>
                         <Award className="h-4 w-4 text-violet-600" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-black">{data.ordersWithSavings}</div>
-                        <p className="text-xs text-muted-foreground mt-1">Orders with negotiated savings</p>
+                        <p className="text-xs text-muted-foreground mt-1">{tc.ordersWithNegotiatedSavings}</p>
                     </CardContent>
                 </Card>
             </div>
@@ -125,8 +129,8 @@ export default function SavingsPage() {
                 {/* Savings by Supplier */}
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-base">Top 10 — Savings by Supplier</CardTitle>
-                        <CardDescription>Spend vs savings per supplier — gap represents procurement efficiency</CardDescription>
+                        <CardTitle className="text-base">{tc.topSavingsBySupplier}</CardTitle>
+                        <CardDescription>{tc.spendVsSavings}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <ResponsiveContainer width="100%" height={300}>
@@ -165,8 +169,8 @@ export default function SavingsPage() {
                 {/* Savings Trend */}
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-base">Monthly Savings Trend</CardTitle>
-                        <CardDescription>Savings trajectory with spend overlay</CardDescription>
+                        <CardTitle className="text-base">{tc.monthlySavingsTrend}</CardTitle>
+                        <CardDescription>{tc.savingsTrajectory}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <ResponsiveContainer width="100%" height={300}>
@@ -198,8 +202,8 @@ export default function SavingsPage() {
                 {/* Savings by Type */}
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-base">Savings by Type</CardTitle>
-                        <CardDescription>Negotiation, volume discount, strategic sourcing</CardDescription>
+                        <CardTitle className="text-base">{tc.savingsByType}</CardTitle>
+                        <CardDescription>{tc.negotiationVolumeStrategic}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <ResponsiveContainer width="100%" height={260}>
@@ -219,8 +223,8 @@ export default function SavingsPage() {
                 {/* Top Savings Orders Table */}
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-base">Top Savings Transactions</CardTitle>
-                        <CardDescription>Orders with highest negotiated savings</CardDescription>
+                        <CardTitle className="text-base">{tc.topSavingsTransactions}</CardTitle>
+                        <CardDescription>{tc.highestNegotiatedSavings}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-2 max-h-[260px] overflow-y-auto">
@@ -243,7 +247,7 @@ export default function SavingsPage() {
                                 </div>
                             ))}
                             {(!data.topSavingsOrders || data.topSavingsOrders.length === 0) && (
-                                <p className="text-center text-muted-foreground italic py-8">No savings data yet. Add initial quotes to orders to track savings.</p>
+                                <p className="text-center text-muted-foreground italic py-8">{tc.noSavingsData}</p>
                             )}
                         </div>
                     </CardContent>

@@ -1,42 +1,22 @@
 'use client'
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { CheckCircle2, AlertCircle } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 
 export default function VerifiedPage() {
-    const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-    const [message, setMessage] = useState('');
+    const { language } = useLanguage();
+    const tp = t(language, "portal");
     const router = useRouter();
     const searchParams = useSearchParams();
-
-    useEffect(() => {
-        // Simulate redirect landing (actual verification happened server-side)
-        const error = searchParams.get('error');
-        if (error) {
-            setStatus('error');
-            setMessage(error);
-        } else {
-            setStatus('success');
-            setMessage('Your email has been verified successfully!');
-        }
-    }, [searchParams]);
-
-    if (status === 'loading') {
-        return (
-            <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-background via-background to-primary/5">
-                <Card className="w-full max-w-lg">
-                    <CardContent className="p-12 text-center space-y-6">
-                        <Loader2 className="h-8 w-8 text-primary mx-auto animate-spin" />
-                        <p className="text-muted-foreground">Verifying your email...</p>
-                    </CardContent>
-                </Card>
-            </div>
-        );
-    }
+    const error = searchParams.get('error');
+    const status: 'success' | 'error' = error ? 'error' : 'success';
+    const message = error || tp.verifiedSuccessTitle;
 
     if (status === 'error') {
         return (
@@ -46,10 +26,10 @@ export default function VerifiedPage() {
                         <div className="mx-auto w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center">
                             <AlertCircle className="h-10 w-10 text-red-500" />
                         </div>
-                        <h2 className="text-2xl font-bold">Verification Failed</h2>
+                        <h2 className="text-2xl font-bold">{tp.verifiedFailedTitle}</h2>
                         <p className="text-muted-foreground">{message}</p>
                         <Link href="/portal/register">
-                            <Button className="w-full">Try Again</Button>
+                            <Button className="w-full">{tp.tryAgain}</Button>
                         </Link>
                     </CardContent>
                 </Card>
@@ -65,16 +45,16 @@ export default function VerifiedPage() {
                         <CheckCircle2 className="h-10 w-10 text-green-500" />
                     </div>
                     <div>
-                        <h2 className="text-2xl font-bold mb-2">Email Verified!</h2>
+                        <h2 className="text-2xl font-bold mb-2">{tp.verifiedSuccessTitle}</h2>
                         <p className="text-muted-foreground mb-4">
-                            Thank you for verifying your email address. An Axiom administrator will review your registration and contact you soon.
+                            {tp.verifiedSuccessBody}
                         </p>
                         <p className="text-xs text-muted-foreground/60">
-                            Typical review time: 1-2 business days
+                            {tp.verifiedReviewTime}
                         </p>
                     </div>
                     <Link href="/portal/register">
-                        <Button variant="outline" className="w-full">Back to Registration</Button>
+                        <Button variant="outline" className="w-full">{tp.backToRegistration}</Button>
                     </Link>
                 </CardContent>
             </Card>

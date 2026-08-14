@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Building2, Mail, Phone, Globe, MapPin, Shield, CheckCircle2, Loader2 } from "lucide-react";
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 
 const CATEGORY_OPTIONS = [
     'Electronics', 'Mechanical', 'Raw Materials', 'Chemicals', 'Packaging',
@@ -20,6 +22,8 @@ const CERT_OPTIONS = [
 ];
 
 export default function SupplierRegistrationPage() {
+    const { language } = useLanguage();
+    const tp = t(language, "portal");
     const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -65,12 +69,12 @@ export default function SupplierRegistrationPage() {
                         <div className="mx-auto w-20 h-20 rounded-full bg-blue-500/10 flex items-center justify-center">
                             <CheckCircle2 className="h-10 w-10 text-blue-500" />
                         </div>
-                        <h2 className="text-2xl font-bold">Check Your Email!</h2>
+                        <h2 className="text-2xl font-bold">{tp.registerCheckEmailTitle}</h2>
                         <p className="text-muted-foreground">
-                            A verification link has been sent to your email address. Please click the link to verify your email and continue with the registration process.
+                            {tp.registerCheckEmailBody}
                         </p>
                         <p className="text-xs text-muted-foreground/60">
-                            The verification link will expire in 24 hours.
+                            {tp.registerLinkExpiry}
                         </p>
                     </CardContent>
                 </Card>
@@ -87,8 +91,8 @@ export default function SupplierRegistrationPage() {
                             <Building2 className="h-6 w-6 text-primary" />
                         </div>
                         <div>
-                            <CardTitle className="text-2xl font-black">Supplier Registration</CardTitle>
-                            <p className="text-sm text-muted-foreground">Join the Axiom Procurement Network</p>
+                            <CardTitle className="text-2xl font-black">{tp.registerTitle}</CardTitle>
+                            <p className="text-sm text-muted-foreground">{tp.registerSubtitle}</p>
                         </div>
                     </div>
                 </CardHeader>
@@ -105,60 +109,60 @@ export default function SupplierRegistrationPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="companyName" className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
-                                    <Building2 className="h-3 w-3" /> Company Name *
+                                    <Building2 className="h-3 w-3" /> {tp.registerCompanyName} *
                                 </Label>
-                                <Input id="companyName" name="companyName" placeholder="Acme Industries Ltd." required />
+                                <Input id="companyName" name="companyName" placeholder={tp.registerCompanyNamePlaceholder} required />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="contactEmail" className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
-                                    <Mail className="h-3 w-3" /> Contact Email *
+                                    <Mail className="h-3 w-3" /> {tp.registerContactEmail} *
                                 </Label>
-                                <Input id="contactEmail" name="contactEmail" type="email" placeholder="procurement@acme.com" required />
+                                <Input id="contactEmail" name="contactEmail" type="email" placeholder={tp.registerContactEmailPlaceholder} required />
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="contactPhone" className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
-                                    <Phone className="h-3 w-3" /> Phone
+                                    <Phone className="h-3 w-3" /> {tp.registerPhone}
                                 </Label>
-                                <Input id="contactPhone" name="contactPhone" placeholder="+1 555 0100" />
+                                <Input id="contactPhone" name="contactPhone" placeholder={tp.registerPhonePlaceholder} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="city" className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
-                                    <MapPin className="h-3 w-3" /> City
+                                    <MapPin className="h-3 w-3" /> {tp.registerCity}
                                 </Label>
-                                <Input id="city" name="city" placeholder="Munich" />
+                                <Input id="city" name="city" placeholder={tp.registerCityPlaceholder} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="country" className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
-                                    <Globe className="h-3 w-3" /> Country
+                                    <Globe className="h-3 w-3" /> {tp.registerCountry}
                                 </Label>
-                                <Input id="country" name="country" placeholder="Germany" />
+                                <Input id="country" name="country" placeholder={tp.registerCountryPlaceholder} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="countryCode" className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
-                                    <Globe className="h-3 w-3" /> ISO Code
+                                    <Globe className="h-3 w-3" /> {tp.registerIsoCode}
                                 </Label>
-                                <Input id="countryCode" name="countryCode" placeholder="DE" maxLength={2} className="uppercase" />
+                                <Input id="countryCode" name="countryCode" placeholder={tp.registerIsoCodePlaceholder} maxLength={2} className="uppercase" />
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="website" className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
-                                    <Globe className="h-3 w-3" /> Website
+                                    <Globe className="h-3 w-3" /> {tp.registerWebsite}
                                 </Label>
-                                <Input id="website" name="website" type="url" placeholder="https://www.acme.com" />
+                                <Input id="website" name="website" type="url" placeholder={tp.registerWebsitePlaceholder} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="description" className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
-                                    <Building2 className="h-3 w-3" /> Company Profile
+                                    <Building2 className="h-3 w-3" /> {tp.registerCompanyProfile}
                                 </Label>
                                 <Textarea
                                     id="description"
                                     name="description"
-                                    placeholder="Describe your capabilities, production footprint, and what you supply."
+                                    placeholder={tp.registerDescriptionPlaceholder}
                                     className="min-h-[102px]"
                                 />
                             </div>
@@ -166,7 +170,7 @@ export default function SupplierRegistrationPage() {
 
                         {/* Categories */}
                         <div className="space-y-3">
-                            <Label className="text-xs font-bold uppercase tracking-wider">Supply Categories</Label>
+                            <Label className="text-xs font-bold uppercase tracking-wider">{tp.registerSupplyCategories}</Label>
                             <div className="flex flex-wrap gap-2">
                                 {CATEGORY_OPTIONS.map(cat => (
                                     <button
@@ -188,7 +192,7 @@ export default function SupplierRegistrationPage() {
                         {/* Certifications */}
                         <div className="space-y-3">
                             <Label className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
-                                <Shield className="h-3 w-3" /> Certifications
+                                <Shield className="h-3 w-3" /> {tp.registerCertifications}
                             </Label>
                             <div className="flex flex-wrap gap-2">
                                 {CERT_OPTIONS.map(cert => (
@@ -211,10 +215,10 @@ export default function SupplierRegistrationPage() {
 
                     <CardFooter className="px-6 py-4 border-t bg-muted/10 flex justify-between items-center">
                         <p className="text-[10px] text-muted-foreground/50 uppercase tracking-wider">
-                            Every submission opens an onboarding pack with workflow and compliance checks
+                            {tp.registerFooterNote}
                         </p>
                         <Button type="submit" disabled={loading} className="min-w-[140px]">
-                            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Submit Registration'}
+                            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : tp.submitRegistration}
                         </Button>
                     </CardFooter>
                 </form>

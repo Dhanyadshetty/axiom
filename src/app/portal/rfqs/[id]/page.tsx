@@ -19,6 +19,8 @@ import {
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 
 type QuoteAnalysis = {
     deliveryWeeks?: number;
@@ -40,6 +42,8 @@ function parseQuoteAnalysis(value: string | null | undefined): QuoteAnalysis | n
 
 export default function SupplierRFQDetail() {
     const { id } = useParams();
+    const { language } = useLanguage();
+    const tc = t(language, "portal");
     const [rfq, setRfq] = useState<any>(null);
     const [currentInvitation, setCurrentInvitation] = useState<any>(null);
     const [totalAmount, setTotalAmount] = useState("");
@@ -71,7 +75,7 @@ export default function SupplierRFQDetail() {
     const handleQuoteSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!currentInvitation) {
-            toast.error("Supplier invitation not found");
+            toast.error(tc.rfqInvitationNotFound);
             return;
         }
 
@@ -86,32 +90,32 @@ export default function SupplierRFQDetail() {
 
             if (result.success) {
                 setCurrentInvitation((prev: any) => prev ? { ...prev, status: 'quoted', quoteAmount: totalAmount } : prev);
-                toast.success(currentInvitation.status === 'quoted' ? "Quote updated" : "Quote submitted", {
-                    description: "Procurement can now compare your offer in the sourcing workspace."
+                toast.success(currentInvitation.status === 'quoted' ? tc.rfqUpdateSuccessTitle : tc.rfqSubmitSuccessTitle, {
+                    description: tc.rfqSubmitSuccessDesc
                 });
             } else {
-                toast.error(result.error || "Failed to submit quotation");
+                toast.error(result.error || tc.rfqSubmitFailed);
             }
         });
     };
 
-    if (loading) return <div className="p-8">Loading invitation...</div>;
-    if (!rfq || !currentInvitation) return <div className="p-8 text-red-500">RFQ not found or access denied.</div>;
+    if (loading) return <div className="p-8">{tc.rfqLoadingInvitation}</div>;
+    if (!rfq || !currentInvitation) return <div className="p-8 text-red-500">{tc.rfqNotFound}</div>;
 
     const quoteLocked = rfq.status !== 'open';
     const invitationBadgeClass = currentInvitation.status === 'quoted'
         ? "bg-emerald-50 text-emerald-700 border-emerald-200"
         : "bg-blue-50 text-blue-700 border-blue-200";
     const invitationLabel = currentInvitation.status === 'quoted'
-        ? 'Quote Submitted'
+        ? tc.rfqQuoteSubmitted
         : rfq.status === 'open'
-            ? 'Invitation Active'
-            : 'Awaiting Launch';
+            ? tc.rfqInvitationActive
+            : tc.rfqAwaitingLaunch;
 
     return (
         <div className="flex min-h-full flex-col bg-muted/40 p-4 lg:p-8 space-y-6">
             <Link href="/portal/rfqs" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors w-fit">
-                <ArrowLeft className="h-4 w-4" /> Back to RFQs
+                <ArrowLeft className="h-4 w-4" /> {tc.rfqBackToRfqs}
             </Link>
 
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -130,7 +134,7 @@ export default function SupplierRFQDetail() {
                         <CardHeader>
                             <CardTitle className="text-lg flex items-center gap-2">
                                 <FileText className="h-5 w-5 text-primary" />
-                                Requested Items
+                                {tc.rfqRequestedItems}
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -138,9 +142,9 @@ export default function SupplierRFQDetail() {
                                 <table className="w-full text-sm text-left">
                                     <thead className="text-xs uppercase bg-muted/50">
                                         <tr>
-                                            <th className="px-6 py-3">Part Name / SKU</th>
-                                            <th className="px-6 py-3">Quantity</th>
-                                            <th className="px-6 py-3 text-right">Reference</th>
+                                            <th className="px-6 py-3">{tc.rfqPartNameSku}</th>
+                                            <th className="px-6 py-3">{tc.rfqQuantity}</th>
+                                            <th className="px-6 py-3 text-right">{tc.rfqReference}</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y">
@@ -150,8 +154,8 @@ export default function SupplierRFQDetail() {
                                                     <div className="font-bold">{item.part.name}</div>
                                                     <div className="text-xs text-muted-foreground">{item.part.sku}</div>
                                                 </td>
-                                                <td className="px-6 py-4 font-medium">{item.quantity} units</td>
-                                                <td className="px-6 py-4 text-right text-muted-foreground italic">Benchmark review in progress</td>
+                                                <td className="px-6 py-4 font-medium">{item.quantity} {tc.rfqUnits}</td>
+                                                <td className="px-6 py-4 text-right text-muted-foreground italic">{tc.rfqBenchmarkReview}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -162,11 +166,11 @@ export default function SupplierRFQDetail() {
 
                     <Card className="bg-gradient-to-br from-background to-blue-50/20">
                         <CardHeader>
-                            <CardTitle className="text-lg">Special Instructions</CardTitle>
+                            <CardTitle className="text-lg">{tc.rfqSpecialInstructions}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <p className="text-sm text-muted-foreground italic">
-                                &quot;{rfq.description || "Quote for standard delivery and quality specifications."}&quot;
+                                &quot;{rfq.description || tc.rfqSpecialInstructionsDefault}&quot;
                             </p>
                         </CardContent>
                     </Card>
@@ -175,13 +179,13 @@ export default function SupplierRFQDetail() {
                 {/* Quoting Form */}
                 <Card className="shadow-lg border-2 border-primary/10">
                     <CardHeader className="bg-primary/5 border-b">
-                        <CardTitle className="text-xl">Submit Your Proposal</CardTitle>
-                        <CardDescription>Your best price, lead time, and payment terms.</CardDescription>
+                        <CardTitle className="text-xl">{tc.rfqSubmitProposal}</CardTitle>
+                        <CardDescription>{tc.rfqProposalDesc}</CardDescription>
                     </CardHeader>
                     <CardContent className="pt-6">
                         <form onSubmit={handleQuoteSubmit} className="space-y-5">
                             <div className="space-y-2">
-                                <Label htmlFor="totalAmount">Total Quote Amount (INR)</Label>
+                                <Label htmlFor="totalAmount">{tc.rfqTotalAmount}</Label>
                                 <div className="relative">
                                     <span className="absolute left-3 top-2.5 font-bold text-muted-foreground">₹</span>
                                     <Input id="totalAmount" name="totalAmount" type="number" step="0.01" className="pl-10 bg-background" placeholder="0.00" value={totalAmount} onChange={(event) => setTotalAmount(event.target.value)} required disabled={quoteLocked || isPending} />
@@ -189,7 +193,7 @@ export default function SupplierRFQDetail() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="leadTime">Lead Time (Weeks)</Label>
+                                <Label htmlFor="leadTime">{tc.rfqLeadTimeWeeks}</Label>
                                 <div className="flex items-center gap-3">
                                     <Clock className="h-4 w-4 text-muted-foreground" />
                                     <Input id="leadTime" name="leadTime" type="number" className="bg-background" value={leadTimeWeeks} onChange={(event) => setLeadTimeWeeks(event.target.value)} required disabled={quoteLocked || isPending} />
@@ -197,13 +201,13 @@ export default function SupplierRFQDetail() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="paymentTerms">Payment Terms</Label>
+                                <Label htmlFor="paymentTerms">{tc.rfqPaymentTerms}</Label>
                                 <Input id="paymentTerms" name="paymentTerms" className="bg-background" value={paymentTerms} onChange={(event) => setPaymentTerms(event.target.value)} disabled={quoteLocked || isPending} />
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="notes">Technical Proposal / Notes</Label>
-                                <Textarea id="notes" name="notes" placeholder="Specify logistics details, tooling assumptions, or tiered pricing." className="min-h-[120px] bg-background" value={notes} onChange={(event) => setNotes(event.target.value)} disabled={quoteLocked || isPending} />
+                                <Label htmlFor="notes">{tc.rfqTechnicalProposal}</Label>
+                                <Textarea id="notes" name="notes" placeholder={tc.rfqNotesPlaceholder} className="min-h-[120px] bg-background" value={notes} onChange={(event) => setNotes(event.target.value)} disabled={quoteLocked || isPending} />
                             </div>
 
                             <div className="p-4 bg-muted rounded-xl flex items-start gap-3">
@@ -211,9 +215,9 @@ export default function SupplierRFQDetail() {
                                 <p className="text-xs leading-relaxed text-muted-foreground">
                                     {quoteLocked
                                         ? rfq.status === 'draft'
-                                            ? "This invitation has been staged in your portal, but procurement has not launched live quoting yet. You can review the requirement now and submit once the event opens."
-                                            : "This RFQ is locked. Quotes can no longer be changed because procurement has closed or cancelled the event."
-                                        : "Procurement will compare this quote directly against competing bids and benchmark data."}
+                                            ? tc.rfqInfoStaged
+                                            : tc.rfqInfoLocked
+                                        : tc.rfqInfoCompare}
                                 </p>
                             </div>
 
@@ -221,12 +225,12 @@ export default function SupplierRFQDetail() {
                                 {isPending ? (
                                     <>
                                         <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                        Submitting...
+                                        {tc.rfqSubmitting}
                                     </>
                                 ) : (
                                     <>
                                         <CheckCircle2 className="mr-2 h-5 w-5" />
-                                        {currentInvitation.status === 'quoted' ? 'Update Quote' : 'Post Official Quote'}
+                                        {currentInvitation.status === 'quoted' ? tc.rfqUpdateQuote : tc.rfqPostQuote}
                                     </>
                                 )}
                             </Button>

@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { ShoppingCart } from "lucide-react";
 import { formatCurrency } from "@/lib/utils/currency";
+import { t, getActiveLanguage } from "@/lib/i18n";
 
 export const dynamic = 'force-dynamic';
 
@@ -17,31 +18,33 @@ const statusClasses: Record<string, string> = {
 
 export default async function SupplierOrdersPage() {
     const orders = await getSupplierOrders();
+    const language = await getActiveLanguage();
+    const tc = t(language, "portal");
 
     return (
         <div className="flex min-h-full flex-col bg-muted/40 p-4 lg:p-8 space-y-6">
             <div>
                 <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
-                    <ShoppingCart className="h-8 w-8 text-primary" /> Supplier Orders
+                    <ShoppingCart className="h-8 w-8 text-primary" /> {tc.ordersTitle}
                 </h1>
-                <p className="text-muted-foreground mt-1 font-medium">All orders raised for your supplier profile.</p>
+                <p className="text-muted-foreground mt-1 font-medium">{tc.ordersSubtitle}</p>
             </div>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Order Ledger</CardTitle>
-                    <CardDescription>{orders.length} order(s) available</CardDescription>
+                    <CardTitle>{tc.ordersLedger}</CardTitle>
+                    <CardDescription>{tc.ordersAvailable.replace("{n}", String(orders.length))}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="rounded-md border overflow-auto">
                         <table className="w-full text-sm">
                             <thead>
                                 <tr className="border-b bg-muted/50">
-                                    <th className="h-11 px-4 text-left text-xs uppercase text-muted-foreground">Order</th>
-                                    <th className="h-11 px-4 text-left text-xs uppercase text-muted-foreground">Status</th>
-                                    <th className="h-11 px-4 text-left text-xs uppercase text-muted-foreground">Amount</th>
-                                    <th className="h-11 px-4 text-left text-xs uppercase text-muted-foreground">Created</th>
-                                    <th className="h-11 px-4 text-left text-xs uppercase text-muted-foreground">Items</th>
+                                    <th className="h-11 px-4 text-left text-xs uppercase text-muted-foreground">{tc.ordersHeaderOrder}</th>
+                                    <th className="h-11 px-4 text-left text-xs uppercase text-muted-foreground">{tc.ordersHeaderStatus}</th>
+                                    <th className="h-11 px-4 text-left text-xs uppercase text-muted-foreground">{tc.ordersHeaderAmount}</th>
+                                    <th className="h-11 px-4 text-left text-xs uppercase text-muted-foreground">{tc.ordersHeaderCreated}</th>
+                                    <th className="h-11 px-4 text-left text-xs uppercase text-muted-foreground">{tc.ordersHeaderItems}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -54,15 +57,15 @@ export default async function SupplierOrdersPage() {
                                             </Badge>
                                         </td>
                                         <td className="p-4 font-semibold">{formatCurrency(order.totalAmount || 0)}</td>
-                                        <td className="p-4 text-muted-foreground">{order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}</td>
+                                        <td className="p-4 text-muted-foreground">{order.createdAt ? new Date(order.createdAt).toLocaleDateString() : tc.ordersNa}</td>
                                         <td className="p-4 min-w-[260px]">
                                             <div className="space-y-1 text-xs">
                                                 {(order.items || []).length === 0 ? (
-                                                    <span className="text-muted-foreground italic">No items</span>
+                                                    <span className="text-muted-foreground italic">{tc.ordersNoItems}</span>
                                                 ) : (
                                                     (order.items || []).map((item) => (
                                                         <div key={item.id} className="flex items-center justify-between gap-2">
-                                                            <span className="font-medium">{item.part?.name || 'Unknown Part'} ({item.part?.sku || 'N/A'})</span>
+                                                            <span className="font-medium">{item.part?.name || tc.ordersUnknownPart} ({item.part?.sku || tc.ordersNa})</span>
                                                             <span className="text-muted-foreground">Qty {item.quantity}</span>
                                                         </div>
                                                     ))
@@ -74,7 +77,7 @@ export default async function SupplierOrdersPage() {
                                 {orders.length === 0 && (
                                     <tr>
                                         <td colSpan={5} className="p-10 text-center text-muted-foreground italic">
-                                            No orders available for your supplier account.
+                                            {tc.ordersNoneAvailable}
                                         </td>
                                     </tr>
                                 )}

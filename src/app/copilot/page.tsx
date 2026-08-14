@@ -10,6 +10,8 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Loader, Paperclip, Send, User, FileText, X } from "lucide-react";
 import { toast } from "sonner";
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 
 interface Message {
     role: 'user' | 'assistant';
@@ -51,6 +53,8 @@ function fileToBase64(file: File) {
 }
 
 export default function CopilotPage() {
+    const { language } = useLanguage();
+    const tc = t(language, "misc");
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState("");
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -67,7 +71,7 @@ export default function CopilotPage() {
                 setMessages(history);
             } else {
                 setMessages([
-                    { role: 'assistant', content: "Hello! I answer from Axiom's live workspace, seeded operating knowledge, and uploaded PDF, CSV, TXT, JSON, or Excel files." }
+                { role: 'assistant', content: tc.copilotGreetingFiles }
                 ]);
             }
             setLoadingHistory(false);
@@ -86,12 +90,12 @@ export default function CopilotPage() {
         if (!file) return;
 
         if (file.size > 10 * 1024 * 1024) {
-            toast.error("File too large. Maximum size is 10 MB.");
+            toast.error(tc.fileTooLarge);
             return;
         }
 
         if (!isSupportedCopilotFile(file)) {
-            toast.error("Unsupported file type. Upload PDF, CSV, TSV, TXT, JSON, XLSX, or XLS files.");
+            toast.error(tc.unsupportedFileType);
             return;
         }
 
@@ -114,7 +118,7 @@ export default function CopilotPage() {
                 fileName = selectedFile.name;
                 fileMimeType = selectedFile.type;
             } catch (error) {
-                toast.error(error instanceof Error ? error.message : "Failed to read file. Please try again.");
+                toast.error(error instanceof Error ? error.message : tc.readFileFailed);
                 return;
             }
         }
@@ -138,10 +142,10 @@ export default function CopilotPage() {
                 );
                 setMessages((previous) => [...previous, { role: 'assistant', content: response }]);
             } catch (error) {
-                toast.error(error instanceof Error ? error.message : "Copilot failed to respond. Please try again.");
+                toast.error(error instanceof Error ? error.message : tc.copilotFailed);
                 setMessages((previous) => [
                     ...previous,
-                    { role: 'assistant', content: "Axiom Copilot could not complete that request cleanly. Please retry, or ask a narrower question and I will answer from the current workspace snapshot." }
+                    { role: 'assistant', content: tc.copilotErrorResponse }
                 ]);
             }
         });
@@ -153,11 +157,11 @@ export default function CopilotPage() {
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0">
                         <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight text-primary sm:text-3xl">
-                            <AxiomLogo className="h-7 w-7 text-primary sm:h-8 sm:w-8" />
-                            Axiom Copilot
+                             <AxiomLogo className="h-7 w-7 text-primary sm:h-8 sm:w-8" />
+                             {tc.copilotTitle}
                         </h1>
                         <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-                            Ask grounded questions against suppliers, parts, contacts, invoices, orders, and parsed business documents.
+                            {tc.copilotSubtitle}
                         </p>
                     </div>
                     <Button
@@ -165,10 +169,10 @@ export default function CopilotPage() {
                         size="sm"
                         onClick={async () => {
                             await clearChatHistory();
-                            setMessages([{ role: 'assistant', content: "Hello! Ask about live Axiom data, operating workflows, or upload a document to parse." }]);
+                            setMessages([{ role: 'assistant', content: tc.copilotGreeting }]);
                         }}
                     >
-                        Clear Session
+                        {tc.clearSession}
                     </Button>
                 </div>
             </div>
@@ -225,7 +229,7 @@ export default function CopilotPage() {
                                             <span className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.15s]" />
                                             <span className="h-2 w-2 animate-bounce rounded-full bg-primary" />
                                         </div>
-                                        <span className="text-xs font-medium italic text-muted-foreground">Copilot is analyzing your data...</span>
+                                        <span className="text-xs font-medium italic text-muted-foreground">{tc.copilotAnalyzing}</span>
                                     </div>
                                 </div>
                             )}
@@ -277,7 +281,7 @@ export default function CopilotPage() {
                                     <Paperclip className="h-5 w-5 text-muted-foreground" />
                                 </Button>
                                 <Input
-                                    placeholder="Ask about Axiom workflows, live data, or upload a file to analyze..."
+                                    placeholder={tc.copilotPlaceholder}
                                     value={input}
                                     onChange={(event) => setInput(event.target.value)}
                                     className="h-10 flex-1 rounded-full border-accent pl-4 shadow-inner focus-visible:ring-primary"

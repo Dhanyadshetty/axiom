@@ -34,6 +34,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { formatCurrency } from "@/lib/utils/currency";
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 
 type WorkspaceRow = Awaited<ReturnType<typeof getSupplierWorkspaceRows>>[number];
 
@@ -54,28 +56,28 @@ const SECTION_GROUPS: Array<{
     items: Array<{ id: SupplierSection; label: string; description: string }>;
 }> = [
     {
-        title: "General Overviews",
+        title: ts.generalOverviews,
         items: [
-            { id: "classification", label: "Classification", description: "Volume, ABC, and trust posture." },
-            { id: "certificates", label: "Certificates & Documents", description: "Compliance coverage and record quality." },
-            { id: "performance", label: "Performance", description: "OTIF, quality, and active order load." },
+            { id: "classification", label: ts.classification, description: ts.classificationDesc },
+            { id: "certificates", label: ts.certificates, description: ts.certificatesDesc },
+            { id: "performance", label: ts.performance, description: ts.performanceDesc },
         ],
     },
     {
-        title: "Onboarding",
+        title: ts.onboardingSection,
         items: [
-            { id: "potential", label: "Potential Suppliers", description: "Prospects not yet qualified." },
-            { id: "qualification", label: "In Qualification", description: "Suppliers in onboarding flow." },
-            { id: "onboarded", label: "Onboarded Suppliers", description: "Approved network ready to transact." },
-            { id: "suspended", label: "Suspended / Rejected", description: "Stopped or rejected relationships." },
+            { id: "potential", label: ts.potentialSuppliers, description: ts.potentialDesc },
+            { id: "qualification", label: ts.inQualification, description: ts.inQualificationDesc },
+            { id: "onboarded", label: ts.onboardedSuppliers, description: ts.onboardedDesc },
+            { id: "suspended", label: ts.suspendedRejected, description: ts.suspendedDesc },
         ],
     },
     {
-        title: "Risk & ESG",
+        title: ts.riskEsg,
         items: [
-            { id: "risk", label: "Risk Development", description: "Operational and financial exposure." },
-            { id: "watchlist", label: "Suspicious Suppliers", description: "High-risk or low-trust suppliers." },
-            { id: "incidents", label: "Public Incidents", description: "Suppliers above critical risk threshold." },
+            { id: "risk", label: ts.riskDevelopment, description: ts.riskDevelopmentDesc },
+            { id: "watchlist", label: ts.suspiciousSuppliers, description: ts.suspiciousDesc },
+            { id: "incidents", label: ts.publicIncidents, description: ts.incidentsDesc },
         ],
     },
 ];
@@ -181,6 +183,8 @@ export function SuppliersWorkspace({
     const [selectedSupplier, setSelectedSupplier] = useState<WorkspaceRow | null>(null);
     const [supplierToDelete, setSupplierToDelete] = useState<WorkspaceRow | null>(null);
     const [isPending, startTransition] = useTransition();
+    const { language } = useLanguage();
+    const ts = t(language, "suppliers");
 
     const setSupplierDrawer = (supplierId: string | null) => {
         const nextParams = new URLSearchParams(searchParams.toString());
@@ -279,12 +283,12 @@ export function SuppliersWorkspace({
             }
 
             if (result.success) {
-                toast.success(selectedSupplier ? "Supplier updated" : "Supplier added");
+                toast.success(selectedSupplier ? ts.updateSupplier : ts.onboardSupplier);
                 setOpenDialog(false);
                 setSelectedSupplier(null);
                 await reloadRows();
             } else {
-                toast.error(result.error || "Failed to save supplier");
+                toast.error(result.error || ts.addNewSupplier);
             }
         });
     };
@@ -295,12 +299,12 @@ export function SuppliersWorkspace({
         startTransition(async () => {
             const result = await deleteSupplier(supplierToDelete.id);
             if (result.success) {
-                toast.success("Supplier deleted");
+                toast.success(ts.deleteSupplier.replace("?", "") || "Supplier deleted");
                 setDeleteOpen(false);
                 setSupplierToDelete(null);
                 await reloadRows();
             } else {
-                toast.error(result.error || "Failed to delete supplier");
+                toast.error(result.error || ts.deleteSupplierConfirm);
             }
         });
     };
@@ -309,10 +313,10 @@ export function SuppliersWorkspace({
         startTransition(async () => {
             const result = await calculateABCAnalysis();
             if (result.success) {
-                toast.success("ABC analysis refreshed");
+                toast.success(ts.refreshAbc + " " + ts.rows);
                 await reloadRows();
             } else {
-                toast.error(("error" in result ? result.error : undefined) || "Failed to refresh ABC analysis");
+                toast.error(("error" in result ? result.error : undefined) || ts.refreshAbc);
             }
         });
     };
@@ -321,21 +325,21 @@ export function SuppliersWorkspace({
         <div className="min-h-full bg-background p-4 lg:p-8">
             <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                    <h1 className="text-3xl font-black tracking-tight text-slate-950">Supplier Workspace</h1>
+                    <h1 className="text-3xl font-black tracking-tight text-slate-950">{ts.workspaceTitle}</h1>
                     <p className="mt-1 text-sm text-slate-500">
-                        Classification, onboarding, compliance coverage, and supplier risk in one operating view.
+                        {ts.workspaceSubtitle}
                     </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                     {canManage ? (
                         <Button variant="outline" className="gap-2" onClick={handleRunAbc} disabled={isPending}>
                             {isPending ? <Loader className="h-4 w-4 animate-spin" /> : <BarChart3 className="h-4 w-4" />}
-                            Refresh ABC
+                            {ts.refreshAbc}
                         </Button>
                     ) : null}
                     <Link href="/admin/ecosystem">
                         <Button variant="outline" className="gap-2">
-                            Open Ecosystem
+                            {ts.openEcosystem}
                             <ArrowUpRight className="h-4 w-4" />
                         </Button>
                     </Link>
@@ -349,95 +353,95 @@ export function SuppliersWorkspace({
                             <DialogTrigger asChild>
                                 <Button className="gap-2" onClick={() => setSelectedSupplier(null)}>
                                     <Plus className="h-4 w-4" />
-                                    Add new
+                                    {ts.addNew}
                                 </Button>
                             </DialogTrigger>
                             <DialogContent className="max-w-3xl">
                                 <DialogHeader>
-                                    <DialogTitle>{selectedSupplier ? "Edit supplier" : "Add new supplier"}</DialogTitle>
+                                    <DialogTitle>{selectedSupplier ? ts.editSupplier : ts.addNewSupplier}</DialogTitle>
                                     <DialogDescription>
-                                        Capture the commercial, compliance, and risk profile that should follow this supplier into sourcing and finance.
+                                        {ts.dialogDescription}
                                     </DialogDescription>
                                 </DialogHeader>
                                 <form action={handleSaveSupplier} className="grid gap-4 py-4">
                                     <div className="grid gap-4 md:grid-cols-2">
                                         <div className="grid gap-2">
-                                            <Label htmlFor="name">Company name</Label>
+                                            <Label htmlFor="name">{ts.companyName}</Label>
                                             <Input id="name" name="name" defaultValue={selectedSupplier?.name} required />
                                         </div>
                                         <div className="grid gap-2">
-                                            <Label htmlFor="email">Contact email</Label>
+                                            <Label htmlFor="email">{ts.contactEmail}</Label>
                                             <Input id="email" name="email" type="email" defaultValue={selectedSupplier?.contactEmail} required />
                                         </div>
                                     </div>
                                     <div className="grid gap-4 md:grid-cols-4">
                                         <div className="grid gap-2">
-                                            <Label htmlFor="countryCode">Country</Label>
+                                            <Label htmlFor="countryCode">{ts.country}</Label>
                                             <Input id="countryCode" name="countryCode" maxLength={2} defaultValue={selectedSupplier?.countryCode || ""} />
                                         </div>
                                         <div className="grid gap-2">
-                                            <Label htmlFor="city">City / region</Label>
+                                            <Label htmlFor="city">{ts.cityRegion}</Label>
                                             <Input id="city" name="city" defaultValue={selectedSupplier?.city || ""} />
                                         </div>
                                         <div className="grid gap-2">
-                                            <Label htmlFor="latitude">Latitude</Label>
+                                            <Label htmlFor="latitude">{ts.latitude}</Label>
                                             <Input id="latitude" name="latitude" type="number" step="0.0000001" defaultValue="" />
                                         </div>
                                         <div className="grid gap-2">
-                                            <Label htmlFor="longitude">Longitude</Label>
+                                            <Label htmlFor="longitude">{ts.longitude}</Label>
                                             <Input id="longitude" name="longitude" type="number" step="0.0000001" defaultValue="" />
                                         </div>
                                     </div>
                                     <div className="grid gap-4 md:grid-cols-4">
                                         <div className="grid gap-2">
-                                            <Label htmlFor="risk">Risk score</Label>
+                                            <Label htmlFor="risk">{ts.riskScore}</Label>
                                             <Input id="risk" name="risk" type="number" min="0" max="100" defaultValue={selectedSupplier?.riskScore ?? 15} />
                                         </div>
                                         <div className="grid gap-2">
-                                            <Label htmlFor="performance">Performance</Label>
+                                            <Label htmlFor="performance">{ts.performance}</Label>
                                             <Input id="performance" name="performance" type="number" min="0" max="100" defaultValue={selectedSupplier?.performanceScore ?? 80} />
                                         </div>
                                         <div className="grid gap-2">
-                                            <Label htmlFor="financial">Financial</Label>
+                                            <Label htmlFor="financial">{ts.financial}</Label>
                                             <Input id="financial" name="financial" type="number" min="0" max="100" defaultValue={selectedSupplier?.financialScore ?? 70} />
                                         </div>
                                         <div className="grid gap-2">
-                                            <Label htmlFor="esg">ESG</Label>
+                                            <Label htmlFor="esg">{ts.esg}</Label>
                                             <Input id="esg" name="esg" type="number" min="0" max="100" defaultValue={selectedSupplier?.esgScore ?? 70} />
                                         </div>
                                     </div>
                                     <div className="grid gap-4 md:grid-cols-4">
                                         <div className="grid gap-2">
-                                            <Label htmlFor="tier">Tier</Label>
+                                            <Label htmlFor="tier">{ts.tier}</Label>
                                             <select id="tier" name="tier" defaultValue={selectedSupplier?.tierLevel ?? "tier_3"} className="h-10 rounded-md border bg-background px-3 text-sm">
-                                                <option value="tier_1">Tier 1</option>
-                                                <option value="tier_2">Tier 2</option>
-                                                <option value="tier_3">Tier 3</option>
-                                                <option value="critical">Critical</option>
+                                                <option value="tier_1">{ts.tier1}</option>
+                                                <option value="tier_2">{ts.tier2}</option>
+                                                <option value="tier_3">{ts.tier3}</option>
+                                                <option value="critical">{ts.critical}</option>
                                             </select>
                                         </div>
                                         <div className="grid gap-2">
-                                            <Label htmlFor="lifecycleStatus">Lifecycle</Label>
+                                            <Label htmlFor="lifecycleStatus">{ts.lifecycle}</Label>
                                             <select id="lifecycleStatus" name="lifecycleStatus" defaultValue={selectedSupplier?.lifecycleStatus ?? "prospect"} className="h-10 rounded-md border bg-background px-3 text-sm">
-                                                <option value="prospect">Prospect</option>
-                                                <option value="onboarding">Onboarding</option>
-                                                <option value="active">Active</option>
-                                                <option value="suspended">Suspended</option>
-                                                <option value="terminated">Terminated</option>
+                                                <option value="prospect">{ts.prospect}</option>
+                                                <option value="onboarding">{ts.onboarding}</option>
+                                                <option value="active">{ts.active}</option>
+                                                <option value="suspended">{ts.suspended}</option>
+                                                <option value="terminated">{ts.terminated}</option>
                                             </select>
                                         </div>
                                         <div className="grid gap-2">
-                                            <Label htmlFor="status">Status</Label>
+                                            <Label htmlFor="status">{ts.status}</Label>
                                             <select id="status" name="status" defaultValue={selectedSupplier?.status ?? "active"} className="h-10 rounded-md border bg-background px-3 text-sm">
-                                                <option value="active">Active</option>
-                                                <option value="inactive">Inactive</option>
-                                                <option value="blacklisted">Blacklisted</option>
+                                                <option value="active">{ts.statusActive}</option>
+                                                <option value="inactive">{ts.statusInactive}</option>
+                                                <option value="blacklisted">{ts.statusBlacklisted}</option>
                                             </select>
                                         </div>
                                         <div className="grid gap-2">
-                                            <Label htmlFor="abcClassification">ABC class</Label>
+                                            <Label htmlFor="abcClassification">{ts.abcClass}</Label>
                                             <select id="abcClassification" name="abcClassification" defaultValue={selectedSupplier?.abcClassification ?? "None"} className="h-10 rounded-md border bg-background px-3 text-sm">
-                                                <option value="None">None</option>
+                                                <option value="None">{ts.none}</option>
                                                 <option value="A">A</option>
                                                 <option value="B">B</option>
                                                 <option value="C">C</option>
@@ -446,20 +450,20 @@ export function SuppliersWorkspace({
                                     </div>
                                     <div className="grid gap-4 md:grid-cols-3">
                                         <div className="grid gap-2">
-                                            <Label htmlFor="esg_env">ESG: Environment</Label>
+                                            <Label htmlFor="esg_env">{ts.esgEnv}</Label>
                                             <Input id="esg_env" name="esg_env" type="number" min="0" max="100" defaultValue={selectedSupplier?.esgScore ?? 70} />
                                         </div>
                                         <div className="grid gap-2">
-                                            <Label htmlFor="esg_soc">ESG: Social</Label>
+                                            <Label htmlFor="esg_soc">{ts.esgSoc}</Label>
                                             <Input id="esg_soc" name="esg_soc" type="number" min="0" max="100" defaultValue={selectedSupplier?.esgScore ?? 70} />
                                         </div>
                                         <div className="grid gap-2">
-                                            <Label htmlFor="esg_gov">ESG: Governance</Label>
+                                            <Label htmlFor="esg_gov">{ts.esgGov}</Label>
                                             <Input id="esg_gov" name="esg_gov" type="number" min="0" max="100" defaultValue={selectedSupplier?.esgScore ?? 70} />
                                         </div>
                                     </div>
                                     <div className="space-y-3 pt-2">
-                                        <Label className="text-sm font-semibold">Compliance and certifications</Label>
+                                        <Label className="text-sm font-semibold">{ts.complianceCerts}</Label>
                                         <div className="grid gap-2 md:grid-cols-3">
                                             {["ISO 9001", "ISO 14001", "ISO 27001", "ISO 45001", "IATF 16949", "REACH"].map((certification) => (
                                                 <label key={certification} className="flex items-center gap-2 text-sm">
@@ -474,25 +478,25 @@ export function SuppliersWorkspace({
                                             ))}
                                             <label className="flex items-center gap-2 text-sm">
                                                 <input type="checkbox" name="modern_slavery" defaultChecked={selectedSupplier?.modernSlaveryStatement === "yes"} />
-                                                Modern slavery statement
+                                                {ts.modernSlaveryStatement}
                                             </label>
                                         </div>
                                         <div className="grid gap-2">
-                                            <Label htmlFor="customCertifications">Additional certifications</Label>
+                                            <Label htmlFor="customCertifications">{ts.additionalCerts}</Label>
                                             <Input id="customCertifications" name="customCertifications" placeholder="RoHS, TISAX, ISO 50001" />
                                         </div>
                                         <div className="grid gap-2">
-                                            <Label htmlFor="financialHealthRating">Financial health note</Label>
+                                            <Label htmlFor="financialHealthRating">{ts.financialHealthNote}</Label>
                                             <Input id="financialHealthRating" name="financialHealthRating" defaultValue="Reviewed" />
                                         </div>
                                     </div>
                                     <div className="flex justify-end gap-2 pt-4">
                                         <Button type="button" variant="outline" onClick={() => setOpenDialog(false)}>
-                                            Cancel
+                                            {ts.cancel}
                                         </Button>
                                         <Button type="submit" disabled={isPending}>
                                             {isPending ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : null}
-                                            {selectedSupplier ? "Update supplier" : "Onboard supplier"}
+                                            {selectedSupplier ? ts.updateSupplier : ts.onboardSupplier}
                                         </Button>
                                     </div>
                                 </form>
@@ -543,38 +547,38 @@ export function SuppliersWorkspace({
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                         <Card className="border-slate-200 shadow-sm">
                             <CardHeader className="pb-2">
-                                <CardDescription className="text-xs font-black uppercase tracking-[0.18em]">Current year volume</CardDescription>
-                                <CardTitle className="text-3xl font-black">{formatCurrency(metrics.totalCurrentVolume)}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-sm text-slate-500">Live order value in the current filtered workspace.</p>
+                                 <CardDescription className="text-xs font-black uppercase tracking-[0.18em]">{ts.currentYearVolume}</CardDescription>
+                                 <CardTitle className="text-3xl font-black">{formatCurrency(metrics.totalCurrentVolume)}</CardTitle>
+                             </CardHeader>
+                             <CardContent>
+                                 <p className="text-sm text-slate-500">{ts.liveOrderValue}</p>
                             </CardContent>
                         </Card>
                         <Card className="border-slate-200 shadow-sm">
                             <CardHeader className="pb-2">
-                                <CardDescription className="text-xs font-black uppercase tracking-[0.18em]">Onboarding queue</CardDescription>
-                                <CardTitle className="text-3xl font-black text-blue-700">{metrics.onboardingCount}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-sm text-slate-500">Suppliers still moving through qualification and onboarding.</p>
+                                 <CardDescription className="text-xs font-black uppercase tracking-[0.18em]">{ts.onboardingQueue}</CardDescription>
+                                 <CardTitle className="text-3xl font-black text-blue-700">{metrics.onboardingCount}</CardTitle>
+                             </CardHeader>
+                             <CardContent>
+                                 <p className="text-sm text-slate-500">{ts.stillMoving}</p>
                             </CardContent>
                         </Card>
                         <Card className="border-slate-200 shadow-sm">
                             <CardHeader className="pb-2">
-                                <CardDescription className="text-xs font-black uppercase tracking-[0.18em]">High-risk watchlist</CardDescription>
-                                <CardTitle className="text-3xl font-black text-rose-700">{metrics.highRiskCount}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-sm text-slate-500">Suppliers currently above the intervention threshold.</p>
+                                 <CardDescription className="text-xs font-black uppercase tracking-[0.18em]">{ts.highRiskWatchlist}</CardDescription>
+                                 <CardTitle className="text-3xl font-black text-rose-700">{metrics.highRiskCount}</CardTitle>
+                             </CardHeader>
+                             <CardContent>
+                                 <p className="text-sm text-slate-500">{ts.aboveThreshold}</p>
                             </CardContent>
                         </Card>
                         <Card className="border-slate-200 shadow-sm">
                             <CardHeader className="pb-2">
-                                <CardDescription className="text-xs font-black uppercase tracking-[0.18em]">Compliance gaps</CardDescription>
-                                <CardTitle className="text-3xl font-black text-amber-700">{metrics.complianceGapCount}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-sm text-slate-500">Suppliers with thin certification or control coverage.</p>
+                                 <CardDescription className="text-xs font-black uppercase tracking-[0.18em]">{ts.complianceGaps}</CardDescription>
+                                 <CardTitle className="text-3xl font-black text-amber-700">{metrics.complianceGapCount}</CardTitle>
+                             </CardHeader>
+                             <CardContent>
+                                 <p className="text-sm text-slate-500">{ts.thinCoverage}</p>
                             </CardContent>
                         </Card>
                     </div>
@@ -583,20 +587,20 @@ export function SuppliersWorkspace({
                         <CardHeader className="pb-4">
                             <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                                 <div>
-                                    <CardTitle className="text-xl font-black tracking-tight text-slate-950">
-                                        Supplier control table
-                                    </CardTitle>
-                                    <CardDescription>
-                                        Filter by lifecycle, risk, geography, and compliance without leaving the supplier workspace.
-                                    </CardDescription>
+                                     <CardTitle className="text-xl font-black tracking-tight text-slate-950">
+                                        {ts.supplierControlTable}
+                                     </CardTitle>
+                                     <CardDescription>
+                                        {ts.filterNote}
+                                     </CardDescription>
                                 </div>
                                 <div className="flex flex-wrap items-center gap-2">
-                                    <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
-                                        {filteredRows.length} rows
-                                    </Badge>
-                                    <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
-                                        8 columns live
-                                    </Badge>
+                                     <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
+                                        {filteredRows.length} {ts.rows}
+                                     </Badge>
+                                     <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
+                                        8 {ts.columnsLive}
+                                     </Badge>
                                 </div>
                             </div>
                         </CardHeader>
@@ -607,8 +611,8 @@ export function SuppliersWorkspace({
                                     <Input
                                         value={search}
                                         onChange={(event) => setSearch(event.target.value)}
-                                        placeholder="Search supplier, email, code, or category..."
-                                        className="pl-9"
+                                         placeholder={ts.searchPlaceholder}
+                                         className="pl-9"
                                     />
                                 </div>
                                 <div className="relative">
@@ -618,7 +622,7 @@ export function SuppliersWorkspace({
                                         onChange={(event) => setCountryFilter(event.target.value)}
                                         className="h-10 w-full appearance-none rounded-md border bg-background pl-9 pr-3 text-sm"
                                     >
-                                        <option value="all">All countries</option>
+                                         <option value="all">{ts.allCountries}</option>
                                         {countryOptions.map((countryCode) => (
                                             <option key={countryCode} value={countryCode}>
                                                 {countryLabel(countryCode)}
@@ -633,11 +637,11 @@ export function SuppliersWorkspace({
                                         onChange={(event) => setAttentionFilter(event.target.value)}
                                         className="h-10 w-full appearance-none rounded-md border bg-background pl-9 pr-3 text-sm"
                                     >
-                                        <option value="all">All views</option>
-                                        <option value="high_risk">High risk</option>
-                                        <option value="compliance_gap">Compliance gaps</option>
-                                        <option value="onboarding">Onboarding</option>
-                                        <option value="low_trust">Low trust</option>
+                                         <option value="all">{ts.allViews}</option>
+                                         <option value="high_risk">{ts.highRisk}</option>
+                                         <option value="compliance_gap">{ts.complianceGapsFilter}</option>
+                                         <option value="onboarding">{ts.onboardingFilter}</option>
+                                         <option value="low_trust">{ts.lowTrust}</option>
                                     </select>
                                 </div>
                                 <Button variant="outline" onClick={() => {
@@ -645,7 +649,7 @@ export function SuppliersWorkspace({
                                     setCountryFilter("all");
                                     setAttentionFilter("all");
                                 }}>
-                                    Reset
+                                     {ts.reset}
                                 </Button>
                             </div>
 
@@ -654,14 +658,14 @@ export function SuppliersWorkspace({
                                     <table className="w-full min-w-[1120px] text-sm">
                                         <thead className="bg-slate-50">
                                             <tr className="border-b">
-                                                <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-[0.18em] text-slate-500">Supplier</th>
-                                                <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-[0.18em] text-slate-500">Country</th>
-                                                <th className="px-4 py-3 text-right text-xs font-black uppercase tracking-[0.18em] text-slate-500">Order volume {new Date().getUTCFullYear()}</th>
-                                                <th className="px-4 py-3 text-right text-xs font-black uppercase tracking-[0.18em] text-slate-500">Order volume {new Date().getUTCFullYear() - 1}</th>
-                                                <th className="px-4 py-3 text-center text-xs font-black uppercase tracking-[0.18em] text-slate-500">ABC</th>
-                                                <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-[0.18em] text-slate-500">Trust & compliance</th>
-                                                <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-[0.18em] text-slate-500">Lifecycle</th>
-                                                <th className="px-4 py-3 text-right text-xs font-black uppercase tracking-[0.18em] text-slate-500">Actions</th>
+                                                 <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-[0.18em] text-slate-500">{ts.supplier}</th>
+                                                 <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-[0.18em] text-slate-500">{ts.countryCol}</th>
+                                                 <th className="px-4 py-3 text-right text-xs font-black uppercase tracking-[0.18em] text-slate-500">{ts.orderVolume} {new Date().getUTCFullYear()}</th>
+                                                 <th className="px-4 py-3 text-right text-xs font-black uppercase tracking-[0.18em] text-slate-500">{ts.orderVolume} {new Date().getUTCFullYear() - 1}</th>
+                                                 <th className="px-4 py-3 text-center text-xs font-black uppercase tracking-[0.18em] text-slate-500">{ts.abc}</th>
+                                                 <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-[0.18em] text-slate-500">{ts.trustCompliance}</th>
+                                                 <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-[0.18em] text-slate-500">{ts.lifecycleCol}</th>
+                                                 <th className="px-4 py-3 text-right text-xs font-black uppercase tracking-[0.18em] text-slate-500">{ts.actions}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -688,7 +692,7 @@ export function SuppliersWorkspace({
                                                             <span className="text-lg">{flagEmoji(row.countryCode)}</span>
                                                             <div>
                                                                 <p className="font-medium text-slate-900">{countryLabel(row.countryCode)}</p>
-                                                                <p className="text-xs text-slate-500">{row.city || "Region pending"}</p>
+                                                                 <p className="text-xs text-slate-500">{row.city || ts.regionPending}</p>
                                                             </div>
                                                         </div>
                                                     </td>
@@ -706,20 +710,20 @@ export function SuppliersWorkspace({
                                                     <td className="px-4 py-4 align-top">
                                                         <div className="space-y-2">
                                                             <div className="flex items-center justify-between text-xs">
-                                                                <span className="font-semibold text-slate-700">Trust {row.trustScore}</span>
-                                                                <span className="text-slate-500">Coverage {row.complianceCoverage}%</span>
+                                                                 <span className="font-semibold text-slate-700">{ts.trust} {row.trustScore}</span>
+                                                                 <span className="text-slate-500">{ts.coverage} {row.complianceCoverage}%</span>
                                                             </div>
                                                             <Progress value={row.complianceCoverage} className="h-1.5" />
                                                             <div className="flex flex-wrap gap-1">
                                                                 <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
-                                                                    Risk {row.riskScore}
-                                                                </Badge>
-                                                                <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
-                                                                    Perf {row.performanceScore}
-                                                                </Badge>
-                                                                <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
-                                                                    Docs {row.documentCount}
-                                                                </Badge>
+                                                                     {ts.risk} {row.riskScore}
+                                                                 </Badge>
+                                                                 <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
+                                                                     {ts.perf} {row.performanceScore}
+                                                                 </Badge>
+                                                                 <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
+                                                                     {ts.docs} {row.documentCount}
+                                                                 </Badge>
                                                             </div>
                                                         </div>
                                                     </td>
@@ -729,7 +733,7 @@ export function SuppliersWorkspace({
                                                                 {row.lifecycleStatus.replace("_", " ")}
                                                             </Badge>
                                                             <div className="text-xs text-slate-500">
-                                                                {row.activeOrders} active orders • {row.quotedRfqs} quoted RFQs
+                                                                 {row.activeOrders} {ts.activeOrders} • {row.quotedRfqs} {ts.quotedRfqs}
                                                             </div>
                                                         </div>
                                                     </td>
@@ -743,11 +747,11 @@ export function SuppliersWorkspace({
                                                                 variant="ghost"
                                                                 className="h-8 w-8"
                                                             />
-                                                            <Button variant="outline" size="sm" onClick={() => setSupplierDrawer(row.id)}>
-                                                                Quick view
-                                                            </Button>
-                                                            <Link href={`/suppliers/${row.id}`}>
-                                                                <Button variant="ghost" size="sm">Profile</Button>
+                                                                 <Button variant="outline" size="sm" onClick={() => setSupplierDrawer(row.id)}>
+                                                                     {ts.quickView}
+                                                                 </Button>
+                                                                 <Link href={`/suppliers/${row.id}`}>
+                                                                     <Button variant="ghost" size="sm">{ts.profile}</Button>
                                                             </Link>
                                                             {canManage ? (
                                                                 <>
@@ -772,10 +776,10 @@ export function SuppliersWorkspace({
                                             {filteredRows.length === 0 ? (
                                                 <tr>
                                                     <td colSpan={8} className="px-6 py-12 text-center">
-                                                        <p className="text-base font-semibold text-slate-900">No suppliers match this view.</p>
-                                                        <p className="mt-1 text-sm text-slate-500">
-                                                            Adjust the workspace section or clear filters to broaden the supplier set.
-                                                        </p>
+                                                         <p className="text-base font-semibold text-slate-900">{ts.noSuppliersMatch}</p>
+                                                         <p className="mt-1 text-sm text-slate-500">
+                                                             {ts.adjustView}
+                                                         </p>
                                                     </td>
                                                 </tr>
                                             ) : null}
@@ -795,19 +799,19 @@ export function SuppliersWorkspace({
             <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Delete supplier?</AlertDialogTitle>
+                        <AlertDialogTitle>{ts.deleteSupplier}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This will remove {supplierToDelete?.name || "this supplier"} only if there are no active commercial dependencies left in orders or RFQs.
+                            {ts.deleteSupplierConfirm}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel>{ts.cancel}</AlertDialogCancel>
                         <AlertDialogAction onClick={(event) => {
                             event.preventDefault();
                             void handleDeleteSupplier();
                         }} disabled={isPending} className="bg-rose-600 hover:bg-rose-700">
                             {isPending ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : null}
-                            Delete
+                            {ts.confirmDelete}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

@@ -21,6 +21,7 @@ import { SupplierEnterpriseReadiness } from "@/components/suppliers/supplier-ent
 import { EnrichSupplierButton } from "@/components/suppliers/enrich-supplier-button";
 import { MessageSupplierButton } from "@/components/suppliers/message-supplier-button";
 import { TimelineList } from "@/components/shared/timeline-list";
+import { getActiveLanguage, t } from "@/lib/i18n";
 
 type LifecycleStatus = 'prospect' | 'onboarding' | 'active' | 'suspended' | 'terminated';
 type SupplierMetrics = {
@@ -56,6 +57,8 @@ export default async function SupplierPage({ params }: { params: Promise<{ id: s
     const { id } = await params;
     const session = await auth();
     const isAdmin = session?.user?.role === 'admin';
+    const language = await getActiveLanguage();
+    const ts = t(language, "suppliers");
 
     const [supplier, orders, docs, initialComments, supplierThreadComments, timelineEntries, performanceData, readinessSnapshot, portalAccess] = await Promise.all([
         getSupplierById(id),
@@ -70,7 +73,7 @@ export default async function SupplierPage({ params }: { params: Promise<{ id: s
     ]);
 
     if (!supplier) {
-        return <div className="p-8">Supplier not found.</div>;
+        return <div className="p-8">{ts.supplierNotFound}</div>;
     }
 
     const totalSpend = orders.reduce((sum: number, order) => sum + parseFloat(order.totalAmount || '0'), 0);
@@ -81,7 +84,7 @@ export default async function SupplierPage({ params }: { params: Promise<{ id: s
             <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <Link href="/suppliers" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
                     <ArrowLeft className="h-4 w-4" />
-                    Back to Suppliers
+                    {ts.backToSuppliers}
                 </Link>
                 {isAdmin && (
                     <div className="flex flex-wrap gap-3">
@@ -109,7 +112,7 @@ export default async function SupplierPage({ params }: { params: Promise<{ id: s
                                 supplierId={id}
                                 supplierName={supplier.name}
                                 supplierEmail={supplier.contactEmail}
-                                triggerLabel="Message Supplier"
+                                triggerLabel={ts.messageSupplier}
                             />
                             <Badge variant={supplier.status === 'active' ? 'default' : 'destructive'}>
                                 {supplier.status?.toUpperCase()}
@@ -117,11 +120,11 @@ export default async function SupplierPage({ params }: { params: Promise<{ id: s
                             <Badge variant="outline" className={`font-bold border-2 ${supplier.tierLevel === 'tier_1' || supplier.tierLevel === 'critical' ? 'border-purple-500 text-purple-700 bg-purple-50' :
                                 supplier.tierLevel === 'tier_2' ? 'border-blue-500 text-blue-700 bg-blue-50' : 'border-slate-300 text-slate-600'
                                 }`}>
-                                {supplier.tierLevel?.replace('_', ' ').toUpperCase() || 'TIER 3'}
+                                {supplier.tierLevel?.replace('_', ' ').toUpperCase() || ts.tierFallback}
                             </Badge>
                             {supplier.abcClassification && supplier.abcClassification !== 'None' && (
                                 <Badge variant="outline" className="border-primary text-primary">
-                                    CLASS {supplier.abcClassification}
+                                    {ts.classLabel} {supplier.abcClassification}
                                 </Badge>
                             )}
                         </div>
@@ -166,20 +169,20 @@ export default async function SupplierPage({ params }: { params: Promise<{ id: s
 
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Total Spend</CardTitle>
-                            <Target className="h-5 w-5 text-primary" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-3xl font-bold">
-                                {formatInr(totalSpend)}
-                            </div>
-                            <p className="text-[10px] text-muted-foreground mt-2 italic">Across {orders.length} orders</p>
+                            <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">{ts.totalSpend}</CardTitle>
+                             <Target className="h-5 w-5 text-primary" />
+                         </CardHeader>
+                         <CardContent>
+                             <div className="text-3xl font-bold">
+                                 {formatInr(totalSpend)}
+                             </div>
+                             <p className="text-[10px] text-muted-foreground mt-2 italic">{ts.acrossOrders} {orders.length}</p>
                         </CardContent>
                     </Card>
 
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Operational Risk</CardTitle>
+                            <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">{ts.operationalRisk}</CardTitle>
                             <AlertTriangle className={`h-5 w-5 ${supplier.riskScore! > 50 ? 'text-red-500' : 'text-yellow-500'}`} />
                         </CardHeader>
                         <CardContent>
@@ -191,14 +194,14 @@ export default async function SupplierPage({ params }: { params: Promise<{ id: s
                                         style={{ width: `${supplier.riskScore}%` }}
                                     />
                                 </div>
-                                <p className="text-[10px] text-muted-foreground italic">System-wide weighted score</p>
+                                 <p className="text-[10px] text-muted-foreground italic">{ts.systemWideScore}</p>
                             </div>
                         </CardContent>
                     </Card>
 
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">ESG & Compliance</CardTitle>
+                            <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">{ts.esgCompliance}</CardTitle>
                             <Activity className="h-5 w-5 text-blue-500" />
                         </CardHeader>
                         <CardContent>
@@ -211,36 +214,36 @@ export default async function SupplierPage({ params }: { params: Promise<{ id: s
                             </div>
                             <div className="space-y-3 pt-2 border-t">
                                 <div className="flex justify-between text-xs">
-                                    <span className="text-muted-foreground">Scope 1,2,3</span>
+                                        <span className="text-muted-foreground">{ts.scope123}</span>
                                     <span className="font-mono text-[10px]">{parseFloat(supplier.carbonFootprintScope1 || '0') + parseFloat(supplier.carbonFootprintScope2 || '0') + parseFloat(supplier.carbonFootprintScope3 || '0')} tCO2e</span>
                                 </div>
                                 <div className="flex justify-between text-xs">
-                                    <span className="text-muted-foreground">Conflict Minerals</span>
+                                        <span className="text-muted-foreground">{ts.conflictMinerals}</span>
                                     <Badge variant="outline" className="text-[10px] py-0 h-4 uppercase">
-                                            {supplier.conflictMineralsStatus || 'Unknown'}
+                                             {supplier.conflictMineralsStatus || ts.unknown}
                                     </Badge>
                                 </div>
                                 <div className="space-y-1.5 pt-1">
                                     <div className="flex justify-between items-center">
-                                        <span className="text-[10px] text-muted-foreground font-medium uppercase">Environmental</span>
+                                        <span className="text-[10px] text-muted-foreground font-medium uppercase">{ts.environmental}</span>
                                         <span className="text-[10px] font-bold">{supplier.esgEnvironmentScore || 0}%</span>
                                     </div>
                                     <Progress value={supplier.esgEnvironmentScore || 0} className="h-1 bg-slate-100" />
 
                                     <div className="flex justify-between items-center">
-                                        <span className="text-[10px] text-muted-foreground font-medium uppercase">Social</span>
+                                        <span className="text-[10px] text-muted-foreground font-medium uppercase">{ts.social}</span>
                                         <span className="text-[10px] font-bold">{supplier.esgSocialScore || 0}%</span>
                                     </div>
                                     <Progress value={supplier.esgSocialScore || 0} className="h-1 bg-slate-100" />
 
                                     <div className="flex justify-between items-center">
-                                        <span className="text-[10px] text-muted-foreground font-medium uppercase">Governance</span>
+                                        <span className="text-[10px] text-muted-foreground font-medium uppercase">{ts.governance}</span>
                                         <span className="text-[10px] font-bold">{supplier.esgGovernanceScore || 0}%</span>
                                     </div>
                                     <Progress value={supplier.esgGovernanceScore || 0} className="h-1 bg-slate-100" />
                                 </div>
                                 <div className="pt-3 border-t">
-                                    <div className="text-[10px] text-muted-foreground font-bold uppercase mb-2">Compliance Markers</div>
+                                    <div className="text-[10px] text-muted-foreground font-bold uppercase mb-2">{ts.complianceMarkers}</div>
                                     <div className="flex flex-wrap gap-1.5">
                                         {supplier.isoCertifications?.map((iso: string) => (
                                             <Badge key={iso} variant="secondary" className="text-[9px] px-1.5 h-4 bg-slate-100 text-slate-700 font-bold border-slate-200">
@@ -249,11 +252,11 @@ export default async function SupplierPage({ params }: { params: Promise<{ id: s
                                         ))}
                                         {supplier.modernSlaveryStatement === 'yes' && (
                                             <Badge className="text-[9px] px-1.5 h-4 bg-green-50 text-green-700 font-bold border-green-200" variant="outline">
-                                                MODERN SLAVERY ACT
+                                                 {ts.modernSlaveryAct}
                                             </Badge>
                                         )}
                                         {supplier.isoCertifications?.length === 0 && supplier.modernSlaveryStatement !== 'yes' && (
-                                            <span className="text-[10px] text-muted-foreground italic">No certifications recorded.</span>
+                                            <span className="text-[10px] text-muted-foreground italic">{ts.noCertifications}</span>
                                         )}
                                     </div>
                                 </div>
@@ -267,28 +270,28 @@ export default async function SupplierPage({ params }: { params: Promise<{ id: s
             <div className="grid gap-4 grid-cols-2 md:grid-cols-4 mb-10">
                 <Card className="border-l-4 border-l-indigo-500">
                     <CardContent className="pt-4 pb-3">
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wide">Performance Score</p>
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wide">{ts.performanceScore}</p>
                         <p className="text-2xl font-black text-indigo-600">{supplier.performanceScore ?? 0}%</p>
                         <Progress value={supplier.performanceScore ?? 0} className="h-1.5 mt-2" />
                     </CardContent>
                 </Card>
                 <Card className="border-l-4 border-l-emerald-500">
                     <CardContent className="pt-4 pb-3">
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wide">Financial Health</p>
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wide">{ts.financialHealth}</p>
                         <p className="text-2xl font-black text-emerald-600">{supplier.financialScore ?? 0}%</p>
                         <Progress value={supplier.financialScore ?? 0} className="h-1.5 mt-2" />
                     </CardContent>
                 </Card>
                 <Card className="border-l-4 border-l-cyan-500">
                     <CardContent className="pt-4 pb-3">
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wide">Total Orders</p>
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wide">{ts.totalOrders}</p>
                         <p className="text-2xl font-black text-cyan-600">{orders.length}</p>
-                        <p className="text-[10px] text-muted-foreground mt-1">{orders.filter((o) => o.status === 'fulfilled').length} fulfilled</p>
+                        <p className="text-[10px] text-muted-foreground mt-1">{orders.filter((o) => o.status === 'fulfilled').length} {ts.fulfilled}</p>
                     </CardContent>
                 </Card>
                 <Card className="border-l-4 border-l-amber-500">
                     <CardContent className="pt-4 pb-3">
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wide">Avg Order Value</p>
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wide">{ts.avgOrderValue}</p>
                         <p className="text-2xl font-black text-amber-600">
                             {formatInr(averageOrderValue)}
                         </p>
@@ -298,8 +301,8 @@ export default async function SupplierPage({ params }: { params: Promise<{ id: s
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Order History</CardTitle>
-                    <CardDescription>All orders placed with {supplier.name}.</CardDescription>
+                    <CardTitle>{ts.orderHistory}</CardTitle>
+                    <CardDescription>{ts.allOrdersPlaced} {supplier.name}.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="rounded-md border">
@@ -307,11 +310,11 @@ export default async function SupplierPage({ params }: { params: Promise<{ id: s
                             <table className="w-full caption-bottom text-sm">
                                 <thead className="[&_tr]:border-b">
                                     <tr className="border-b transition-colors hover:bg-muted/50">
-                                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Order ID</th>
-                                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Amount</th>
-                                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Logistics</th>
-                                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Status</th>
-                                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Created</th>
+                                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">{ts.orderId}</th>
+                                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">{ts.amount}</th>
+                                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">{ts.logistics}</th>
+                                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">{ts.status}</th>
+                                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">{ts.created}</th>
                                     </tr>
                                 </thead>
                                 <tbody className="[&_tr:last-child]:border-0">
@@ -345,7 +348,7 @@ export default async function SupplierPage({ params }: { params: Promise<{ id: s
                                     ))}
                                     {orders.length === 0 && (
                                         <tr>
-                                            <td colSpan={4} className="p-4 text-center text-muted-foreground">No orders found for this supplier.</td>
+                                            <td colSpan={4} className="p-4 text-center text-muted-foreground">{ts.noOrdersFound}</td>
                                         </tr>
                                     )}
                                 </tbody>
@@ -361,19 +364,19 @@ export default async function SupplierPage({ params }: { params: Promise<{ id: s
                         entityType="supplier_message"
                         entityId={id}
                         initialComments={supplierThreadComments}
-                        title="Supplier Inbox"
-                        placeholder="Write the next supplier-facing update or respond inside the shared thread..."
-                        buttonLabel="Post to Supplier Thread"
-                        emptyState="No supplier messages yet. Use the message button above to start the auditable thread."
+                        title={ts.supplierInbox}
+                        placeholder={ts.supplierInboxPlaceholder}
+                        buttonLabel={ts.postToThread}
+                        emptyState={ts.noSupplierMessages}
                     />
                     <CommentsSection
                         entityType="supplier"
                         entityId={id}
                         initialComments={initialComments}
-                        title="Internal Notes"
-                        placeholder="Add an internal note for buyers, approvers, and admin teammates..."
-                        buttonLabel="Save Internal Note"
-                        emptyState="No internal notes logged yet."
+                        title={ts.internalNotes}
+                        placeholder={ts.internalNotesPlaceholder}
+                        buttonLabel={ts.saveInternalNote}
+                        emptyState={ts.noInternalNotes}
                     />
                     <TimelineList entries={timelineEntries} />
                 </div>

@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { getAccessProfileLabel, getAllowedAccessProfilesForRole, type AccessProfile } from "@/lib/rbac";
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 import {
     Briefcase,
     Building2,
@@ -86,6 +88,8 @@ function getDefaultAccessProfile(role: UserRole) {
 }
 
 export default function UsersClient({ users, suppliers, currentUserRole }: UsersClientProps) {
+    const { language } = useLanguage();
+    const tc = t(language, "misc");
     const [open, setOpen] = useState(false);
     const [editUser, setEditUser] = useState<AppUser | null>(null);
     const [createRole, setCreateRole] = useState<UserRole>('user');
@@ -114,11 +118,11 @@ export default function UsersClient({ users, suppliers, currentUserRole }: Users
         startTransition(async () => {
             const result = await createUser(formData);
             if (result.success) {
-                toast.success("Access account created.");
-                setOpen(false);
-                resetCreateState();
-            } else {
-                toast.error(result.error || "Failed to create user");
+            toast.success(tc.accessCreated);
+            setOpen(false);
+            resetCreateState();
+        } else {
+            toast.error(result.error || tc.createUserFailed);
             }
         });
     };
@@ -128,25 +132,25 @@ export default function UsersClient({ users, suppliers, currentUserRole }: Users
         startTransition(async () => {
             const result = await updateUser(editUser.id, formData);
             if (result.success) {
-                toast.success("Access account updated.");
-                setEditUser(null);
-            } else {
-                toast.error(result.error || "Failed to update user");
+            toast.success(tc.accessUpdated);
+            setEditUser(null);
+        } else {
+            toast.error(result.error || tc.updateUserFailed);
             }
         });
     };
 
     const handleDeleteUser = async (id: string) => {
-        if (!confirm("Are you sure you want to delete this access account?")) {
+        if (!confirm(tc.deleteConfirm)) {
             return;
         }
 
         startTransition(async () => {
             const result = await deleteUser(id);
             if (result.success) {
-                toast.success("Access account removed.");
-            } else {
-                toast.error(result.error || "Failed to delete user");
+            toast.success(tc.accessRemoved);
+        } else {
+            toast.error(result.error || tc.deleteUserFailed);
             }
         });
     };
@@ -162,8 +166,8 @@ export default function UsersClient({ users, suppliers, currentUserRole }: Users
         <div className="flex min-h-full flex-col bg-muted/40 p-4 lg:p-8">
             <div className="mb-8 flex items-center justify-between">
                 <div>
-                    <h1 className="text-4xl font-black uppercase leading-none tracking-tighter text-slate-900">Access & Roles</h1>
-                    <p className="mt-2 text-sm font-bold uppercase tracking-widest text-muted-foreground">Role-based access control and regional scope governance</p>
+                    <h1 className="text-4xl font-black uppercase leading-none tracking-tighter text-slate-900">{tc.usersTitle}</h1>
+                    <p className="mt-2 text-sm font-bold uppercase tracking-widest text-muted-foreground">{tc.usersSubtitle}</p>
                 </div>
 
                 {currentUserRole === 'admin' && (
@@ -179,48 +183,48 @@ export default function UsersClient({ users, suppliers, currentUserRole }: Users
                         <DialogTrigger asChild>
                             <Button className="gap-2 bg-amber-600 shadow-lg shadow-amber-100 transition-all hover:bg-amber-700">
                                 <Plus className="mr-1 h-4 w-4" />
-                                Add Account
+                                {tc.addAccount}
                             </Button>
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
-                                <DialogTitle>Create Access Account</DialogTitle>
+                                <DialogTitle>{tc.createAccessAccount}</DialogTitle>
                                 <DialogDescription>
-                                    Provision a named access profile for an internal or supplier-facing workspace.
+                                    {tc.createAccessDesc}
                                 </DialogDescription>
                             </DialogHeader>
                             <form action={handleCreateUser} className="grid gap-4 py-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="name">Full Name</Label>
+                                    <Label htmlFor="name">{tc.fullName}</Label>
                                     <Input id="name" name="name" placeholder="John Doe" required />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="email">Email</Label>
+                                    <Label htmlFor="email">{tc.email}</Label>
                                     <Input id="email" name="email" type="email" placeholder="john@company.com" required />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="employeeId">Employee ID</Label>
+                                    <Label htmlFor="employeeId">{tc.employeeId}</Label>
                                     <Input id="employeeId" name="employeeId" placeholder="EMP001" />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="password">Password</Label>
+                                    <Label htmlFor="password">{tc.password}</Label>
                                     <Input id="password" name="password" type="password" placeholder="Minimum 6 characters" required minLength={6} />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="department">Department</Label>
+                                    <Label htmlFor="department">{tc.department}</Label>
                                     <select
                                         id="department"
                                         name="department"
                                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                                     >
-                                        <option value="">Select Department</option>
+                                        <option value="">{tc.selectDepartment}</option>
                                         {DEPARTMENTS.map((department) => (
                                             <option key={department} value={department}>{department}</option>
                                         ))}
                                     </select>
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="role">Role</Label>
+                                    <Label htmlFor="role">{tc.role}</Label>
                                     <select
                                         id="role"
                                         name="role"
@@ -235,14 +239,14 @@ export default function UsersClient({ users, suppliers, currentUserRole }: Users
                                             }
                                         }}
                                     >
-                                        <option value="user">Internal User</option>
-                                        <option value="admin">Admin</option>
-                                        <option value="supplier" disabled={suppliers.length === 0}>Supplier</option>
+                                        <option value="user">{tc.internalUser}</option>
+                                        <option value="admin">{tc.admin}</option>
+                                        <option value="supplier" disabled={suppliers.length === 0}>{tc.supplier}</option>
                                     </select>
                                 </div>
                                 {createRole === 'supplier' && (
                                     <div className="grid gap-2">
-                                        <Label htmlFor="supplierId">Linked Supplier</Label>
+                                        <Label htmlFor="supplierId">{tc.linkedSupplier}</Label>
                                         <select
                                             id="supplierId"
                                             name="supplierId"
@@ -251,18 +255,18 @@ export default function UsersClient({ users, suppliers, currentUserRole }: Users
                                             onChange={(event) => setCreateSupplierId(event.target.value)}
                                             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                                         >
-                                            <option value="">Select Supplier</option>
+                                            <option value="">{tc.selectSupplier}</option>
                                             {suppliers.map((supplier) => (
                                                 <option key={supplier.id} value={supplier.id}>{supplier.name}</option>
                                             ))}
                                         </select>
-                                        <p className="text-[11px] text-muted-foreground">
-                                            Supplier logins are portal-only and must be mapped to an existing supplier record.
-                                        </p>
+                                            <p className="text-[11px] text-muted-foreground">
+                                                {tc.supplierMappingNote}
+                                            </p>
                                     </div>
                                 )}
                                 <div className="grid gap-2">
-                                    <Label htmlFor="accessProfile">Access Profile</Label>
+                                    <Label htmlFor="accessProfile">{tc.accessProfile}</Label>
                                     <select
                                         id="accessProfile"
                                         name="accessProfile"
@@ -278,11 +282,11 @@ export default function UsersClient({ users, suppliers, currentUserRole }: Users
                                 {createAccessProfile === 'regional_operator' && (
                                     <div className="grid gap-4 md:grid-cols-2">
                                         <div className="grid gap-2">
-                                            <Label htmlFor="countryScope">Country Scope</Label>
+                                            <Label htmlFor="countryScope">{tc.countryScope}</Label>
                                             <Input id="countryScope" name="countryScope" placeholder="DE, IN, US..." />
                                         </div>
                                         <div className="grid gap-2">
-                                            <Label htmlFor="regionScope">Region Scope</Label>
+                                            <Label htmlFor="regionScope">{tc.regionScope}</Label>
                                             <Input id="regionScope" name="regionScope" placeholder="EMEA, APAC, Bavaria..." />
                                         </div>
                                     </div>
@@ -290,7 +294,7 @@ export default function UsersClient({ users, suppliers, currentUserRole }: Users
                                 <div className="mt-4 flex justify-end">
                                     <Button type="submit" disabled={isPending}>
                                         {isPending && <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />}
-                                        Create Account
+                                        {tc.createAccount}
                                     </Button>
                                 </div>
                             </form>
@@ -302,56 +306,56 @@ export default function UsersClient({ users, suppliers, currentUserRole }: Users
             <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-5">
                 <Card className="glass-card border-l-4 border-l-indigo-600">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Total Accounts</CardTitle>
+                        <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{tc.totalAccounts}</CardTitle>
                         <UsersIcon className="h-4 w-4 text-indigo-600" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-black text-slate-900">{users.length}</div>
-                        <p className="mt-1 text-[10px] font-medium text-muted-foreground">Authorized platform identities</p>
+                        <p className="mt-1 text-[10px] font-medium text-muted-foreground">{tc.authorizedIdentities}</p>
                     </CardContent>
                 </Card>
 
                 <Card className="glass-card border-l-4 border-l-amber-500">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Admins</CardTitle>
+                        <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{tc.admins}</CardTitle>
                         <ShieldIcon className="h-4 w-4 text-amber-600" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-black text-slate-900">{adminCount}</div>
-                        <p className="mt-1 text-[10px] font-medium text-muted-foreground">Control-plane accounts</p>
+                        <p className="mt-1 text-[10px] font-medium text-muted-foreground">{tc.controlPlaneAccounts}</p>
                     </CardContent>
                 </Card>
 
                 <Card className="glass-card border-l-4 border-l-blue-500">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Internal Users</CardTitle>
+                        <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{tc.internalUsers}</CardTitle>
                         <Briefcase className="h-4 w-4 text-blue-600" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-black text-slate-900">{internalUserCount}</div>
-                        <p className="mt-1 text-[10px] font-medium text-muted-foreground">Operational workspace accounts</p>
+                        <p className="mt-1 text-[10px] font-medium text-muted-foreground">{tc.operationalWorkspaceAccounts}</p>
                     </CardContent>
                 </Card>
 
                 <Card className="glass-card border-l-4 border-l-cyan-500">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Regional Scope</CardTitle>
+                        <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{tc.regionalScope}</CardTitle>
                         <Building2 className="h-4 w-4 text-cyan-600" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-black text-slate-900">{scopedOperatorCount}</div>
-                        <p className="mt-1 text-[10px] font-medium text-muted-foreground">Country or region-filtered operators</p>
+                        <p className="mt-1 text-[10px] font-medium text-muted-foreground">{tc.countryRegionOperators}</p>
                     </CardContent>
                 </Card>
 
                 <Card className="glass-card border-l-4 border-l-emerald-500">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Supplier Logins</CardTitle>
+                        <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{tc.supplierLogins}</CardTitle>
                         <Store className="h-4 w-4 text-emerald-600" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-black text-slate-900">{supplierAccountCount}</div>
-                        <p className="mt-1 text-[10px] font-medium text-muted-foreground">Portal-only external access</p>
+                        <p className="mt-1 text-[10px] font-medium text-muted-foreground">{tc.portalOnlyExternal}</p>
                     </CardContent>
                 </Card>
             </div>
@@ -360,10 +364,10 @@ export default function UsersClient({ users, suppliers, currentUserRole }: Users
                 <CardHeader className="border-b border-slate-100 bg-slate-50/50 px-6 py-6 dark:bg-slate-900/50">
                     <CardTitle className="flex items-center gap-2 text-xl font-black uppercase tracking-tighter text-slate-900">
                         <UserCheck className="h-5 w-5 text-indigo-600" />
-                        Directory
+                        {tc.directory}
                     </CardTitle>
                     <CardDescription className="mt-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                        Role assignments, named access profiles, and workspace scope
+                        {tc.directoryDesc}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -372,14 +376,14 @@ export default function UsersClient({ users, suppliers, currentUserRole }: Users
                             <table className="w-full caption-bottom text-sm">
                                 <thead className="[&_tr]:border-b">
                                     <tr className="border-b transition-colors hover:bg-muted/50">
-                                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Name</th>
-                                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Email</th>
-                                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Access Scope</th>
-                                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Department</th>
-                                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Role</th>
-                                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Created</th>
+                                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">{tc.thName}</th>
+                                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">{tc.thEmail}</th>
+                                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">{tc.thAccessScope}</th>
+                                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">{tc.thDepartment}</th>
+                                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">{tc.thRole}</th>
+                                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">{tc.thCreated}</th>
                                         {currentUserRole === 'admin' && (
-                                            <th className="h-12 px-8 text-right align-middle font-medium text-muted-foreground">Actions</th>
+                                            <th className="h-12 px-8 text-right align-middle font-medium text-muted-foreground">{tc.thActions}</th>
                                         )}
                                     </tr>
                                 </thead>
@@ -417,9 +421,9 @@ export default function UsersClient({ users, suppliers, currentUserRole }: Users
                                                     {scopeLabel(user) ? (
                                                         <span className="text-[11px] text-muted-foreground">{scopeLabel(user)}</span>
                                                     ) : null}
-                                                    {user.role === 'supplier' && !user.supplierName ? (
-                                                        <span className="text-[11px] text-red-500">Supplier mapping required</span>
-                                                    ) : null}
+                                                        {user.role === 'supplier' && !user.supplierName ? (
+                                                            <span className="text-[11px] text-red-500">{tc.supplierMappingRequired}</span>
+                                                        ) : null}
                                                 </div>
                                             </td>
                                             <td className="p-4 align-middle text-xs">
@@ -455,7 +459,7 @@ export default function UsersClient({ users, suppliers, currentUserRole }: Users
                                                             onClick={() => openEditDialog(user)}
                                                             className="rounded-lg font-bold text-amber-700 transition-colors hover:bg-amber-50 hover:text-amber-900"
                                                         >
-                                                            Edit
+                                                            {tc.edit}
                                                         </Button>
                                                         <Button
                                                             variant="ghost"
@@ -464,7 +468,7 @@ export default function UsersClient({ users, suppliers, currentUserRole }: Users
                                                             disabled={isPending}
                                                             className="text-red-500 hover:text-red-700"
                                                         >
-                                                            Delete
+                                                            {tc.delete}
                                                         </Button>
                                                     </div>
                                                 </td>
@@ -473,7 +477,7 @@ export default function UsersClient({ users, suppliers, currentUserRole }: Users
                                     ))}
                                     {users.length === 0 && (
                                         <tr>
-                                            <td colSpan={7} className="p-4 text-center text-muted-foreground">No users found.</td>
+                                            <td colSpan={7} className="p-4 text-center text-muted-foreground">{tc.noUsersFound}</td>
                                         </tr>
                                     )}
                                 </tbody>
@@ -496,45 +500,45 @@ export default function UsersClient({ users, suppliers, currentUserRole }: Users
             >
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Edit Access Account</DialogTitle>
+                        <DialogTitle>{tc.editAccessAccount}</DialogTitle>
                         <DialogDescription>
-                            Update profile details, access posture, or portal mapping for {editUser?.name}.
+                            {tc.editAccessDesc.replace("{name}", editUser?.name || "")}
                         </DialogDescription>
                     </DialogHeader>
                     {editUser && (
                         <form action={handleUpdateUser} className="grid gap-4 py-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="edit-name">Full Name</Label>
+                                <Label htmlFor="edit-name">{tc.fullName}</Label>
                                 <Input id="edit-name" name="name" defaultValue={editUser.name} required />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="edit-email">Email</Label>
+                                <Label htmlFor="edit-email">{tc.email}</Label>
                                 <Input id="edit-email" name="email" type="email" defaultValue={editUser.email} required />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="edit-employeeId">Employee ID</Label>
+                                <Label htmlFor="edit-employeeId">{tc.employeeId}</Label>
                                 <Input id="edit-employeeId" name="employeeId" defaultValue={editUser.employeeId || ''} />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="edit-password">New Password (leave blank to keep current)</Label>
+                                <Label htmlFor="edit-password">{tc.newPassword}</Label>
                                 <Input id="edit-password" name="password" type="password" placeholder="Minimum 6 characters" minLength={6} />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="edit-department">Department</Label>
+                                <Label htmlFor="edit-department">{tc.department}</Label>
                                 <select
                                     id="edit-department"
                                     name="department"
                                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                                     defaultValue={editUser.department || ''}
                                 >
-                                    <option value="">Select Department</option>
+                                    <option value="">{tc.selectDepartment}</option>
                                     {DEPARTMENTS.map((department) => (
                                         <option key={department} value={department}>{department}</option>
                                     ))}
                                 </select>
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="edit-role">Role</Label>
+                                <Label htmlFor="edit-role">{tc.role}</Label>
                                 <select
                                     id="edit-role"
                                     name="role"
@@ -549,23 +553,23 @@ export default function UsersClient({ users, suppliers, currentUserRole }: Users
                                         }
                                     }}
                                 >
-                                    <option value="user">Internal User</option>
-                                    <option value="admin">Admin</option>
-                                    <option value="supplier" disabled={suppliers.length === 0}>Supplier</option>
+                                        <option value="user">{tc.internalUser}</option>
+                                        <option value="admin">{tc.admin}</option>
+                                        <option value="supplier" disabled={suppliers.length === 0}>{tc.supplier}</option>
                                 </select>
                             </div>
                             {editRole === 'supplier' && (
                                 <div className="grid gap-2">
-                                    <Label htmlFor="edit-supplierId">Linked Supplier</Label>
-                                    <select
-                                        id="edit-supplierId"
-                                        name="supplierId"
-                                        required
-                                        value={editSupplierId}
-                                        onChange={(event) => setEditSupplierId(event.target.value)}
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                                    >
-                                        <option value="">Select Supplier</option>
+                                        <Label htmlFor="edit-supplierId">{tc.linkedSupplier}</Label>
+                                        <select
+                                            id="edit-supplierId"
+                                            name="supplierId"
+                                            required
+                                            value={editSupplierId}
+                                            onChange={(event) => setEditSupplierId(event.target.value)}
+                                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                        >
+                                            <option value="">{tc.selectSupplier}</option>
                                         {suppliers.map((supplier) => (
                                             <option key={supplier.id} value={supplier.id}>{supplier.name}</option>
                                         ))}
@@ -573,7 +577,7 @@ export default function UsersClient({ users, suppliers, currentUserRole }: Users
                                 </div>
                             )}
                             <div className="grid gap-2">
-                                <Label htmlFor="edit-accessProfile">Access Profile</Label>
+                                <Label htmlFor="edit-accessProfile">{tc.accessProfile}</Label>
                                 <select
                                     id="edit-accessProfile"
                                     name="accessProfile"
@@ -589,11 +593,11 @@ export default function UsersClient({ users, suppliers, currentUserRole }: Users
                             {editAccessProfile === 'regional_operator' && (
                                 <div className="grid gap-4 md:grid-cols-2">
                                     <div className="grid gap-2">
-                                        <Label htmlFor="edit-countryScope">Country Scope</Label>
+                                        <Label htmlFor="edit-countryScope">{tc.countryScope}</Label>
                                         <Input id="edit-countryScope" name="countryScope" defaultValue={editUser.countryScope || ''} placeholder="DE, IN, US..." />
                                     </div>
                                     <div className="grid gap-2">
-                                        <Label htmlFor="edit-regionScope">Region Scope</Label>
+                                        <Label htmlFor="edit-regionScope">{tc.regionScope}</Label>
                                         <Input id="edit-regionScope" name="regionScope" defaultValue={editUser.regionScope || ''} placeholder="EMEA, APAC, Bavaria..." />
                                     </div>
                                 </div>
@@ -601,7 +605,7 @@ export default function UsersClient({ users, suppliers, currentUserRole }: Users
                             <div className="mt-4 flex justify-end">
                                 <Button type="submit" disabled={isPending}>
                                     {isPending && <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />}
-                                    Update Account
+                                    {tc.updateAccount}
                                 </Button>
                             </div>
                         </form>

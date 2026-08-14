@@ -19,17 +19,20 @@ import { getRiskComplianceStats, getSupplierRiskProfiles } from "@/app/actions/r
 import { GeocodeTrigger } from "@/components/admin/geocode-trigger";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { getActiveLanguage, t } from "@/lib/i18n";
 
 export const dynamic = 'force-dynamic';
 
 export default async function RiskDashboardPage() {
+    const language = await getActiveLanguage();
+    const ta = t(language, "admin");
     const session = await auth();
     if (!session?.user) redirect('/login');
     const role = session.user.role;
     if (role !== 'admin' && role !== 'user') redirect('/');
     const stats = await getRiskComplianceStats();
 
-    if (!stats) return <div className="p-8">Unable to load risk intelligence.</div>;
+        if (!stats) return <div className="p-8">{ta.unableToLoadRisk}</div>;
 
     const allSuppliers = await getSupplierRiskProfiles();
     const highRiskSuppliers = allSuppliers.filter((s) => (s.riskScore || 0) > 60);
@@ -40,8 +43,8 @@ export default async function RiskDashboardPage() {
         <div className="flex min-h-full flex-col bg-muted/40 p-4 lg:p-8">
             <div className="flex items-center justify-between mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-foreground">Risk & Compliance Intelligence</h1>
-                    <p className="text-muted-foreground mt-1">Real-time monitoring of ESG, financial, and operational supply chain risks.</p>
+                    <h1 className="text-3xl font-bold tracking-tight text-foreground">{ta.riskComplianceIntelligence}</h1>
+                    <p className="text-muted-foreground mt-1">{ta.riskComplianceSubtitle}</p>
                 </div>
                 <GeocodeTrigger />
             </div>
@@ -65,44 +68,44 @@ export default async function RiskDashboardPage() {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
                 <Card className="border-red-200 bg-red-50/30 shadow-none">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Critical Risks</CardTitle>
+                        <CardTitle className="text-sm font-medium">{ta.criticalRisks}</CardTitle>
                         <ShieldAlert className="h-4 w-4 text-red-600" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-red-600">{highRiskSuppliers.length}</div>
                         <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1 font-medium">
-                            Requiring immediate attention
+                            {ta.requiringImmediateAttention}
                         </p>
                     </CardContent>
                 </Card>
                 <Card className="border-green-200 bg-green-50/30 shadow-none">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Network Health Score</CardTitle>
+                        <CardTitle className="text-sm font-medium">{ta.networkHealthScore}</CardTitle>
                         <Activity className="h-4 w-4 text-green-600" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-green-600">{100 - stats.avgRisk}%</div>
-                        <p className="text-xs text-muted-foreground mt-1 font-medium">Stable</p>
+                        <p className="text-xs text-muted-foreground mt-1 font-medium">{ta.stable}</p>
                     </CardContent>
                 </Card>
                 <Card className="border-amber-200 bg-amber-50/30 shadow-none">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Avg ESG Performance</CardTitle>
+                        <CardTitle className="text-sm font-medium">{ta.avgEsgPerformance}</CardTitle>
                         <Globe className="h-4 w-4 text-amber-600" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-amber-700">{stats.esgAvg}/100</div>
-                        <p className="text-xs text-stone-500 mt-1">Portfolio ESG Target: 75+</p>
+                        <p className="text-xs text-stone-500 mt-1">{ta.portfolioEsgTarget}</p>
                     </CardContent>
                 </Card>
                 <Card className="border-stone-200 bg-stone-50/30 shadow-none">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Compliance Rate</CardTitle>
+                        <CardTitle className="text-sm font-medium">{ta.complianceRate}</CardTitle>
                         <Search className="h-4 w-4 text-stone-600" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-stone-900">{stats.esgAvg}%</div>
-                        <p className="text-xs text-stone-500 mt-1 font-medium">Avg Portfolio ESG Score</p>
+                        <p className="text-xs text-stone-500 mt-1 font-medium">{ta.avgPortfolioEsgScore}</p>
                     </CardContent>
                 </Card>
             </div>
@@ -115,9 +118,9 @@ export default async function RiskDashboardPage() {
                             <div>
                                 <CardTitle className="text-xl flex items-center gap-2 text-stone-900">
                                     <Globe className="h-5 w-5 text-amber-600" />
-                                    ESG Tracking (Sustainability)
+                                    {ta.esgTracking}
                                 </CardTitle>
-                                <CardDescription>Monitoring environmental and social impact scores.</CardDescription>
+                                <CardDescription>{ta.monitoringEnvironmentalSocial}</CardDescription>
                             </div>
                             <Badge variant="outline" className="text-amber-700 border-amber-200 bg-amber-50/50">Active Monitoring</Badge>
                         </div>
@@ -132,13 +135,13 @@ export default async function RiskDashboardPage() {
                                 <Progress value={s.esgScore || 0} className="h-2 bg-muted transition-all [&>div]:bg-red-500" />
                                 <p className="text-[10px] text-muted-foreground italic flex items-center gap-1">
                                     <AlertTriangle size={10} />
-                                    Environmental compliance verification active.
+                                    {ta.environmentalComplianceVerification}
                                 </p>
                             </div>
                         ))}
                         {lowESGSuppliers.length === 0 && (
                             <div className="py-10 text-center text-muted-foreground">
-                                All suppliers meet ESG benchmarks.
+                                {ta.allSuppliersMeetEsg}
                             </div>
                         )}
                     </CardContent>
@@ -151,11 +154,11 @@ export default async function RiskDashboardPage() {
                             <div>
                                 <CardTitle className="text-xl flex items-center gap-2">
                                     <Wallet className="h-5 w-5 text-purple-600" />
-                                    Financial Health Watchlist
+                                    {ta.financialHealthWatchlist}
                                 </CardTitle>
-                                <CardDescription>Live credit monitoring and liquidity risk assessment.</CardDescription>
+                                <CardDescription>{ta.liveCreditMonitoring}</CardDescription>
                             </div>
-                            <Badge variant="outline" className="text-purple-600">Credit Active</Badge>
+                                        <Badge variant="outline" className="text-purple-600">{ta.creditActive}</Badge>
                         </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -164,9 +167,9 @@ export default async function RiskDashboardPage() {
                                 <div className="flex flex-col gap-1">
                                     <Link href={`/suppliers/${s.id}`} className="font-bold text-foreground hover:text-primary transition-colors">{s.name}</Link>
                                     <span className="text-xs text-muted-foreground">Financial Health: <strong>{
-                                        s.financialScore > 80 ? 'Exceptional' :
-                                            s.financialScore > 60 ? 'Strong' :
-                                                s.financialScore > 40 ? 'Fair' : 'Distressed'
+                                            s.financialScore > 80 ? ta.exceptional :
+                                            s.financialScore > 60 ? ta.strong :
+                                                s.financialScore > 40 ? ta.fair : ta.distressed
                                     }</strong></span>
                                 </div>
                                 <div className="text-right flex flex-col items-end gap-1">
@@ -178,7 +181,7 @@ export default async function RiskDashboardPage() {
                                         Score: {s.financialScore}
                                     </Badge>
                                     <span className="text-[10px] text-muted-foreground">
-                                        Liquidity: {s.financialScore > 50 ? 'Stable' : 'Volatile'}
+                                        {ta.liquidity}: {s.financialScore > 50 ? ta.stable : ta.volatile}
                                     </span>
                                 </div>
                             </div>
@@ -194,9 +197,9 @@ export default async function RiskDashboardPage() {
                         <div className="flex items-center justify-between">
                             <CardTitle className="text-xl flex items-center gap-2">
                                 <ShieldAlert className="h-6 w-6 text-primary" />
-                                AI-Driven Risk Intelligence
+                                {ta.aiDrivenRiskIntelligence}
                             </CardTitle>
-                            <Badge className="bg-primary hover:bg-primary shadow-none">Active Analysis</Badge>
+                            <Badge className="bg-primary hover:bg-primary shadow-none">{ta.activeAnalysis}</Badge>
                         </div>
                     </CardHeader>
                     <CardContent className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -206,15 +209,15 @@ export default async function RiskDashboardPage() {
                         {highRiskSuppliers.length === 0 && (
                             <div className="col-span-3 py-10 text-center text-muted-foreground bg-muted/20 rounded-xl border border-dashed border-primary/20">
                                 <CheckCircle2 className="h-8 w-8 text-primary mx-auto mb-2 opacity-50" />
-                                <p className="font-medium">No critical risk disruptions detected in the active supplier network.</p>
+                                <p className="font-medium">{ta.noCriticalRiskDisruptions}</p>
                             </div>
                         )}
                         <div className="p-4 rounded-xl border bg-background/50 hover:shadow-md transition-all group">
                             <Badge variant="outline" className="text-orange-500 border-orange-200 mb-3 uppercase text-[10px]">Strategic Insight</Badge>
-                            <h4 className="font-bold mb-2">Portfolio Diversification</h4>
-                            <p className="text-sm text-muted-foreground line-clamp-2">Axiom detected {highRiskSuppliers.length} suppliers in high-risk zones. Recommendation: Review alternative source options.</p>
+                            <h4 className="font-bold mb-2">{ta.strategicInsight}</h4>
+                            <p className="text-sm text-muted-foreground line-clamp-2">{ta.portfolioDiversificationBody.replace("{count}", String(highRiskSuppliers.length))}</p>
                             <Link href="/sourcing/rfqs" className="inline-flex items-center gap-1 text-xs text-primary font-bold mt-4 group-hover:underline">
-                                Explore Sourcing <ArrowUpRight size={14} />
+                                {ta.exploreSourcing} <ArrowUpRight size={14} />
                             </Link>
                         </div>
                     </CardContent>

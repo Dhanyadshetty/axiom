@@ -30,6 +30,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { formatCurrency } from "@/lib/utils/currency";
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 
 interface RequisitionActionsProps {
     requisitionId: string;
@@ -50,6 +52,8 @@ export function RequisitionActions({
     suppliers,
     purchaseOrderId,
 }: RequisitionActionsProps) {
+    const { language } = useLanguage();
+    const tc = t(language, "sourcing");
     const [isPending, startTransition] = useTransition();
     const [convertOpen, setConvertOpen] = useState(false);
     const [selectedSupplier, setSelectedSupplier] = useState<string>("");
@@ -63,45 +67,45 @@ export function RequisitionActions({
         startTransition(async () => {
             const result = await approveRequisition(requisitionId);
             if (result.success) {
-                toast.success("Requisition approved");
+                toast.success(tc.requisitionApproved);
                 setApproveOpen(false);
             } else {
-                toast.error(result.error || "Approval failed");
+                toast.error(result.error || tc.approvalFailed);
             }
         });
     };
 
     const handleReject = () => {
         if (!rejectReason.trim()) {
-            toast.error("Please provide a rejection reason");
+            toast.error(tc.provideRejectionReason);
             return;
         }
 
         startTransition(async () => {
             const result = await rejectRequisition(requisitionId, rejectReason.trim());
             if (result.success) {
-                toast.success("Requisition rejected");
+                toast.success(tc.requisitionRejected);
                 setRejectOpen(false);
                 setRejectReason("");
             } else {
-                toast.error(result.error || "Rejection failed");
+                toast.error(result.error || tc.rejectionFailed);
             }
         });
     };
 
     const handleConvert = () => {
         if (!selectedSupplier) {
-            toast.error("Please select a supplier");
+            toast.error(tc.selectSupplier);
             return;
         }
 
         startTransition(async () => {
             const result = await convertToPO(requisitionId, selectedSupplier);
             if (result.success) {
-                toast.success("Converted to Purchase Order");
+                toast.success(tc.convertedToPO);
                 setConvertOpen(false);
             } else {
-                toast.error(result.error || "Conversion failed");
+                toast.error(result.error || tc.conversionFailed);
             }
         });
     };
@@ -111,7 +115,7 @@ export function RequisitionActions({
             <Link href={`/sourcing/orders/${purchaseOrderId}`}>
                 <Button variant="outline" size="sm" className="h-9 gap-1 text-xs">
                     <ExternalLink size={12} />
-                    View PO
+                    {tc.viewPO}
                 </Button>
             </Link>
         );
@@ -120,7 +124,7 @@ export function RequisitionActions({
     if (!isAdmin) {
         return (
             <Button variant="ghost" size="sm" className="h-9 text-xs text-muted-foreground" disabled>
-                Awaiting approval
+                {tc.awaitingApproval}
             </Button>
         );
     }
@@ -138,35 +142,35 @@ export function RequisitionActions({
                                 disabled={isPending}
                             >
                                 <X size={14} />
-                                Reject
+                                {tc.reject}
                             </Button>
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
-                                <DialogTitle>Reject Requisition</DialogTitle>
+                                <DialogTitle>{tc.rejectRequisitionTitle}</DialogTitle>
                                 <DialogDescription>
-                                    Add an auditable reason before this request is sent back to the requester.
+                                    {tc.rejectReasonDesc}
                                 </DialogDescription>
                             </DialogHeader>
                             <div className="grid gap-3 py-2">
-                                <Label htmlFor={`reject-reason-${requisitionId}`}>Reason</Label>
+                                <Label htmlFor={`reject-reason-${requisitionId}`}>{tc.reason}</Label>
                                 <Textarea
                                     id={`reject-reason-${requisitionId}`}
                                     value={rejectReason}
                                     onChange={(event) => setRejectReason(event.target.value)}
-                                    placeholder="Budget mismatch, missing justification, compliance gap..."
+                                    placeholder={tc.rejectReasonPlaceholder}
                                     className="min-h-[120px]"
                                 />
                             </div>
                             <DialogFooter>
-                                <Button variant="outline" onClick={() => setRejectOpen(false)}>Cancel</Button>
+                                <Button variant="outline" onClick={() => setRejectOpen(false)}>{tc.cancel}</Button>
                                 <Button
                                     onClick={handleReject}
                                     disabled={isPending || !rejectReason.trim()}
                                     className="bg-red-600 text-white hover:bg-red-700"
                                 >
                                     {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <X className="mr-2 h-4 w-4" />}
-                                    Reject Requisition
+                                    {tc.rejectRequisition}
                                 </Button>
                             </DialogFooter>
                         </DialogContent>
@@ -180,31 +184,31 @@ export function RequisitionActions({
                             disabled={isPending}
                         >
                             {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check size={14} />}
-                            {highValue ? 'Approve Spend' : 'Approve'}
+                            {highValue ? tc.approveSpend : tc.approve}
                         </Button>
                         <AlertDialogContent>
                             <AlertDialogHeader>
-                                <AlertDialogTitle>Approve this requisition?</AlertDialogTitle>
+                                <AlertDialogTitle>{tc.approveRequisitionTitle}</AlertDialogTitle>
                                 <AlertDialogDescription>
                                     <span className="block font-medium text-foreground">{title}</span>
                                     <span className="mt-2 block">
-                                        This approval will move {formatCurrency(estimatedAmount)} into the sourcing workflow and release it for PO conversion.
+                                        {tc.approveMoveText.replace("{amount}", formatCurrency(estimatedAmount))}
                                     </span>
                                     {highValue && (
                                         <span className="mt-3 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-emerald-800">
                                             <ShieldCheck className="h-4 w-4" />
-                                            High-value approval. Please confirm budget, supplier strategy, and audit readiness.
+                                            {tc.highValueApproval}
                                         </span>
                                     )}
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                                <AlertDialogCancel>Review Again</AlertDialogCancel>
+                                <AlertDialogCancel>{tc.reviewAgain}</AlertDialogCancel>
                                 <AlertDialogAction
                                     onClick={handleApprove}
                                     className="bg-emerald-600 text-white hover:bg-emerald-700"
                                 >
-                                    Confirm Approval
+                                    {tc.confirmApproval}
                                 </AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
@@ -217,22 +221,22 @@ export function RequisitionActions({
                     <DialogTrigger asChild>
                         <Button size="sm" variant="outline" className="h-9 gap-1 border-primary/30 text-primary hover:bg-primary/5">
                             <Repeat size={14} />
-                            Convert to PO
+                            {tc.convertToPO}
                         </Button>
                     </DialogTrigger>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Convert Requisition to PO</DialogTitle>
+                            <DialogTitle>{tc.convertRequisitionTitle}</DialogTitle>
                             <DialogDescription>
-                                Select the supplier that should fulfill this approved request. A purchase order will be generated and issued immediately.
+                                {tc.convertDesc}
                             </DialogDescription>
                         </DialogHeader>
                         <div className="grid gap-4 py-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="supplier">Primary Supplier</Label>
+                                <Label htmlFor="supplier">{tc.primarySupplier}</Label>
                                 <Select onValueChange={setSelectedSupplier}>
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Choose a strategic partner..." />
+                                        <SelectValue placeholder={tc.choosePartner} />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {suppliers.map((supplier) => (
@@ -245,10 +249,10 @@ export function RequisitionActions({
                             </div>
                         </div>
                         <DialogFooter>
-                            <Button variant="outline" onClick={() => setConvertOpen(false)}>Cancel</Button>
+                            <Button variant="outline" onClick={() => setConvertOpen(false)}>{tc.cancel}</Button>
                             <Button onClick={handleConvert} disabled={isPending || !selectedSupplier}>
                                 {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Generate PO and Send
+                                {tc.generatePO}
                             </Button>
                         </DialogFooter>
                     </DialogContent>
@@ -257,7 +261,7 @@ export function RequisitionActions({
 
             {(status === 'rejected' || status === 'draft') && (
                 <Button variant="ghost" size="sm" className="h-9 italic text-muted-foreground" disabled>
-                    {status === 'rejected' ? 'Rejected' : 'Draft'}
+                    {status === 'rejected' ? tc.rejected : tc.draft}
                 </Button>
             )}
         </div>

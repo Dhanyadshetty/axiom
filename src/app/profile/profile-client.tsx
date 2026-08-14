@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { User, Shield, Loader, Eye, EyeOff, Fingerprint } from "lucide-react";
 import { changePassword, updateProfile } from "@/app/actions/auth";
 import { TwoFactorSetup } from "@/components/admin/two-factor-setup";
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 
 interface User {
     id: string;
@@ -24,6 +26,8 @@ interface ProfileClientProps {
 }
 
 export default function ProfileClient({ user }: ProfileClientProps) {
+    const { language } = useLanguage();
+    const ta = t(language, "auth");
     const [isPending, startTransition] = useTransition();
     const [showCurrentPassword, setShowCurrentPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
@@ -35,9 +39,9 @@ export default function ProfileClient({ user }: ProfileClientProps) {
         startTransition(async () => {
             const result = await updateProfile(formData);
             if (result.success) {
-                setProfileMessage({ type: 'success', text: result.message || 'Profile updated successfully' });
+                setProfileMessage({ type: 'success', text: result.message || ta.profileUpdatedSuccess });
             } else {
-                setProfileMessage({ type: 'error', text: result.error || 'Failed to update profile' });
+                setProfileMessage({ type: 'error', text: result.error || ta.profileUpdateFailed });
             }
             setTimeout(() => setProfileMessage(null), 3000);
         });
@@ -50,13 +54,13 @@ export default function ProfileClient({ user }: ProfileClientProps) {
 
         // Client-side validation
         if (newPassword.length < 8) {
-            setPasswordMessage({ type: 'error', text: 'Password must be at least 8 characters long' });
+            setPasswordMessage({ type: 'error', text: ta.profilePasswordMinLength });
             setTimeout(() => setPasswordMessage(null), 3000);
             return;
         }
 
         if (newPassword !== confirmPassword) {
-            setPasswordMessage({ type: 'error', text: 'New passwords do not match' });
+            setPasswordMessage({ type: 'error', text: ta.profilePasswordsDoNotMatch });
             setTimeout(() => setPasswordMessage(null), 3000);
             return;
         }
@@ -64,12 +68,12 @@ export default function ProfileClient({ user }: ProfileClientProps) {
         startTransition(async () => {
             const result = await changePassword(currentPassword, newPassword);
             if (result.success) {
-                setPasswordMessage({ type: 'success', text: result.message || 'Password changed successfully' });
+                setPasswordMessage({ type: 'success', text: result.message || ta.passwordChangedSuccess });
                 // Clear form
                 const form = document.getElementById('password-form') as HTMLFormElement;
                 if (form) form.reset();
             } else {
-                setPasswordMessage({ type: 'error', text: result.error || 'Failed to change password' });
+                setPasswordMessage({ type: 'error', text: result.error || ta.passwordChangeFailed });
             }
             setTimeout(() => setPasswordMessage(null), 3000);
         });
@@ -79,8 +83,8 @@ export default function ProfileClient({ user }: ProfileClientProps) {
         <div className="flex min-h-full flex-col bg-muted/40 p-4 lg:p-8">
             <div className="max-w-4xl w-full mx-auto space-y-8">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Profile</h1>
-                    <p className="text-muted-foreground mt-1">Manage your account settings and password.</p>
+                    <h1 className="text-3xl font-bold tracking-tight">{ta.profileTitle}</h1>
+                    <p className="text-muted-foreground mt-1">{ta.profileSubtitle}</p>
                 </div>
 
                 {/* User Info Card */}
@@ -94,20 +98,20 @@ export default function ProfileClient({ user }: ProfileClientProps) {
                             )}
                             User Information
                         </CardTitle>
-                        <CardDescription>Your account details and role</CardDescription>
+                        <CardDescription>{ta.profileUserInfoDesc}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <Label className="text-sm font-medium text-muted-foreground">Name</Label>
+                                <Label className="text-sm font-medium text-muted-foreground">{ta.profileName}</Label>
                                 <p className="font-medium">{user.name}</p>
                             </div>
                             <div>
-                                <Label className="text-sm font-medium text-muted-foreground">Email</Label>
+                                <Label className="text-sm font-medium text-muted-foreground">{ta.profileEmail}</Label>
                                 <p className="font-medium">{user.email}</p>
                             </div>
                             <div>
-                                <Label className="text-sm font-medium text-muted-foreground">Role</Label>
+                                <Label className="text-sm font-medium text-muted-foreground">{ta.profileRole}</Label>
                                 <div className="mt-1">
                                     <Badge className={
                                         user.role === 'admin'
@@ -119,7 +123,7 @@ export default function ProfileClient({ user }: ProfileClientProps) {
                                 </div>
                             </div>
                             <div>
-                                <Label className="text-sm font-medium text-muted-foreground">Member Since</Label>
+                                <Label className="text-sm font-medium text-muted-foreground">{ta.profileMemberSince}</Label>
                                 <p className="font-medium">
                                     {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                                 </p>
@@ -131,13 +135,13 @@ export default function ProfileClient({ user }: ProfileClientProps) {
                 {/* Update Profile Card */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Update Profile</CardTitle>
-                        <CardDescription>Update your name and email address</CardDescription>
+                        <CardTitle>{ta.profileUpdateTitle}</CardTitle>
+                        <CardDescription>{ta.profileUpdateDesc}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <form action={handleUpdateProfile} className="grid gap-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="name">Full Name</Label>
+                                <Label htmlFor="name">{ta.profileFullName}</Label>
                                 <Input id="name" name="name" defaultValue={user.name} required />
                             </div>
                             <div className="grid gap-2">
@@ -155,7 +159,7 @@ export default function ProfileClient({ user }: ProfileClientProps) {
                             <div className="flex justify-end">
                                 <Button type="submit" disabled={isPending}>
                                     {isPending && <Loader className="mr-2 h-4 w-4 animate-spin" />}
-                                    Update Profile
+                                    {ta.profileUpdateButton}
                                 </Button>
                             </div>
                         </form>
@@ -165,13 +169,13 @@ export default function ProfileClient({ user }: ProfileClientProps) {
                 {/* Change Password Card */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Change Password</CardTitle>
-                        <CardDescription>Update your account password</CardDescription>
+                        <CardTitle>{ta.profileChangePasswordTitle}</CardTitle>
+                        <CardDescription>{ta.profileChangePasswordDesc}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <form id="password-form" action={handleChangePassword} className="grid gap-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="currentPassword">Current Password</Label>
+                                <Label htmlFor="currentPassword">{ta.profileCurrentPassword}</Label>
                                 <div className="relative">
                                     <Input
                                         id="currentPassword"
@@ -190,7 +194,7 @@ export default function ProfileClient({ user }: ProfileClientProps) {
                                 </div>
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="newPassword">New Password</Label>
+                                <Label htmlFor="newPassword">{ta.profileNewPassword}</Label>
                                 <div className="relative">
                                     <Input
                                         id="newPassword"
@@ -210,7 +214,7 @@ export default function ProfileClient({ user }: ProfileClientProps) {
                                 </div>
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                                <Label htmlFor="confirmPassword">{ta.profileConfirmNewPassword}</Label>
                                 <Input
                                     id="confirmPassword"
                                     name="confirmPassword"
@@ -230,7 +234,7 @@ export default function ProfileClient({ user }: ProfileClientProps) {
                             <div className="flex justify-end">
                                 <Button type="submit" disabled={isPending}>
                                     {isPending && <Loader className="mr-2 h-4 w-4 animate-spin" />}
-                                    Change Password
+                                    {ta.profileChangePasswordButton}
                                 </Button>
                             </div>
                         </form>
@@ -245,7 +249,7 @@ export default function ProfileClient({ user }: ProfileClientProps) {
                             Two-Factor Authentication
                         </CardTitle>
                         <CardDescription>
-                            Add an extra layer of security to your account using an authenticator app (Google Authenticator, Microsoft Authenticator, etc.).
+                            {ta.profileTwoFactorDesc}
                         </CardDescription>
                     </CardHeader>
                     <CardContent>

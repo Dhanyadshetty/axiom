@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { t, getActiveLanguage } from "@/lib/i18n";
 // NEW: client component that adds Export CSV + Adjust Stock actions
 import { InventoryActions } from "@/components/inventory/inventory-actions";
 
@@ -31,6 +32,9 @@ export default async function InventoryPage() {
     const session = await auth();
     const role = (session?.user as SessionUser | undefined)?.role;
     if (role === 'supplier') redirect('/portal');
+
+    const language = await getActiveLanguage();
+    const tc = t(language, "misc");
 
     // Fetch parts through the scoped action so regional operators only see their inventory slice
     const allParts = await getParts({ limit: 1000 });
@@ -64,10 +68,10 @@ export default async function InventoryPage() {
         const stock = part.stockLevel ?? 0;
         const reorder = part.reorderPoint ?? 50;
         const min = part.minStockLevel ?? 20;
-        if (stock === 0) return { label: 'Out of Stock', color: 'text-red-600', bg: 'bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-red-800/50', dot: 'bg-red-500', urgency: 3 };
-        if (stock < min) return { label: 'Critical',     color: 'text-red-500',   bg: 'bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-red-800/50', dot: 'bg-red-400',   urgency: 2 };
-        if (stock < reorder) return { label: 'Low Stock', color: 'text-amber-600', bg: 'bg-amber-50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800/50', dot: 'bg-amber-400', urgency: 1 };
-        return { label: 'In Stock', color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-800/50', dot: 'bg-emerald-500', urgency: 0 };
+        if (stock === 0) return { label: tc.outOfStockLabel, color: 'text-red-600', bg: 'bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-red-800/50', dot: 'bg-red-500', urgency: 3 };
+        if (stock < min) return { label: tc.critical,     color: 'text-red-500',   bg: 'bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-red-800/50', dot: 'bg-red-400',   urgency: 2 };
+        if (stock < reorder) return { label: tc.lowStock, color: 'text-amber-600', bg: 'bg-amber-50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800/50', dot: 'bg-amber-400', urgency: 1 };
+        return { label: tc.inStock, color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-800/50', dot: 'bg-emerald-500', urgency: 0 };
     }
 
     function getTrendIcon(trend: string | null) {
@@ -92,8 +96,8 @@ export default async function InventoryPage() {
                         <Warehouse className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-black tracking-tight text-foreground">Inventory</h1>
-                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest">Stock Levels & Parts Management</p>
+                        <h1 className="text-2xl font-black tracking-tight text-foreground">{tc.inventoryTitle}</h1>
+                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest">{tc.inventorySubtitle}</p>
                     </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -103,14 +107,14 @@ export default async function InventoryPage() {
                     <Link href="/sourcing/requisitions/new">
                         <Button size="sm" variant="outline" className="gap-2">
                             <ShoppingCart className="h-4 w-4" />
-                            Create Requisition
+                            {tc.createRequisition}
                         </Button>
                     </Link>
                     {/* ORIGINAL: Parts Catalog link */}
                     <Link href="/sourcing/parts">
                         <Button size="sm" className="gap-2">
                             <Package className="h-4 w-4" />
-                            Parts Catalog
+                            {tc.partsCatalog}
                             <ArrowUpRight className="h-3 w-3" />
                         </Button>
                     </Link>
@@ -121,46 +125,46 @@ export default async function InventoryPage() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Card className="border-l-4 border-l-primary shadow-sm">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-tight">Total SKUs</CardTitle>
+                        <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-tight">{tc.totalSkus}</CardTitle>
                         <Package className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-black tracking-tight">{totalSKUs.toLocaleString()}</div>
-                        <p className="text-xs text-muted-foreground mt-1">{totalUnits.toLocaleString()} total units on hand</p>
+                        <p className="text-xs text-muted-foreground mt-1">{tc.totalUnitsOnHand.replace("{n}", totalUnits.toLocaleString())}</p>
                     </CardContent>
                 </Card>
 
                 <Card className="border-l-4 border-l-emerald-500 shadow-sm">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-tight">Stock Health</CardTitle>
+                        <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-tight">{tc.stockHealth}</CardTitle>
                         <CheckCircle2 className="h-4 w-4 text-emerald-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-black tracking-tight text-emerald-600">{stockHealthPct}%</div>
                         <Progress value={stockHealthPct} className="mt-2 h-1.5" />
-                        <p className="text-xs text-muted-foreground mt-1">{wellStocked.length} of {totalSKUs} SKUs above reorder point</p>
+                        <p className="text-xs text-muted-foreground mt-1">{tc.aboveReorderPoint.replace("{n}", String(wellStocked.length)).replace("{total}", String(totalSKUs))}</p>
                     </CardContent>
                 </Card>
 
                 <Card className="border-l-4 border-l-amber-500 shadow-sm">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-tight">Reorder Alerts</CardTitle>
+                        <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-tight">{tc.reorderAlerts}</CardTitle>
                         <AlertTriangle className="h-4 w-4 text-amber-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-black tracking-tight text-amber-600">{belowReorder.length}</div>
-                        <p className="text-xs text-muted-foreground mt-1">SKUs below reorder threshold</p>
+                        <p className="text-xs text-muted-foreground mt-1">{tc.belowReorderThreshold}</p>
                     </CardContent>
                 </Card>
 
                 <Card className="border-l-4 border-l-red-500 shadow-sm">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-tight">Out of Stock</CardTitle>
+                        <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-tight">{tc.outOfStock}</CardTitle>
                         <AlertTriangle className="h-4 w-4 text-red-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-black tracking-tight text-red-600">{outOfStock.length}</div>
-                        <p className="text-xs text-muted-foreground mt-1">SKUs with zero inventory</p>
+                        <p className="text-xs text-muted-foreground mt-1">{tc.zeroInventory}</p>
                     </CardContent>
                 </Card>
             </div>
@@ -169,18 +173,18 @@ export default async function InventoryPage() {
             <div className="grid gap-6 md:grid-cols-2">
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-sm font-bold uppercase tracking-wide">ABC Classification</CardTitle>
-                        <CardDescription>Inventory value segmentation</CardDescription>
+                        <CardTitle className="text-sm font-bold uppercase tracking-wide">{tc.abcClassification}</CardTitle>
+                        <CardDescription>{tc.abcDesc}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
                         {(['A', 'B', 'C', 'None'] as const).map((cls) => {
                             const count = abcCounts[cls] ?? 0;
                             const pct = totalSKUs > 0 ? Math.round((count / totalSKUs) * 100) : 0;
                             const labels: Record<string, string> = {
-                                A:    'High-value items (top 20% by spend)',
-                                B:    'Mid-value items (next 30% by spend)',
-                                C:    'Low-value items (remaining 50%)',
-                                None: 'Unclassified items',
+                                A:    tc.highValueItems,
+                                B:    tc.midValueItems,
+                                C:    tc.lowValueItems,
+                                None: tc.unclassifiedItems,
                             };
                             return (
                                 <div key={cls} className="flex items-center gap-3">
@@ -200,12 +204,12 @@ export default async function InventoryPage() {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-sm font-bold uppercase tracking-wide">Category Breakdown</CardTitle>
-                        <CardDescription>Top categories by SKU count</CardDescription>
+                        <CardTitle className="text-sm font-bold uppercase tracking-wide">{tc.categoryBreakdown}</CardTitle>
+                        <CardDescription>{tc.categoryBreakdownDesc}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
                         {topCategories.length === 0 ? (
-                            <p className="text-sm text-muted-foreground text-center py-4">No categories found</p>
+                            <p className="text-sm text-muted-foreground text-center py-4">{tc.noCategoriesFound}</p>
                         ) : topCategories.map(([cat, count]) => {
                             const pct = totalSKUs > 0 ? Math.round((count / totalSKUs) * 100) : 0;
                             return (
@@ -232,14 +236,14 @@ export default async function InventoryPage() {
                             <AlertTriangle className="h-4 w-4 text-amber-600" />
                         </div>
                         <div className="flex-1">
-                            <CardTitle className="text-sm font-bold">Reorder Required</CardTitle>
-                            <CardDescription>{belowReorder.length} items need immediate attention</CardDescription>
+                            <CardTitle className="text-sm font-bold">{tc.reorderRequired}</CardTitle>
+                            <CardDescription>{tc.itemsNeedAttention.replace("{n}", String(belowReorder.length))}</CardDescription>
                         </div>
                         {/* NEW: Bulk reorder shortcut */}
                         <Link href="/sourcing/requisitions/new">
                             <Button size="sm" className="gap-1.5 text-xs">
                                 <ShoppingCart className="h-3.5 w-3.5" />
-                                Bulk Reorder
+                                {tc.bulkReorder}
                             </Button>
                         </Link>
                     </CardHeader>
@@ -248,15 +252,15 @@ export default async function InventoryPage() {
                             <table className="w-full text-sm">
                                 <thead>
                                     <tr className="border-b border-border/60">
-                                        <th className="text-left py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">SKU</th>
-                                        <th className="text-left py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Part Name</th>
-                                        <th className="text-left py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Category</th>
-                                        <th className="text-right py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">On Hand</th>
-                                        <th className="text-right py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Reorder At</th>
-                                        <th className="text-center py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Trend</th>
-                                        <th className="text-center py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Status</th>
+                                        <th className="text-left py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">{tc.thSku}</th>
+                                        <th className="text-left py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">{tc.thPartName}</th>
+                                        <th className="text-left py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">{tc.thCategory}</th>
+                                        <th className="text-right py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">{tc.thOnHand}</th>
+                                        <th className="text-right py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">{tc.thReorderAt}</th>
+                                        <th className="text-center py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">{tc.thTrend}</th>
+                                        <th className="text-center py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">{tc.thStatus}</th>
                                         {/* NEW column */}
-                                        <th className="text-right py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Actions</th>
+                                        <th className="text-right py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">{tc.thActions}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -302,10 +306,10 @@ export default async function InventoryPage() {
                             </table>
                         </div>
                         {belowReorder.length > 20 && (
-                            <p className="text-xs text-muted-foreground text-center mt-3">
-                                Showing 20 of {belowReorder.length} items.{" "}
+                                <p className="text-xs text-muted-foreground text-center mt-3">
+                                {tc.showingOfItems.replace("{n}", String(belowReorder.length))}{" "}
                                 <Link href="/sourcing/parts" className="text-primary hover:underline font-medium">
-                                    View all in Parts Catalog →
+                                    {tc.viewAllInCatalog}
                                 </Link>
                             </p>
                         )}
@@ -316,20 +320,20 @@ export default async function InventoryPage() {
             {/* Full Inventory Table — ORIGINAL columns preserved + NEW Actions column */}
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-sm font-bold uppercase tracking-wide flex items-center gap-2">
-                        <BarChart3 className="h-4 w-4 text-primary" />
-                        Full Inventory
-                    </CardTitle>
-                    <CardDescription>All {totalSKUs} SKUs with current stock levels</CardDescription>
+                        <CardTitle className="text-sm font-bold uppercase tracking-wide flex items-center gap-2">
+                            <BarChart3 className="h-4 w-4 text-primary" />
+                            {tc.fullInventory}
+                        </CardTitle>
+                        <CardDescription>{tc.allSkus.replace("{n}", String(totalSKUs))}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     {allParts.length === 0 ? (
                         <div className="py-12 text-center">
                             <Warehouse className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-                            <p className="text-muted-foreground font-medium">No parts in inventory yet.</p>
-                            <p className="text-sm text-muted-foreground/60 mt-1">Add parts via the Parts Catalog to track stock levels.</p>
-                            <Link href="/sourcing/parts" className="mt-4 inline-block">
-                                <Button size="sm" variant="outline">Go to Parts Catalog</Button>
+                        <p className="text-muted-foreground font-medium">{tc.noPartsInInventory}</p>
+                        <p className="text-sm text-muted-foreground/60 mt-1">{tc.addPartsCatalog}</p>
+                        <Link href="/sourcing/parts" className="mt-4 inline-block">
+                            <Button size="sm" variant="outline">{tc.goToPartsCatalog}</Button>
                             </Link>
                         </div>
                     ) : (
@@ -337,17 +341,17 @@ export default async function InventoryPage() {
                             <table className="w-full text-sm">
                                 <thead>
                                     <tr className="border-b border-border/60">
-                                        <th className="text-left py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">SKU</th>
-                                        <th className="text-left py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Part Name</th>
-                                        <th className="text-left py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Category</th>
-                                        <th className="text-center py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">ABC</th>
-                                        <th className="text-right py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">On Hand</th>
-                                        <th className="text-right py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Min Level</th>
-                                        <th className="text-right py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Reorder At</th>
-                                        <th className="text-center py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Trend</th>
-                                        <th className="text-center py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Status</th>
+                                        <th className="text-left py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">{tc.thSku}</th>
+                                        <th className="text-left py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">{tc.thPartName}</th>
+                                        <th className="text-left py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">{tc.thCategory}</th>
+                                        <th className="text-center py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">{tc.thAbc}</th>
+                                        <th className="text-right py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">{tc.thOnHand}</th>
+                                        <th className="text-right py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">{tc.thMinLevel}</th>
+                                        <th className="text-right py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">{tc.thReorderAt}</th>
+                                        <th className="text-center py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">{tc.thTrend}</th>
+                                        <th className="text-center py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">{tc.thStatus}</th>
                                         {/* NEW column */}
-                                        <th className="text-right py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Actions</th>
+                                        <th className="text-right py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">{tc.thActions}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -384,13 +388,13 @@ export default async function InventoryPage() {
                                                                 <Button size="sm" variant="outline"
                                                                     className="h-7 text-[10px] font-bold gap-1 border-amber-300 text-amber-700 hover:bg-amber-50">
                                                                     <ShoppingCart className="h-3 w-3" />
-                                                                    Reorder
+                                                                    {tc.reorder}
                                                                 </Button>
                                                             </Link>
                                                         )}
                                                         <Link href={`/sourcing/parts/${part.id}`}>
                                                             <Button size="sm" variant="ghost" className="h-7 text-[10px] text-muted-foreground">
-                                                                Manage
+                                                                {tc.manage}
                                                             </Button>
                                                         </Link>
                                                     </div>

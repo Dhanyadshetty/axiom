@@ -30,6 +30,8 @@ import {
     HardDrive
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 
 const SECTIONS = [
     {
@@ -362,6 +364,8 @@ const SECTIONS = [
 
 export default function DocsPage() {
     const [activeSection, setActiveSection] = useState("overview");
+    const { language } = useLanguage();
+    const tc = t(language, "misc");
 
     return (
         <div className="flex h-screen bg-background overflow-hidden font-sans">
@@ -377,7 +381,7 @@ export default function DocsPage() {
                                 <path d="M21.5 20L14 6L12 10L19 21H21.5Z" />
                             </svg>
                         </div>
-                        <h1 className="text-3xl font-black tracking-tight font-display text-primary">AXIOM PLAYBOOK</h1>
+                        <h1 className="text-3xl font-black tracking-tight font-display text-primary">{tc.axiomPlaybook}</h1>
                     </div>
                 </div>
 
@@ -406,13 +410,13 @@ export default function DocsPage() {
 
                 <div className="p-6 border-t bg-background/50">
                     <div className="rounded-xl p-4 bg-primary/5 border border-primary/10 mb-4">
-                        <p className="text-xs text-primary font-bold mb-1 italic">Need extra help?</p>
+                        <p className="text-xs text-primary font-bold mb-1 italic">{tc.needExtraHelp}</p>
                         <p className="text-[10px] text-muted-foreground leading-relaxed">
                             Use the <span className="text-primary font-semibold">Axiom Copilot</span> for real-time natural language answers about your specific data.
                         </p>
                     </div>
                     <div className="px-2 py-1 border-l-2 border-primary/20">
-                        <p className="text-[10px] font-black tracking-widest text-muted-foreground/40 uppercase">Architected & Developed By</p>
+                        <p className="text-[10px] font-black tracking-widest text-muted-foreground/40 uppercase">{tc.architectedBy}</p>
                         <p className="text-sm font-bold text-foreground font-display tracking-tight">A. Anantha Shayana, <span className="text-primary/70 text-[11px]">AI Expert</span></p>
                     </div>
                 </div>
@@ -480,7 +484,7 @@ export default function DocsPage() {
                                         <div className="grid gap-6">
                                             <div className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-muted-foreground/60 border-b pb-4">
                                                 <Info size={16} />
-                                                Step-by-Step Workflow
+                                                {tc.stepByStepWorkflow}
                                             </div>
                                             <div className="space-y-4">
                                                 {section.steps.map((step, index) => (
@@ -512,7 +516,7 @@ export default function DocsPage() {
                                         <div className="py-20 flex flex-col items-center justify-center text-center space-y-4 border-2 border-dashed rounded-3xl bg-muted/10 opacity-60">
                                             <Sparkles className="h-12 w-12 text-primary" />
                                             <p className="max-w-xs text-sm font-medium">
-                                                This section provides a high-level summary of your operational metrics. Navigate using the sidebar to explore specific workflow guides.
+                                                {tc.thisSectionSummary}
                                             </p>
                                         </div>
                                     )}
@@ -524,7 +528,7 @@ export default function DocsPage() {
                                         setActiveSection(SECTIONS[nextIndex].id);
                                     }}>
                                         <div className="text-sm">
-                                            <p className="font-bold text-muted-foreground uppercase text-[10px] tracking-widest mb-1">Up Next</p>
+                                            <p className="font-bold text-muted-foreground uppercase text-[10px] tracking-widest mb-1">{tc.upNext}</p>
                                             <p className="text-2xl font-black tracking-tight group-hover:text-primary transition-colors">
                                                 {SECTIONS[(SECTIONS.findIndex(s => s.id === activeSection) + 1) % SECTIONS.length].title}
                                             </p>

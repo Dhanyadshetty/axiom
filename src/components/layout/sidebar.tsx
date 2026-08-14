@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import {
     LayoutDashboard,
@@ -28,12 +30,14 @@ import {
     Building2,
     Leaf,
 } from "lucide-react";
-import { auth } from "@/auth";
+import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { AxiomLogo } from "@/components/shared/axiom-logo";
 import { NavLink } from "@/components/layout/nav-link";
 import { AGENT_REGISTRY } from "@/app/actions/agents/registry";
 import { canAccessAIFleet, canAccessAdminPath } from "@/lib/rbac";
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 
 type SessionUser = {
     role?: string | null;
@@ -44,55 +48,58 @@ type SessionUser = {
 };
 
 const adminPriorityLinks = [
-    { label: "Fraud Alerts", icon: ShieldAlert, href: "/admin/fraud-alerts" },
-    { label: "Telemetry", icon: History, href: "/admin/telemetry" },
-    { label: "Financial Matching", icon: CreditCard, href: "/admin/financial-matching" },
-    { label: "Spend Intelligence", icon: BarChart3, href: "/admin/analytics" },
-    { label: "Risk Intelligence", icon: ShieldAlert, href: "/admin/risk" },
+    { labelKey: "fraudAlerts", icon: ShieldAlert, href: "/admin/fraud-alerts" },
+    { labelKey: "telemetry", icon: History, href: "/admin/telemetry" },
+    { labelKey: "financialMatching", icon: CreditCard, href: "/admin/financial-matching" },
+    { labelKey: "spendIntelligence", icon: BarChart3, href: "/admin/analytics" },
+    { labelKey: "riskIntelligence", icon: ShieldAlert, href: "/admin/risk" },
 ];
 
 const adminOperationalLinks = [
-    { label: "Task Inbox", icon: Inbox, href: "/admin/tasks" },
-    { label: "Compliance", icon: ShieldCheck, href: "/admin/compliance" },
-    { label: "User Management", icon: UserCog, href: "/admin/users" },
-    { label: "Support Tickets", icon: LifeBuoy, href: "/admin/support" },
-    { label: "Audit Trail", icon: History, href: "/admin/audit" },
-    { label: "Import Data", icon: FileUp, href: "/admin/import" },
-    { label: "Admin Settings", icon: Settings, href: "/admin/settings" },
-    { label: "Scenario Modeling", icon: BarChart3, href: "/admin/scenarios" },
-    { label: "Supplier Ecosystem", icon: Globe, href: "/admin/ecosystem" },
+    { labelKey: "taskInbox", icon: Inbox, href: "/admin/tasks" },
+    { labelKey: "compliance", icon: ShieldCheck, href: "/admin/compliance" },
+    { labelKey: "userManagement", icon: UserCog, href: "/admin/users" },
+    { labelKey: "supportTickets", icon: LifeBuoy, href: "/admin/support" },
+    { labelKey: "auditTrail", icon: History, href: "/admin/audit" },
+    { labelKey: "importData", icon: FileUp, href: "/admin/import" },
+    { labelKey: "adminSettings", icon: Settings, href: "/admin/settings" },
+    { labelKey: "scenarioModeling", icon: BarChart3, href: "/admin/scenarios" },
+    { labelKey: "supplierEcosystem", icon: Globe, href: "/admin/ecosystem" },
 ];
 
 const supplierLinks = [
-    { label: "My Portal", icon: LayoutDashboard, href: "/portal" },
-    { label: "Incoming Bids", icon: FileText, href: "/portal/rfqs" },
-    { label: "Active Orders", icon: ShoppingCart, href: "/portal/orders" },
-    { label: "My Documents", icon: FileText, href: "/portal/documents" },
-    { label: "Requests & Tasks", icon: ClipboardList, href: "/portal/requests" },
+    { labelKey: "myPortal", icon: LayoutDashboard, href: "/portal" },
+    { labelKey: "incomingBids", icon: FileText, href: "/portal/rfqs" },
+    { labelKey: "activeOrders", icon: ShoppingCart, href: "/portal/orders" },
+    { labelKey: "myDocuments", icon: FileText, href: "/portal/documents" },
+    { labelKey: "requestsTasks", icon: ClipboardList, href: "/portal/requests" },
 ];
 
 const navCls = "flex items-center rounded-md px-3 py-1 text-[13px] font-medium text-sidebar-foreground/92 transition-colors hover:bg-accent hover:text-accent-foreground";
 const sectionLabelCls = "text-[10.5px] font-black uppercase tracking-[0.16em] text-sidebar-foreground/78";
 const sectionDividerCls = "h-px flex-1 bg-sidebar-foreground/18";
 
-export async function Sidebar({ className }: { className?: string }) {
-    const session = await auth();
+export function Sidebar({ className }: { className?: string }) {
+    const { data: session } = useSession();
+    const { language } = useLanguage();
+    const ts = t(language, "sidebar");
+
     const user = session?.user as SessionUser | undefined;
     const role = user?.role;
     const visiblePriorityLinks = role === "admin" ? adminPriorityLinks.filter((link) => canAccessAdminPath(user, link.href)) : [];
     const visibleOperationalLinks = role === "admin" ? adminOperationalLinks.filter((link) => canAccessAdminPath(user, link.href)) : [];
-    const workspaceLabel = role === "admin" ? "Admin Console" : role === "supplier" ? "Supplier Portal" : "Internal Workspace";
+    const workspaceLabel = role === "admin" ? ts.adminConsole : role === "supplier" ? ts.supplierPortal : ts.internalWorkspace;
     const workspaceDescription = role === "admin"
-        ? "Platform controls, approvals, intelligence, and operating oversight"
+        ? ts.adminDescription
         : role === "supplier"
-            ? "Vendor-facing workspace for bids, orders, documents, and requests"
-            : "Operational sourcing, requisitions, and invoice coordination";
+            ? ts.supplierDescription
+            : ts.internalDescription;
     const workspaceBadgeClass = role === "admin"
         ? "border-amber-200 bg-amber-50 text-amber-700"
         : role === "supplier"
             ? "border-emerald-200 bg-emerald-50 text-emerald-700"
             : "border-blue-200 bg-blue-50 text-blue-700";
-    const homeLabel = role === "admin" ? "Admin Console" : role === "supplier" ? "Supplier Portal" : "Workspace";
+    const homeLabel = role === "admin" ? ts.adminConsole : role === "supplier" ? ts.supplierPortal : ts.workspace;
     const enabledAgentCount = AGENT_REGISTRY.filter((agent) => agent.isEnabled).length;
 
     return (
@@ -128,7 +135,7 @@ export async function Sidebar({ className }: { className?: string }) {
                     {role !== "supplier" && (
                         <NavLink href="/suppliers" className={navCls}>
                             <Building2 className="mr-2 h-4 w-4" />
-                            Suppliers
+                            {ts.suppliers}
                         </NavLink>
                     )}
                 </div>
@@ -137,14 +144,14 @@ export async function Sidebar({ className }: { className?: string }) {
                     {role !== "supplier" && (
                         <NavLink href="/copilot" className={cn(navCls, "border border-primary/25 bg-primary/12 text-emerald-100 font-semibold hover:bg-primary/18")}>
                             <AxiomLogo className="mr-2 h-4 w-4 text-primary" />
-                            Axiom Copilot
+                            {ts.copilot}
                         </NavLink>
                     )}
                     {role === "admin" && canAccessAIFleet(user) && (
                         <Link href="/admin/agents">
                             <span className="flex items-center rounded-md border border-emerald-400/25 bg-emerald-500/14 px-3 py-1.5 text-[13px] font-semibold text-emerald-100 transition-all hover:bg-emerald-500/20">
                                 <Layers className="mr-2 h-4 w-4 text-emerald-200" />
-                                AI Agents
+                                {ts.agents}
                                 <span className="ml-auto rounded-full bg-emerald-300/18 px-1.5 py-0.5 text-[9px] font-black text-emerald-100">{enabledAgentCount}</span>
                             </span>
                         </Link>
@@ -155,17 +162,18 @@ export async function Sidebar({ className }: { className?: string }) {
                     <div className="mt-4 px-3">
                         <div className="mb-1.5 flex items-center gap-2 px-1">
                             <span className={sectionDividerCls} />
-                            <span className={sectionLabelCls}>Sourcing</span>
+                            <span className={sectionLabelCls}>{ts.sourcing}</span>
                             <span className={sectionDividerCls} />
                         </div>
                         <div className="space-y-0.5">
-                            <NavLink href="/sourcing/parts" className={navCls}><Package className="mr-2 h-4 w-4" />Parts Catalog</NavLink>
-                            <NavLink href="/sourcing/rfqs" className={navCls}><FileText className="mr-2 h-4 w-4" />Sourcing Requests</NavLink>
-                            <NavLink href="/sourcing/requisitions" className={navCls}><ClipboardList className="mr-2 h-4 w-4" />Requisitions</NavLink>
-                            <NavLink href="/sourcing/orders" className={navCls}><ShoppingCart className="mr-2 h-4 w-4" />Orders</NavLink>
-                            <NavLink href="/sourcing/goods-receipts" className={navCls}><Truck className="mr-2 h-4 w-4" />Goods Receipts</NavLink>
-                            <NavLink href="/sourcing/exceptions" className={navCls}><ShieldAlert className="mr-2 h-4 w-4" />Exception Management</NavLink>
-                            <NavLink href="/sourcing/contracts" className={navCls}><Scale className="mr-2 h-4 w-4" />Contracts</NavLink>
+                            <NavLink href="/sourcing/parts" className={navCls}><Package className="mr-2 h-4 w-4" />{ts.partsCatalog}</NavLink>
+                            <NavLink href="/sourcing/rfqs" className={navCls}><FileText className="mr-2 h-4 w-4" />{ts.sourcingRequests}</NavLink>
+                            <NavLink href="/requests" className={navCls}><ClipboardList className="mr-2 h-4 w-4" />{ts.requests}</NavLink>
+                            <NavLink href="/sourcing/requisitions" className={navCls}><ClipboardList className="mr-2 h-4 w-4" />{ts.requisitions}</NavLink>
+                            <NavLink href="/sourcing/orders" className={navCls}><ShoppingCart className="mr-2 h-4 w-4" />{ts.orders}</NavLink>
+                            <NavLink href="/sourcing/goods-receipts" className={navCls}><Truck className="mr-2 h-4 w-4" />{ts.goodsReceipts}</NavLink>
+                            <NavLink href="/sourcing/exceptions" className={navCls}><ShieldAlert className="mr-2 h-4 w-4" />{ts.exceptionManagement}</NavLink>
+                            <NavLink href="/sourcing/contracts" className={navCls}><Scale className="mr-2 h-4 w-4" />{ts.contracts}</NavLink>
                         </div>
                     </div>
                 )}
@@ -174,16 +182,16 @@ export async function Sidebar({ className }: { className?: string }) {
                     <div className="mt-4 px-3">
                         <div className="mb-1.5 flex items-center gap-2 px-1">
                             <span className={sectionDividerCls} />
-                            <span className={sectionLabelCls}>Finance</span>
+                            <span className={sectionLabelCls}>{ts.finance}</span>
                             <span className={sectionDividerCls} />
                         </div>
                         <div className="space-y-0.5">
-                            <NavLink href="/sourcing/invoices" className={navCls}><ReceiptText className="mr-2 h-4 w-4" />Invoices</NavLink>
-                            <NavLink href="/inventory" className={navCls}><Warehouse className="mr-2 h-4 w-4" />Inventory</NavLink>
-                            <NavLink href="/transactions" className={navCls}><ArrowRightLeft className="mr-2 h-4 w-4" />Transactions</NavLink>
-                            <NavLink href="/contacts" className={navCls}><ContactRound className="mr-2 h-4 w-4" />Contacts</NavLink>
-                            <NavLink href="/savings" className={navCls}><PiggyBank className="mr-2 h-4 w-4" />Savings</NavLink>
-                            <NavLink href="/sustainability" className={navCls}><Leaf className="mr-2 h-4 w-4" />Sustainability</NavLink>
+                            <NavLink href="/sourcing/invoices" className={navCls}><ReceiptText className="mr-2 h-4 w-4" />{ts.invoices}</NavLink>
+                            <NavLink href="/inventory" className={navCls}><Warehouse className="mr-2 h-4 w-4" />{ts.inventory}</NavLink>
+                            <NavLink href="/transactions" className={navCls}><ArrowRightLeft className="mr-2 h-4 w-4" />{ts.transactions}</NavLink>
+                            <NavLink href="/contacts" className={navCls}><ContactRound className="mr-2 h-4 w-4" />{ts.contacts}</NavLink>
+                            <NavLink href="/savings" className={navCls}><PiggyBank className="mr-2 h-4 w-4" />{ts.savings}</NavLink>
+                            <NavLink href="/sustainability" className={navCls}><Leaf className="mr-2 h-4 w-4" />{ts.sustainability}</NavLink>
                         </div>
                     </div>
                 )}
@@ -192,7 +200,7 @@ export async function Sidebar({ className }: { className?: string }) {
                     <div className="mt-4 px-3">
                         <div className="mb-1.5 flex items-center gap-2 px-1">
                             <span className={sectionDividerCls} />
-                            <span className={sectionLabelCls}>Vendor Portal</span>
+                            <span className={sectionLabelCls}>{ts.vendorPortal}</span>
                             <span className={sectionDividerCls} />
                         </div>
                         <div className="space-y-0.5">
@@ -201,7 +209,7 @@ export async function Sidebar({ className }: { className?: string }) {
                                 return (
                                     <NavLink key={link.href} href={link.href} className={navCls}>
                                         <Icon className="mr-2 h-4 w-4" />
-                                        {link.label}
+                                        {ts[link.labelKey as keyof typeof ts]}
                                     </NavLink>
                                 );
                             })}
@@ -212,14 +220,14 @@ export async function Sidebar({ className }: { className?: string }) {
                 <div className="mt-4 px-3">
                     <div className="mb-1.5 flex items-center gap-2 px-1">
                         <span className={sectionDividerCls} />
-                        <span className={sectionLabelCls}>Resources</span>
+                        <span className={sectionLabelCls}>{ts.resources}</span>
                         <span className={sectionDividerCls} />
                     </div>
                     <div className="space-y-0.5">
                         {role !== "supplier" && (
-                            <NavLink href="/docs" className={navCls}><BookOpen className="mr-2 h-4 w-4" />Axiom Playbook</NavLink>
+                            <NavLink href="/docs" className={navCls}><BookOpen className="mr-2 h-4 w-4" />{ts.playbook}</NavLink>
                         )}
-                        <NavLink href="/support" className={navCls}><LifeBuoy className="mr-2 h-4 w-4" />Help & Support</NavLink>
+                        <NavLink href="/support" className={navCls}><LifeBuoy className="mr-2 h-4 w-4" />{ts.helpSupport}</NavLink>
                     </div>
                 </div>
 
@@ -229,7 +237,7 @@ export async function Sidebar({ className }: { className?: string }) {
                             <>
                                 <div className="mb-1.5 flex items-center gap-2 px-1">
                                     <span className={sectionDividerCls} />
-                                    <span className={sectionLabelCls}>Intelligence</span>
+                                    <span className={sectionLabelCls}>{ts.intelligence}</span>
                                     <span className={sectionDividerCls} />
                                 </div>
                                 <div className="space-y-0.5">
@@ -238,7 +246,7 @@ export async function Sidebar({ className }: { className?: string }) {
                                         return (
                                             <NavLink key={link.href} href={link.href} className={navCls}>
                                                 <Icon className="mr-2 h-4 w-4" />
-                                                {link.label}
+                                                {ts[link.labelKey as keyof typeof ts]}
                                             </NavLink>
                                         );
                                     })}
@@ -249,7 +257,7 @@ export async function Sidebar({ className }: { className?: string }) {
                             <div className="mt-3">
                                 <div className="mb-1.5 flex items-center gap-2 px-1">
                                     <span className={sectionDividerCls} />
-                                    <span className={sectionLabelCls}>Operations</span>
+                                    <span className={sectionLabelCls}>{ts.operations}</span>
                                     <span className={sectionDividerCls} />
                                 </div>
                                 <div className="space-y-0.5">
@@ -258,7 +266,7 @@ export async function Sidebar({ className }: { className?: string }) {
                                         return (
                                             <NavLink key={link.href} href={link.href} className={navCls}>
                                                 <Icon className="mr-2 h-4 w-4" />
-                                                {link.label}
+                                                {ts[link.labelKey as keyof typeof ts]}
                                             </NavLink>
                                         );
                                     })}

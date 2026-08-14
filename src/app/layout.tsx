@@ -14,6 +14,9 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { getRuntimeVersionSnapshot } from "@/lib/build-info";
 import { Toaster } from "sonner";
 import { getPlatformSettingsForLayout } from "@/app/actions/settings";
+import { cookies } from "next/headers";
+import { LanguageProvider } from "@/components/i18n/language-provider";
+import { LANGUAGE_COOKIE, normalizeLanguage } from "@/lib/i18n";
 
 import "./globals.css";
 
@@ -41,9 +44,11 @@ export default async function RootLayout({
   const session = await auth();
   const settings = await getPlatformSettingsForLayout();
   const runtimeVersion = getRuntimeVersionSnapshot();
+  const cookieStore = await cookies();
+  const initialLanguage = normalizeLanguage(cookieStore.get(LANGUAGE_COOKIE)?.value);
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={initialLanguage} suppressHydrationWarning>
       <body
         className={`${geistSans.variable} min-h-[100dvh] overflow-hidden bg-background text-foreground antialiased`}
         suppressHydrationWarning
@@ -55,30 +60,32 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <SessionProvider session={session}>
-            <CurrencyProvider initialSettings={settings}>
-              {session ? (
-                <div className="flex h-[100dvh] w-full overflow-hidden">
-                  <Sidebar className="hidden h-[100dvh] shrink-0 self-stretch lg:flex" />
-                  <div className="flex h-[100dvh] min-w-0 flex-1 flex-col overflow-hidden">
-                    <Header />
-                    <main className="min-h-0 flex-1 overflow-auto">
-                      <PageTransition>{children}</PageTransition>
-                    </main>
-                    <CommandPalette />
+            <LanguageProvider initialLanguage={initialLanguage}>
+              <CurrencyProvider initialSettings={settings}>
+                {session ? (
+                  <div className="flex h-[100dvh] w-full overflow-hidden">
+                    <Sidebar className="hidden h-[100dvh] shrink-0 self-stretch lg:flex" />
+                    <div className="flex h-[100dvh] min-w-0 flex-1 flex-col overflow-hidden">
+                      <Header />
+                      <main className="min-h-0 flex-1 overflow-auto">
+                        <PageTransition>{children}</PageTransition>
+                      </main>
+                      <CommandPalette />
+                    </div>
+                    <InactivityTracker />
                   </div>
-                  <InactivityTracker />
-                </div>
-              ) : (
-                <div className="flex h-[100dvh] w-full min-w-0 flex-1 flex-col overflow-hidden">
-                  <main className="flex-1 overflow-auto">{children}</main>
-                </div>
-              )}
-              <VersionShield
-                initialVersion={runtimeVersion.version}
-                initialLabel={runtimeVersion.label}
-              />
-              <Toaster position="top-right" richColors />
-            </CurrencyProvider>
+                ) : (
+                  <div className="flex h-[100dvh] w-full min-w-0 flex-1 flex-col overflow-hidden">
+                    <main className="flex-1 overflow-auto">{children}</main>
+                  </div>
+                )}
+                <VersionShield
+                  initialVersion={runtimeVersion.version}
+                  initialLabel={runtimeVersion.label}
+                />
+                <Toaster position="top-right" richColors />
+              </CurrencyProvider>
+            </LanguageProvider>
           </SessionProvider>
         </ThemeProvider>
       </body>

@@ -10,6 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { FileUp, Database, CheckCircle2, AlertTriangle, Upload, ShieldCheck, Link2, Radar, RefreshCcw, PlugZap } from 'lucide-react';
 import { dryRunSapImport, executeSapImport } from '@/app/actions/import';
 import { toast } from 'sonner';
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 
 type EntityType = 'suppliers' | 'parts' | 'invoices';
 
@@ -33,6 +35,8 @@ type SapConnectorStatus = {
 };
 
 export default function AdminImportPage() {
+    const { language } = useLanguage();
+    const ta = t(language, "admin");
     const [entityType, setEntityType] = useState<EntityType>('suppliers');
     const [csvText, setCsvText] = useState('');
     const [dryRunResult, setDryRunResult] = useState<any>(null);
@@ -51,7 +55,7 @@ export default function AdminImportPage() {
             const payload = await response.json() as SapConnectorStatus;
             setConnectorStatus(payload);
         } catch {
-            toast.error('Could not load SAP connector status');
+            toast.error(ta.sapConnectorLoadFailed);
         } finally {
             setIsConnectorLoading(false);
         }
@@ -70,7 +74,7 @@ export default function AdminImportPage() {
 
     const runDry = async () => {
         if (!csvText.trim()) {
-            toast.error('Please upload a CSV file or paste CSV content.');
+            toast.error(ta.pleaseUploadCsv);
             return;
         }
 
@@ -79,13 +83,13 @@ export default function AdminImportPage() {
             const result = await dryRunSapImport(csvText, entityType);
             setDryRunResult(result);
             if (result.success) {
-                toast.success('Dry run complete', {
-                    description: `${result.validRows} valid rows, ${result.invalidRows} invalid rows`,
+                toast.success(ta.dryRunComplete, {
+                    description: `${result.validRows} ${ta.validRows}, ${result.invalidRows} ${ta.invalidRows}`,
                 });
             } else {
-                toast.error('Dry run failed');
+                toast.error(ta.dryRunFailed);
             }
-        } catch {            toast.error('Dry run failed');
+        } catch {            toast.error(ta.dryRunFailed);
         } finally {
             setIsDryRunning(false);
         }
@@ -101,8 +105,8 @@ export default function AdminImportPage() {
         try {
             const result = await executeSapImport(csvText, entityType);
             if (result.success) {
-                toast.success('Import completed', {
-                    description: `Inserted: ${result.inserted}, Updated: ${result.updated}, Skipped: ${result.skipped}`,
+                toast.success(ta.importCompleted, {
+                    description: `${ta.inserted}: ${result.inserted}, ${ta.updated}: ${result.updated}, ${ta.skipped}: ${result.skipped}`,
                 });
                 const refreshedDryRun = await dryRunSapImport(csvText, entityType);
                 setDryRunResult(refreshedDryRun);
@@ -127,41 +131,41 @@ export default function AdminImportPage() {
             <div className="flex items-center justify-between gap-4 flex-wrap">
                 <div>
                     <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
-                        <FileUp className="h-8 w-8 text-primary" /> Controlled Data Import
+                        <FileUp className="h-8 w-8 text-primary" /> {ta.controlledDataImport}
                     </h1>
                     <p className="text-muted-foreground mt-1 font-medium">
-                        Admin-only CSV intake with dry-run validation, suspicious-input blocking, referential checks, and post-import intelligence sync.
+                        {ta.importSubtitle}
                     </p>
                 </div>
-                <Badge variant="outline" className="text-xs font-bold">Admin Only</Badge>
+                    <Badge variant="outline" className="text-xs font-bold">{ta.adminOnly}</Badge>
             </div>
 
             <div className="grid gap-3 md:grid-cols-3">
                 <div className="rounded-2xl border bg-background p-4">
                     <div className="flex items-center gap-2 text-sm font-bold text-foreground">
                         <ShieldCheck className="h-4 w-4 text-emerald-600" />
-                        Schema validation
+                        {ta.schemaValidation}
                     </div>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                        Headers, numeric ranges, currency codes, and suspicious spreadsheet formulas are checked before commit.
+                        {ta.schemaValidationBody}
                     </p>
                 </div>
                 <div className="rounded-2xl border bg-background p-4">
                     <div className="flex items-center gap-2 text-sm font-bold text-foreground">
                         <Link2 className="h-4 w-4 text-blue-600" />
-                        Referential checks
+                        {ta.referentialChecks}
                     </div>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                        Invoice imports verify linked orders and suppliers so broken records do not bridge into live workflows.
+                        {ta.referentialChecksBody}
                     </p>
                 </div>
                 <div className="rounded-2xl border bg-background p-4">
                     <div className="flex items-center gap-2 text-sm font-bold text-foreground">
                         <Radar className="h-4 w-4 text-amber-600" />
-                        Post-import sync
+                        {ta.postImportSync}
                     </div>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                        Successful imports trigger downstream refresh so dashboards, alerts, and recovery routes stay aligned.
+                        {ta.postImportSyncBody}
                     </p>
                 </div>
             </div>
@@ -169,44 +173,44 @@ export default function AdminImportPage() {
             <Card>
                 <CardHeader className="flex flex-row items-start justify-between gap-4">
                     <div>
-                        <CardTitle className="flex items-center gap-2">
-                            <PlugZap className="h-5 w-5 text-primary" /> SAP Connector Status
-                        </CardTitle>
-                        <CardDescription>
-                            Axiom can test SAP connectivity, map OData fields, dry-run imports, and track committed syncs with job history.
-                        </CardDescription>
+                            <CardTitle className="flex items-center gap-2">
+                                <PlugZap className="h-5 w-5 text-primary" /> {ta.sapConnectorStatus}
+                            </CardTitle>
+                            <CardDescription>
+                                {ta.sapConnectorDesc}
+                            </CardDescription>
                     </div>
                     <Button variant="outline" size="sm" className="gap-2" onClick={loadSapConnectorStatus} disabled={isConnectorLoading}>
                         <RefreshCcw className={`h-4 w-4 ${isConnectorLoading ? 'animate-spin' : ''}`} />
-                        Refresh Status
+                        {ta.refreshStatus}
                     </Button>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-3 md:grid-cols-4">
                         <div className="rounded-2xl border bg-background p-4">
-                            <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Configuration</p>
+                            <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">{ta.configuration}</p>
                             <p className="mt-2 text-sm font-semibold text-foreground">
-                                {connectorStatus?.configured ? 'Ready' : 'Missing environment settings'}
+                                {connectorStatus?.configured ? ta.ready : ta.missingEnvironmentSettings}
                             </p>
                         </div>
                         <div className="rounded-2xl border bg-background p-4">
-                            <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Auth Method</p>
+                            <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">{ta.authMethod}</p>
                             <p className="mt-2 text-sm font-semibold capitalize text-foreground">
-                                {connectorStatus?.authMethod?.replace(/_/g, ' ') || 'Unknown'}
+                                {connectorStatus?.authMethod?.replace(/_/g, ' ') || ta.unknown}
                             </p>
                         </div>
                         <div className="rounded-2xl border bg-background p-4">
-                            <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Last Successful Sync</p>
+                            <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">{ta.lastSuccessfulSync}</p>
                             <p className="mt-2 text-sm font-semibold text-foreground">
                                 {connectorStatus?.lastSuccessfulSyncAt
                                     ? new Date(connectorStatus.lastSuccessfulSyncAt).toLocaleString('en-IN')
-                                    : 'No successful SAP sync yet'}
+                                    : ta.noSuccessfulSapSync}
                             </p>
                         </div>
                         <div className="rounded-2xl border bg-background p-4">
-                            <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Recent SAP Jobs</p>
+                            <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">{ta.recentSapJobs}</p>
                             <p className="mt-2 text-sm font-semibold text-foreground">
-                                {connectorStatus?.recentSyncs?.length || 0} tracked runs
+                                {connectorStatus?.recentSyncs?.length || 0} {ta.trackedRuns}
                             </p>
                         </div>
                     </div>
@@ -219,9 +223,9 @@ export default function AdminImportPage() {
                                             <p className="font-semibold text-foreground">
                                                 {job.entityType} sync
                                             </p>
-                                            <p className="text-xs text-muted-foreground">
-                                                {job.sourceSystemId || 'manual'} • {job.successRows || 0}/{job.totalRows || 0} rows applied
-                                            </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {job.sourceSystemId || ta.manual} • {job.successRows || 0}/{job.totalRows || 0} {ta.rowsApplied}
+                                                </p>
                                         </div>
                                         <div className="text-right">
                                             <Badge variant="outline">{job.status}</Badge>
@@ -233,9 +237,9 @@ export default function AdminImportPage() {
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-sm text-muted-foreground">
-                                No SAP sync jobs are tracked yet. Once you commit a SAP-backed import, Axiom records the run here with row counts and completion status.
-                            </p>
+                                        <p className="text-sm text-muted-foreground">
+                                            {ta.noSapJobs}
+                                        </p>
                         )}
                     </div>
                 </CardContent>
@@ -243,17 +247,17 @@ export default function AdminImportPage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Database className="h-5 w-5 text-primary" /> Import Configuration
-                    </CardTitle>
-                    <CardDescription>
-                        Supported datasets: Suppliers, Parts, Invoices. Run the dry run first, then commit only the rows that pass validation.
-                    </CardDescription>
+                        <CardTitle className="flex items-center gap-2">
+                            <Database className="h-5 w-5 text-primary" /> {ta.importConfiguration}
+                        </CardTitle>
+                        <CardDescription>
+                            {ta.supportedDatasets}
+                        </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-1.5">
-                            <Label>Dataset</Label>
+                                <Label>{ta.dataset}</Label>
                             <select
                                 value={entityType}
                                 onChange={(e) => {
@@ -262,15 +266,15 @@ export default function AdminImportPage() {
                                 }}
                                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                             >
-                                <option value="suppliers">Suppliers</option>
-                                <option value="parts">Parts</option>
-                                <option value="invoices">Invoices</option>
+                                <option value="suppliers">{ta.suppliersDataset}</option>
+                                <option value="parts">{ta.partsDataset}</option>
+                                <option value="invoices">{ta.invoicesDataset}</option>
                             </select>
                         </div>
                         <div className="space-y-1.5">
-                            <Label>Upload CSV</Label>
+                            <Label>{ta.uploadCsv}</Label>
                             <label className="h-10 inline-flex w-full items-center gap-2 rounded-md border border-input px-3 text-sm cursor-pointer hover:bg-muted/50">
-                                <Upload className="h-4 w-4" /> Choose file
+                                <Upload className="h-4 w-4" /> {ta.chooseFile}
                                 <input
                                     type="file"
                                     className="hidden"
@@ -282,7 +286,7 @@ export default function AdminImportPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                        <Label>CSV Content</Label>
+                            <Label>{ta.csvContent}</Label>
                         <Textarea
                             value={csvText}
                             onChange={(e) => {
@@ -290,19 +294,19 @@ export default function AdminImportPage() {
                                 setDryRunResult(null);
                             }}
                             rows={12}
-                            placeholder="Paste CSV content here..."
+                            placeholder={ta.pasteCsv}
                         />
                         <p className="text-xs text-muted-foreground">
-                            Expected headers for {entityType}: <span className="font-mono">{templateByEntity[entityType]}</span>
+                            {ta.expectedHeaders.replace("{entity}", entityType)}: <span className="font-mono">{templateByEntity[entityType]}</span>
                         </p>
                         <p className="text-xs text-muted-foreground">
-                            Files with duplicate headers, oversized payloads, or suspicious spreadsheet formulas are rejected before commit.
+                            {ta.suspiciousRejected}
                         </p>
                     </div>
 
                     <div className="flex gap-2 flex-wrap">
                         <Button onClick={runDry} disabled={isDryRunning || !csvText.trim()} className="gap-2">
-                            <CheckCircle2 className="h-4 w-4" /> {isDryRunning ? 'Running Dry-Run...' : 'Run Dry-Run'}
+                            <CheckCircle2 className="h-4 w-4" /> {isDryRunning ? ta.runningDryRun : ta.runDryRun}
                         </Button>
                         <Button
                             onClick={executeImport}
@@ -310,7 +314,7 @@ export default function AdminImportPage() {
                             variant="outline"
                             className="gap-2"
                         >
-                            <FileUp className="h-4 w-4" /> {isImporting ? 'Importing...' : 'Commit Import'}
+                            <FileUp className="h-4 w-4" /> {isImporting ? ta.importing : ta.commitImport}
                         </Button>
                     </div>
                 </CardContent>
@@ -320,18 +324,18 @@ export default function AdminImportPage() {
                 <div className="grid gap-6 lg:grid-cols-2">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Dry-Run Summary</CardTitle>
+                            <CardTitle>{ta.dryRunSummary}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2 text-sm">
-                            <div className="flex items-center justify-between"><span>Total Rows</span><strong>{dryRunResult.totalRows}</strong></div>
-                            <div className="flex items-center justify-between"><span>Valid Rows</span><strong className="text-emerald-700">{dryRunResult.validRows}</strong></div>
-                            <div className="flex items-center justify-between"><span>Invalid Rows</span><strong className="text-red-700">{dryRunResult.invalidRows}</strong></div>
+                            <div className="flex items-center justify-between"><span>{ta.totalRows}</span><strong>{dryRunResult.totalRows}</strong></div>
+                            <div className="flex items-center justify-between"><span>{ta.validRows}</span><strong className="text-emerald-700">{dryRunResult.validRows}</strong></div>
+                            <div className="flex items-center justify-between"><span>{ta.invalidRows}</span><strong className="text-red-700">{dryRunResult.invalidRows}</strong></div>
                         </CardContent>
                     </Card>
 
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-amber-600" /> Validation Issues</CardTitle>
+                            <CardTitle className="flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-amber-600" /> {ta.validationIssues}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             {dryRunResult.issues?.length ? (
@@ -339,19 +343,19 @@ export default function AdminImportPage() {
                                     {dryRunResult.issues.map((issue: any, idx: number) => (
                                         <div key={idx} className={`rounded-md border px-3 py-2 ${issue.row <= 1 ? 'border-red-300 bg-red-50 text-red-800 font-semibold' : 'border-amber-200 bg-amber-50'}`}>
                                             {/* row 0 = empty-file error, row 1 = header-level error */}
-                                            {issue.row <= 1 ? '⚠ Header issue: ' : `Row ${issue.row}: `}{issue.message}
+                                            {issue.row <= 1 ? ta.headerIssue : `${ta.row} ${issue.row}: `}{issue.message}
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <p className="text-sm text-emerald-700 font-medium">No issues found.</p>
+                                <p className="text-sm text-emerald-700 font-medium">{ta.noIssuesFound}</p>
                             )}
                         </CardContent>
                     </Card>
 
                     <Card className="lg:col-span-2">
                         <CardHeader>
-                            <CardTitle>Preview (first 10 rows)</CardTitle>
+                            <CardTitle>{ta.preview}</CardTitle>
                         </CardHeader>
                         <CardContent className="overflow-auto">
                             {dryRunResult.preview?.length ? (
@@ -374,7 +378,7 @@ export default function AdminImportPage() {
                                     </tbody>
                                 </table>
                             ) : (
-                                <p className="text-sm text-muted-foreground">No preview available.</p>
+                                <p className="text-sm text-muted-foreground">{ta.noPreviewAvailable}</p>
                             )}
                         </CardContent>
                     </Card>

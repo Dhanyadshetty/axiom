@@ -7,6 +7,7 @@ import { getAllTasks, getInboxTasks, getTaskSummary } from "@/app/actions/workfl
 import { TaskRowActions } from "@/components/admin/task-row-actions";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getActiveLanguage, t } from "@/lib/i18n";
 
 const priorityColors: Record<string, string> = {
     critical: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
@@ -39,6 +40,8 @@ type TaskData = Awaited<ReturnType<typeof getAllTasks>> | Awaited<ReturnType<typ
 type TaskSummary = Awaited<ReturnType<typeof getTaskSummary>>;
 
 export default async function TaskInboxPage() {
+    const language = await getActiveLanguage();
+    const ta = t(language, "admin");
     const session = await auth();
     if (!session?.user || !['admin', 'user'].includes(session.user.role)) {
         redirect('/');
@@ -66,39 +69,39 @@ export default async function TaskInboxPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="flex items-center gap-2 text-2xl font-bold">
-                    <Inbox className="h-6 w-6 text-primary" />
-                    Task Inbox
-                </h1>
-                <p className="mt-1 text-sm text-muted-foreground">
-                    Workflow tasks, assignments, escalations, and SLA tracking across procurement objects.
-                </p>
-                <p className="mt-2 text-xs text-muted-foreground">
-                    Queue-safe view loads summary counts first and then the latest 200 tasks so heavy admin traffic does not force a full-table render.
-                </p>
+                    <h1 className="flex items-center gap-2 text-2xl font-bold">
+                        <Inbox className="h-6 w-6 text-primary" />
+                        {ta.taskInboxTitle}
+                    </h1>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                        {ta.workflowTasksSla}
+                    </p>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                        {ta.queueSafeView}
+                    </p>
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <SummaryCard icon={<ListTodo className="h-8 w-8 text-blue-500" />} label="Open Tasks" value={openCount} />
-                <SummaryCard icon={<Clock className="h-8 w-8 text-purple-500" />} label="In Progress" value={inProgressCount} />
-                <SummaryCard icon={<AlertTriangle className="h-8 w-8 text-red-500" />} label="Overdue" value={overdueCount} />
-                <SummaryCard icon={<CheckCircle className="h-8 w-8 text-green-500" />} label="Completed" value={completedCount} />
+                        <SummaryCard icon={<ListTodo className="h-8 w-8 text-blue-500" />} label={ta.openTasks} value={openCount} />
+                        <SummaryCard icon={<Clock className="h-8 w-8 text-purple-500" />} label={ta.inProgress} value={inProgressCount} />
+                        <SummaryCard icon={<AlertTriangle className="h-8 w-8 text-red-500" />} label={ta.overdue} value={overdueCount} />
+                        <SummaryCard icon={<CheckCircle className="h-8 w-8 text-green-500" />} label={ta.completed} value={completedCount} />
             </div>
 
             <Card className="border-blue-200 bg-blue-50/30">
                 <CardContent className="pt-6">
                     <div className="grid gap-4 md:grid-cols-3">
                         <div>
-                            <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Load window</p>
-                            <p className="mt-2 text-sm font-semibold text-foreground">Latest 200 tasks per request</p>
+                            <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">{ta.loadWindow}</p>
+                            <p className="mt-2 text-sm font-semibold text-foreground">{ta.latest200Tasks}</p>
                         </div>
                         <div>
-                            <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Hot path</p>
-                            <p className="mt-2 text-sm font-semibold text-foreground">Priority + due date sort stays server-side</p>
+                            <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">{ta.hotPath}</p>
+                            <p className="mt-2 text-sm font-semibold text-foreground">{ta.priorityDueSort}</p>
                         </div>
                         <div>
-                            <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Operational note</p>
-                            <p className="mt-2 text-sm font-semibold text-foreground">Use summary counts for full backlog health, not raw list length.</p>
+                            <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">{ta.operationalNote}</p>
+                            <p className="mt-2 text-sm font-semibold text-foreground">{ta.fullBacklogHealth}</p>
                         </div>
                     </div>
                 </CardContent>
@@ -106,18 +109,18 @@ export default async function TaskInboxPage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-lg">All Tasks</CardTitle>
+                        <CardTitle className="text-lg">{ta.allTasks}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     {tasks.length === 0 ? (
                         <div className="py-12 text-center text-muted-foreground">
                             <Inbox className="mx-auto mb-3 h-12 w-12 opacity-30" />
-                            <p className="text-sm">No tasks yet. Tasks are created automatically from workflow actions.</p>
+                            <p className="text-sm">{ta.noTasksYet}</p>
                         </div>
                     ) : (
                         <div className="space-y-6">
-                            <TaskSection title="Active Queue" tasks={activeTasks} emptyMessage="No active tasks remain after reconciliation." />
-                            <TaskSection title="Resolved Recently" tasks={resolvedTasks.slice(0, 10)} emptyMessage="No resolved tasks yet." />
+                            <TaskSection title={ta.activeQueue} tasks={activeTasks} emptyMessage={ta.noActiveTasks} />
+                            <TaskSection title={ta.resolvedRecently} tasks={resolvedTasks.slice(0, 10)} emptyMessage={ta.noResolvedTasks} />
                         </div>
                     )}
                 </CardContent>
@@ -189,11 +192,11 @@ function TaskSection({
                                     <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
                                         <span className="capitalize">{task.entityType?.replace(/_/g, ' ')}</span>
                                         {assigneeName && <span>to {assigneeName}</span>}
-                                        {task.dueDate && (
-                                            <span className={isOverdue ? 'font-medium text-red-600' : ''}>
-                                                Due: {new Date(task.dueDate).toLocaleDateString()}
-                                            </span>
-                                        )}
+                                                {task.dueDate && (
+                                                    <span className={isOverdue ? 'font-medium text-red-600' : ''}>
+                                                        {ta.due}: {new Date(task.dueDate).toLocaleDateString()}
+                                                    </span>
+                                                )}
                                     </div>
                                     {task.nextAction && (
                                         <p className="mt-1 text-xs text-primary">Next: {task.nextAction}</p>

@@ -91,6 +91,7 @@ export function getNavigationSections(user: NavigationRole): NavigationSection[]
                 links: [
                     { label: 'Parts Catalog',        icon: Package,       href: '/sourcing/parts'          },
                     { label: 'Sourcing Requests',    icon: FileText,      href: '/sourcing/rfqs'           },
+                    { label: 'Requests',             icon: ClipboardList, href: '/requests'                },
                     { label: 'Requisitions',         icon: ShoppingCart,  href: '/sourcing/requisitions'   },
                     { label: 'Orders',               icon: ShoppingCart,  href: '/sourcing/orders'         },
                     { label: 'Goods Receipts',       icon: Truck,         href: '/sourcing/goods-receipts' },

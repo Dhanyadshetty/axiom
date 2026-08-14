@@ -6,6 +6,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { postComment } from "@/app/actions/activity";
 import { MessageSquare, User } from "lucide-react";
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 
 interface Comment {
     id: string;
@@ -28,12 +30,13 @@ export function CommentsSection({
     entityType,
     entityId,
     initialComments,
-    title = "Team Collaboration",
-    placeholder = "Add a comment or note...",
-    buttonLabel = "Post Comment",
-    emptyState = "No comments yet. Start the conversation!",
+    title = t(language, "common").teamCollaboration,
+    placeholder = t(language, "common").addComment,
+    buttonLabel = t(language, "common").postComment,
+    emptyState = t(language, "common").noComments,
 }: CommentsSectionProps) {
-    const [comments, setComments] = useState(initialComments);
+    const { language } = useLanguage();
+    const tc = t(language, "common");
     const [text, setText] = useState("");
     const [isPending, startTransition] = useTransition();
 
@@ -76,7 +79,7 @@ export function CommentsSection({
                         className="min-h-[100px]"
                     />
                     <Button type="submit" disabled={isPending || !text.trim()}>
-                        {isPending ? "Posting..." : buttonLabel}
+                        {isPending ? tc.posting : buttonLabel}
                     </Button>
                 </form>
 
@@ -95,7 +98,7 @@ export function CommentsSection({
                                 <div className="flex items-center justify-between">
                                     <p className="text-sm font-semibold">{comment.userName}</p>
                                     <p className="text-xs text-muted-foreground">
-                                        {comment.createdAt ? new Date(comment.createdAt).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) : 'Just now'}
+                                         {comment.createdAt ? new Date(comment.createdAt).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) : tc.justNow}
                                     </p>
                                 </div>
                                 <p className="text-sm text-foreground whitespace-pre-wrap">{comment.text}</p>

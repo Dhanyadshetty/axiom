@@ -25,6 +25,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 
 type ScenarioType = 'price_change' | 'supplier_switch' | 'volume_change' | 'lead_time' | 'currency_fluctuation';
 
@@ -320,6 +322,8 @@ function buildScenarioInput(form: ScenarioFormState): ScenarioInput {
 }
 
 export default function ScenarioModelingPage() {
+    const { language } = useLanguage();
+    const ta = t(language, "admin");
     const [scenarios, setScenarios] = useState<ScenarioRun[]>([]);
     const [isRunning, setIsRunning] = useState(false);
     const [stagingScenarioId, setStagingScenarioId] = useState<string | null>(null);
@@ -335,9 +339,9 @@ export default function ScenarioModelingPage() {
             const result = await runScenarioAnalysis(input);
 
             if (!result.success || !result.data) {
-                toast.error("Scenario run failed", {
-                    description: result.error || "The engine could not complete the analysis.",
-                });
+            toast.error(ta.scenarioRunFailed, {
+                description: result.error || ta.engineCouldNotComplete,
+            });
                 return;
             }
 
@@ -346,11 +350,11 @@ export default function ScenarioModelingPage() {
                 result: result.data as ScenarioResult,
                 executionPacket: null,
             }, ...previous].slice(0, 4));
-            toast.success("Scenario modeled", {
-                description: `${result.data.title} was rebuilt from live workspace baselines.`,
+            toast.success(ta.scenarioModeled, {
+                description: `${result.data.title} ${ta.rebuiltFromBaselines}`,
             });
         } catch {
-            toast.error("Scenario run failed", {
+            toast.error(ta.scenarioRunFailed, {
                 description: "The analysis engine hit an unexpected error.",
             });
         } finally {
@@ -374,9 +378,9 @@ export default function ScenarioModelingPage() {
         try {
             const staged = await stageScenarioExecutionPlan(run.input);
             if (!staged.success || !staged.data) {
-                toast.error("Failed to queue apply plan", {
-                    description: staged.error || "Axiom could not create the governed execution packet.",
-                });
+            toast.error(ta.failedToQueuePlan, {
+                description: staged.error || ta.couldNotCreatePacket,
+            });
                 return;
             }
 
@@ -386,11 +390,11 @@ export default function ScenarioModelingPage() {
                     : entry
             ));
 
-            toast.success(staged.data.reused ? "Apply plan already staged" : "Governed apply plan queued", {
-                description: `${staged.data.ownerName} now owns the execution packet in Task Inbox.`,
+            toast.success(staged.data.reused ? ta.applyPlanAlreadyStaged : ta.governedApplyPlanQueued, {
+                description: `${staged.data.ownerName} ${ta.ownsExecutionPacket}`,
             });
         } catch {
-            toast.error("Failed to queue apply plan", {
+            toast.error(ta.failedToQueuePlan, {
                 description: "The governed execution packet could not be created.",
             });
         } finally {
@@ -404,22 +408,22 @@ export default function ScenarioModelingPage() {
                 <div>
                     <h1 className="flex items-center gap-3 text-3xl font-black tracking-tight text-foreground">
                         <BarChart3 className="h-8 w-8 text-primary" />
-                        Scenario Modeling
+                        {ta.scenarioModeling}
                     </h1>
                     <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
-                        Deterministic scenario analysis over live order, supplier, invoice, and FX baselines. Axiom does not pretend to know the market by magic here: you define the shock, the engine shows the exposure, assumptions, and operational consequences.
+                        {ta.scenarioSubtitle}
                     </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                    <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-700">
-                        Deterministic engine
-                    </Badge>
-                    <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
-                        Live workspace baselines
-                    </Badge>
-                    <Badge variant="outline" className="border-stone-200 bg-white text-stone-700">
-                        Market shock is operator-defined
-                    </Badge>
+                        <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-700">
+                            {ta.deterministicEngine}
+                        </Badge>
+                        <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
+                            {ta.liveWorkspaceBaselines}
+                        </Badge>
+                        <Badge variant="outline" className="border-stone-200 bg-white text-stone-700">
+                            {ta.marketShockOperatorDefined}
+                        </Badge>
                 </div>
             </div>
 

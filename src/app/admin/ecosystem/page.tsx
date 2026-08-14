@@ -32,6 +32,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { downloadCsvFile } from "@/lib/client/download";
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 
 type EcosystemNode = {
     id: string;
@@ -81,6 +83,8 @@ function getRiskTone(score: number) {
 }
 
 export default function SupplierEcosystemPage() {
+    const { language } = useLanguage();
+    const ta = t(language, "admin");
     const [ecosystem, setEcosystem] = useState<EcosystemData | null>(null);
     const [loading, setLoading] = useState(true);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -168,7 +172,7 @@ export default function SupplierEcosystemPage() {
 
     const handleDownloadPerformanceReport = () => {
         if (!ecosystem || ecosystem.nodes.length === 0) {
-            toast.error("No supplier ecosystem data available to export");
+            toast.error(ta.noSupplierEcosystemData);
             return;
         }
 
@@ -196,15 +200,15 @@ export default function SupplierEcosystemPage() {
                 (node.partCategories || []).join("; "),
             ]),
         ]);
-        toast.success("Supplier performance report downloaded");
+        toast.success(ta.supplierPerformanceReportDownloaded);
     };
 
     if (loading) {
         return (
             <div className="flex h-screen items-center justify-center bg-muted/20">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">Mapping supplier ecosystem...</p>
+            <div className="flex flex-col items-center gap-4">
+                <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">{ta.mappingSupplierEcosystem}</p>
                 </div>
             </div>
         );
@@ -215,19 +219,19 @@ export default function SupplierEcosystemPage() {
             <div className="flex min-h-full flex-col bg-background p-4 lg:p-8">
                 <Card className="border-dashed">
                     <CardHeader>
-                        <CardTitle>Supplier ecosystem could not be rebuilt</CardTitle>
+                        <CardTitle>{ta.supplierEcosystemRebuildFailed}</CardTitle>
                         <CardDescription>
-                            {errorMessage}. Axiom rebuilds this page from the current supplier, order, contract, and part data, so a retry will pick up fresh records immediately.
+                            {errorMessage}. {ta.rebuildDescription}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="flex flex-wrap gap-3">
-                        <Button variant="outline" onClick={fetchData}>Retry Mapping</Button>
-                        <Link href="/suppliers">
-                            <Button variant="outline">Open Suppliers</Button>
-                        </Link>
-                        <Link href="/admin/import">
-                            <Button>Load Supplier Data</Button>
-                        </Link>
+                            <Button variant="outline" onClick={fetchData}>{ta.retryMapping}</Button>
+                            <Link href="/suppliers">
+                                <Button variant="outline">{ta.openSuppliers}</Button>
+                            </Link>
+                            <Link href="/admin/import">
+                                <Button>{ta.loadSupplierData}</Button>
+                            </Link>
                     </CardContent>
                 </Card>
             </div>
@@ -239,10 +243,10 @@ export default function SupplierEcosystemPage() {
             <div className="flex min-h-full flex-col bg-background p-4 lg:p-8">
                 <Card className="border-dashed">
                     <CardHeader>
-                        <CardTitle>Awaiting live supplier network data</CardTitle>
-                        <CardDescription>
-                            No active suppliers are currently mapped into the ecosystem view. As soon as supplier, order, or contract data is added, this page reorganizes itself from the new live records on the next rebuild.
-                        </CardDescription>
+                            <CardTitle>{ta.awaitingLiveNetwork}</CardTitle>
+                            <CardDescription>
+                                {ta.awaitingLiveNetworkBody}
+                            </CardDescription>
                     </CardHeader>
                     <CardContent className="flex flex-wrap gap-3">
                         <Button variant="outline" onClick={fetchData}>Rebuild Network</Button>
@@ -263,10 +267,10 @@ export default function SupplierEcosystemPage() {
             <div className="flex min-h-full flex-col bg-background p-4 lg:p-8">
                 <Card className="border-dashed">
                     <CardHeader>
-                        <CardTitle>Supplier ecosystem is waiting for live inputs</CardTitle>
-                        <CardDescription>
-                            This route reorganizes itself from the current supplier, order, contract, and part data. Rebuild the network after new data is added if you want the latest partner map immediately.
-                        </CardDescription>
+                            <CardTitle>{ta.supplierEcosystemWaiting}</CardTitle>
+                            <CardDescription>
+                                {ta.supplierEcosystemWaitingBody}
+                            </CardDescription>
                     </CardHeader>
                     <CardContent className="flex flex-wrap gap-3">
                         <Button variant="outline" onClick={fetchData}>Rebuild Network</Button>
@@ -289,72 +293,71 @@ export default function SupplierEcosystemPage() {
                     <div className="flex flex-wrap items-center gap-3">
                         <h1 className="text-3xl font-black tracking-tight text-foreground flex items-center gap-3">
                             <Network className="h-8 w-8 text-primary" />
-                            Supplier Ecosystem
+                            {ta.supplierEcosystem}
                         </h1>
                         <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
-                            Health score {ecosystem.overallHealthScore}/100
+                            {ta.healthScore.replace("{score}", String(ecosystem.overallHealthScore))}
                         </Badge>
                     </div>
                     <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-                        This page now focuses on partner resilience, performance posture, backup coverage, and action routes.
-                        It treats suppliers as an operating network, not a static address book.
+                        {ta.ecosystemIntro}
                     </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                    <Button variant="outline" className="gap-2" onClick={fetchData} disabled={loading}>
-                        <Sparkles className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Rebuild Network
-                    </Button>
-                    <Button variant="outline" className="gap-2" onClick={handleDownloadPerformanceReport}>
-                        <Download className="h-4 w-4" /> Generate Performance Report
-                    </Button>
-                    <Link href="/suppliers">
-                        <Button variant="outline" className="gap-2">
-                            <Users className="h-4 w-4" /> Open Suppliers
+                        <Button variant="outline" className="gap-2" onClick={fetchData} disabled={loading}>
+                            <Sparkles className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /> {ta.rebuildNetwork}
                         </Button>
-                    </Link>
-                    <Link href="/admin/risk">
-                        <Button className="gap-2">
-                            <ShieldAlert className="h-4 w-4" /> Open Risk Intelligence
+                        <Button variant="outline" className="gap-2" onClick={handleDownloadPerformanceReport}>
+                            <Download className="h-4 w-4" /> {ta.generatePerformanceReport}
                         </Button>
-                    </Link>
+                        <Link href="/suppliers">
+                            <Button variant="outline" className="gap-2">
+                                <Users className="h-4 w-4" /> {ta.openSuppliers}
+                            </Button>
+                        </Link>
+                        <Link href="/admin/risk">
+                            <Button className="gap-2">
+                                <ShieldAlert className="h-4 w-4" /> {ta.openRiskIntelligence}
+                            </Button>
+                        </Link>
                 </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                 <Card className="border-l-4 border-l-primary">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium">Partners Mapped</CardTitle>
+                        <CardTitle className="text-sm font-medium">{ta.partnersMapped}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-black">{ecosystem.nodes.length}</div>
-                        <p className="mt-1 text-xs text-muted-foreground">Active suppliers with live order, contract, and performance signal.</p>
+                        <p className="mt-1 text-xs text-muted-foreground">{ta.activeSuppliersLive}</p>
                     </CardContent>
                 </Card>
                 <Card className="border-l-4 border-l-sky-500">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium">Backup Coverage</CardTitle>
+                        <CardTitle className="text-sm font-medium">{ta.backupCoverage}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-black text-sky-700">{backupCoveredIds.size}</div>
-                        <p className="mt-1 text-xs text-muted-foreground">Suppliers with a mapped backup lane inside the current network model.</p>
+                        <p className="mt-1 text-xs text-muted-foreground">{ta.mappedBackupLane}</p>
                     </CardContent>
                 </Card>
                 <Card className="border-l-4 border-l-amber-500">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium">Contracts Expiring</CardTitle>
+                        <CardTitle className="text-sm font-medium">{ta.contractsExpiring}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-black text-amber-700">{expiringContracts.length}</div>
-                        <p className="mt-1 text-xs text-muted-foreground">Strategic partners whose commercial cover needs renewal attention.</p>
+                        <p className="mt-1 text-xs text-muted-foreground">{ta.commercialCoverRenewal}</p>
                     </CardContent>
                 </Card>
                 <Card className="border-l-4 border-l-red-500">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium">Critical Hotspots</CardTitle>
+                        <CardTitle className="text-sm font-medium">{ta.criticalHotspots}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-black text-red-700">{ecosystem.riskHotspots.length}</div>
-                        <p className="mt-1 text-xs text-muted-foreground">Exposure points where concentration, risk, or missing alternates can break flow.</p>
+                        <p className="mt-1 text-xs text-muted-foreground">{ta.exposurePoints}</p>
                     </CardContent>
                 </Card>
             </div>
@@ -364,43 +367,42 @@ export default function SupplierEcosystemPage() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Handshake className="h-5 w-5 text-emerald-600" />
-                            Supplier Partnership Routes
+                            {ta.supplierPartnershipRoutes}
                         </CardTitle>
                         <CardDescription>
-                            Supplier collaboration is already present in Axiom through portal-driven self-service, not email-only back-and-forth.
+                            {ta.supplierCollaborationPresent}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="grid gap-3 sm:grid-cols-2">
                             <div className="rounded-2xl border bg-muted/20 p-4">
-                                <p className="text-sm font-bold text-foreground">Self-service onboarding</p>
+                                <p className="text-sm font-bold text-foreground">{ta.selfServiceOnboarding}</p>
                                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                                    Suppliers can already maintain profile data, categories, country, contact email, certifications, and ESG declarations in the portal.
+                                    {ta.selfServiceOnboardingBody}
                                 </p>
                             </div>
                             <div className="rounded-2xl border bg-muted/20 p-4">
-                                <p className="text-sm font-bold text-foreground">Bid and order collaboration</p>
+                                <p className="text-sm font-bold text-foreground">{ta.bidOrderCollaboration}</p>
                                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                                    RFQ invitations, active orders, documents, and requests are already visible in the supplier-facing workspace.
+                                    {ta.bidOrderCollaborationBody}
                                 </p>
                             </div>
                         </div>
                         <div className="space-y-2 rounded-2xl border border-dashed p-4">
-                            <p className="text-sm font-bold text-foreground">Current readiness boundary</p>
+                            <p className="text-sm font-bold text-foreground">{ta.currentReadinessBoundary}</p>
                             <p className="text-sm leading-6 text-muted-foreground">
-                                Multi-tier sub-vendor disclosure and supplier-shared forecast commits are not yet live in the data model.
-                                This page surfaces the gap instead of pretending deep upstream visibility already exists.
+                                {ta.readinessBoundaryBody}
                             </p>
                         </div>
                         <div className="flex flex-wrap gap-2">
                             <Link href="/suppliers">
                                 <Button variant="outline" className="gap-2">
-                                    <Building2 className="h-4 w-4" /> Review supplier records
+                                    <Building2 className="h-4 w-4" /> {ta.reviewSupplierRecords}
                                 </Button>
                             </Link>
                             <Link href="/admin/compliance">
                                 <Button variant="outline" className="gap-2">
-                                    <ShieldCheck className="h-4 w-4" /> Open compliance
+                                    <ShieldCheck className="h-4 w-4" /> {ta.openCompliance}
                                 </Button>
                             </Link>
                         </div>
@@ -411,10 +413,10 @@ export default function SupplierEcosystemPage() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <FileBarChart2 className="h-5 w-5 text-sky-600" />
-                            Performance Watch
+                            {ta.performanceWatch}
                         </CardTitle>
                         <CardDescription>
-                            Real suppliers ranked by current performance and risk, ready for the next review or negotiation.
+                            {ta.performanceWatchBody}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
@@ -437,9 +439,9 @@ export default function SupplierEcosystemPage() {
                                 </div>
                             </div>
                         )) : (
-                            <div className="rounded-2xl border border-dashed p-6 text-sm text-muted-foreground">
-                                No supplier is currently outside the active performance watch thresholds.
-                            </div>
+                                <div className="rounded-2xl border border-dashed p-6 text-sm text-muted-foreground">
+                                    {ta.noPerformanceWatch}
+                                </div>
                         )}
                     </CardContent>
                 </Card>
@@ -448,17 +450,17 @@ export default function SupplierEcosystemPage() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Layers className="h-5 w-5 text-amber-600" />
-                            Dependency Pressure
+                            {ta.dependencyPressure}
                         </CardTitle>
                         <CardDescription>
-                            Current blind spots, single-source lanes, and recovery routes from the live ecosystem map.
+                            {ta.dependencyPressureBody}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="rounded-2xl border bg-muted/20 p-4">
-                            <p className="text-sm font-bold text-foreground">Single-source watchlist</p>
+                            <p className="text-sm font-bold text-foreground">{ta.singleSourceWatchlist}</p>
                             <p className="mt-2 text-sm text-muted-foreground">
-                                {singleSourcePartners.length} supplier lanes have live spend but no mapped backup relationship yet.
+                                {ta.singleSourceWatchlistBody.replace("{count}", String(singleSourcePartners.length))}
                             </p>
                         </div>
                         <div className="space-y-2">
@@ -472,20 +474,20 @@ export default function SupplierEcosystemPage() {
                                 </div>
                             ))}
                             {singleSourcePartners.length === 0 ? (
-                                <div className="rounded-xl border border-dashed px-3 py-4 text-sm text-muted-foreground">
-                                    No open single-source concentration was detected in the current supplier map.
-                                </div>
+                                    <div className="rounded-xl border border-dashed px-3 py-4 text-sm text-muted-foreground">
+                                        {ta.noSingleSource}
+                                    </div>
                             ) : null}
                         </div>
                         <div className="flex flex-wrap gap-2">
                             <Link href="/admin/scenarios">
                                 <Button variant="outline" className="gap-2">
-                                    <Sparkles className="h-4 w-4" /> Scenario Lab
+                                    <Sparkles className="h-4 w-4" /> {ta.scenarioLab}
                                 </Button>
                             </Link>
                             <Link href="/admin/risk">
                                 <Button variant="outline" className="gap-2">
-                                    <ShieldAlert className="h-4 w-4" /> Risk routes
+                                    <ShieldAlert className="h-4 w-4" /> {ta.riskRoutes}
                                 </Button>
                             </Link>
                         </div>
@@ -498,10 +500,10 @@ export default function SupplierEcosystemPage() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <ShieldAlert className="h-5 w-5 text-red-600" />
-                            Hotspot Feed
+                            {ta.hotspotFeed}
                         </CardTitle>
                         <CardDescription>
-                            Financial exposure and the first recovery move for each current risk hotspot.
+                            {ta.hotspotFeedBody}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
@@ -525,9 +527,9 @@ export default function SupplierEcosystemPage() {
                                 </p>
                             </div>
                         )) : (
-                            <div className="rounded-2xl border border-dashed p-6 text-sm text-muted-foreground">
-                                No active hotspot is currently flagged in the supplier network.
-                            </div>
+                                <div className="rounded-2xl border border-dashed p-6 text-sm text-muted-foreground">
+                                    {ta.noActiveHotspots}
+                                </div>
                         )}
                     </CardContent>
                 </Card>
@@ -536,15 +538,15 @@ export default function SupplierEcosystemPage() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Globe2 className="h-5 w-5 text-primary" />
-                            Network Shape
+                            {ta.networkShape}
                         </CardTitle>
                         <CardDescription>
-                            Live distribution of supplier clusters and current hotspot exposure.
+                            {ta.networkShapeBody}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="grid min-w-0 gap-6 lg:grid-cols-2">
                         <div className="h-[260px] min-w-0">
-                            <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Cluster density</p>
+                                <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">{ta.clusterDensity}</p>
                             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={260}>
                                 <BarChart data={clusterChartData}>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
@@ -556,7 +558,7 @@ export default function SupplierEcosystemPage() {
                             </ResponsiveContainer>
                         </div>
                         <div className="h-[260px] min-w-0">
-                            <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Hotspot exposure</p>
+                                <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">{ta.hotspotExposure}</p>
                             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={260}>
                                 <BarChart data={hotspotExposureData}>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
@@ -573,10 +575,10 @@ export default function SupplierEcosystemPage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Strategic Recommendations</CardTitle>
-                    <CardDescription>
-                        Recommendations derived from the current supplier map, not from static placeholder copy.
-                    </CardDescription>
+                        <CardTitle>{ta.strategicRecommendations}</CardTitle>
+                        <CardDescription>
+                            {ta.strategicRecommendationsBody}
+                        </CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                     {ecosystem.recommendations.length > 0 ? ecosystem.recommendations.map((recommendation, index) => (
@@ -589,9 +591,9 @@ export default function SupplierEcosystemPage() {
                             </div>
                         </div>
                     )) : (
-                        <div className="rounded-2xl border border-dashed p-6 text-sm text-muted-foreground">
-                            No live recommendation was generated from the current supplier network.
-                        </div>
+                            <div className="rounded-2xl border border-dashed p-6 text-sm text-muted-foreground">
+                                {ta.noLiveRecommendation}
+                            </div>
                     )}
                 </CardContent>
             </Card>

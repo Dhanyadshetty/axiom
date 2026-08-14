@@ -9,8 +9,12 @@ import { Label } from '@/components/ui/label';
 import { Mail, ArrowLeft, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { requestPasswordReset } from '@/app/actions/password-reset';
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 
 export default function ForgotPasswordPage() {
+    const { language } = useLanguage();
+    const ta = t(language, "auth");
     const [email, setEmail] = useState('');
     const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState('');
@@ -41,16 +45,16 @@ export default function ForgotPasswordPage() {
                             <CheckCircle2 className="h-10 w-10 text-blue-500" />
                         </div>
                         <div>
-                            <h2 className="text-2xl font-bold mb-2">Check Your Email</h2>
+                            <h2 className="text-2xl font-bold mb-2">{ta.forgotPasswordCheckEmailTitle}</h2>
                             <p className="text-muted-foreground">
-                                If an account exists with this email address, you will receive a password reset link shortly.
+                                {ta.forgotPasswordCheckEmailBody}
                             </p>
                             <p className="text-xs text-muted-foreground/60 mt-4">
-                                The reset link will expire in 1 hour.
+                                {ta.forgotPasswordLinkExpiry}
                             </p>
                         </div>
                         <Link href="/login">
-                            <Button className="w-full">Back to Login</Button>
+                            <Button className="w-full">{ta.backToLogin}</Button>
                         </Link>
                     </CardContent>
                 </Card>
@@ -67,8 +71,8 @@ export default function ForgotPasswordPage() {
                             <Mail className="h-5 w-5 text-primary" />
                         </div>
                         <div>
-                            <CardTitle>Forgot Password</CardTitle>
-                            <CardDescription>Reset your account password</CardDescription>
+                            <CardTitle>{ta.forgotPasswordTitle}</CardTitle>
+                            <CardDescription>{ta.forgotPasswordSubtitle}</CardDescription>
                         </div>
                     </div>
                 </CardHeader>
@@ -84,12 +88,12 @@ export default function ForgotPasswordPage() {
 
                         <div className="space-y-2">
                             <Label htmlFor="email" className="text-sm font-medium">
-                                Email Address
+                                {ta.forgotPasswordEmailLabel}
                             </Label>
                             <Input
                                 id="email"
                                 type="email"
-                                placeholder="you@axiom.com"
+                                placeholder={ta.forgotPasswordEmailPlaceholder}
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
@@ -97,7 +101,7 @@ export default function ForgotPasswordPage() {
                                 className="bg-background/50"
                             />
                             <p className="text-xs text-muted-foreground">
-                                Enter the email address associated with your account
+                                {ta.forgotPasswordEnterEmail}
                             </p>
                         </div>
 
@@ -109,17 +113,17 @@ export default function ForgotPasswordPage() {
                             {loading ? (
                                 <>
                                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                    Sending...
+                                    {ta.forgotPasswordSending}
                                 </>
                             ) : (
-                                'Send Reset Link'
+                                ta.forgotPasswordSendLink
                             )}
                         </Button>
 
                         <div className="pt-2">
                             <Link href="/login" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition">
                                 <ArrowLeft className="h-4 w-4" />
-                                Back to login
+                                {ta.backToLogin}
                             </Link>
                         </div>
                     </CardContent>

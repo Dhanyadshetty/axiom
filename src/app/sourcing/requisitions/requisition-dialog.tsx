@@ -17,8 +17,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { createRequisition } from "@/app/actions/requisitions";
 import { toast } from "sonner";
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 
 export function RequisitionDialog() {
+    const { language } = useLanguage();
+    const tc = t(language, "sourcing");
     const [open, setOpen] = useState(false);
     const [isPending, startTransition] = useTransition();
 
@@ -37,10 +41,10 @@ export function RequisitionDialog() {
             });
 
             if (result.success) {
-                toast.success("Requisition submitted for approval");
+                toast.success(tc.requisitionSubmitted);
                 setOpen(false);
             } else {
-                toast.error(result.error || "Failed to submit requisition");
+                toast.error(result.error || tc.failedSubmitRequisition);
             }
         });
     }
@@ -50,48 +54,48 @@ export function RequisitionDialog() {
             <DialogTrigger asChild>
                 <Button className="bg-primary hover:bg-primary/90 shadow-md">
                     <Plus className="mr-2 h-4 w-4" />
-                    New Request
+                    {tc.newRequest}
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <ShoppingCart className="h-5 w-5 text-primary" />
-                        Create Purchase Requisition
+                        {tc.createPurchaseRequisition}
                     </DialogTitle>
                     <DialogDescription>
-                        Internal request for goods or services. This will initiate the approval workflow.
+                        {tc.internalRequestGoods}
                     </DialogDescription>
                 </DialogHeader>
                 <form action={handleSubmit} className="space-y-4 py-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="title">Title / Purpose</Label>
-                        <Input id="title" name="title" placeholder="e.g., Office Supplies Q1" required />
+                        <Label htmlFor="title">{tc.titlePurpose}</Label>
+                        <Input id="title" name="title" placeholder={tc.titlePlaceholder} required />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="amount">Est. Amount (₹)</Label>
+                            <Label htmlFor="amount">{tc.estAmount} (₹)</Label>
                             <Input id="amount" name="amount" type="number" placeholder="0.00" step="0.01" required />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="department">Department</Label>
-                            <Input id="department" name="department" placeholder="Operations / IT" />
+                            <Label htmlFor="department">{tc.department}</Label>
+                            <Input id="department" name="department" placeholder={tc.departmentPlaceholder} />
                         </div>
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="description">Justification / Details</Label>
+                        <Label htmlFor="description">{tc.justification}</Label>
                         <Textarea
                             id="description"
                             name="description"
-                            placeholder="Please provide details about why these items are needed..."
+                            placeholder={tc.justificationPlaceholder}
                             className="min-h-[100px]"
                         />
                     </div>
                     <DialogFooter className="pt-4">
-                        <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+                        <Button type="button" variant="outline" onClick={() => setOpen(false)}>{tc.cancel}</Button>
                         <Button type="submit" disabled={isPending}>
                             {isPending && <Loader className="mr-2 h-4 w-4 animate-spin" />}
-                            Submit Request
+                            {tc.submitRequest}
                         </Button>
                     </DialogFooter>
                 </form>

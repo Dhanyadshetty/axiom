@@ -9,10 +9,14 @@ import { Label } from '@/components/ui/label';
 import { Eye, EyeOff, ShieldCheck, Zap, BarChart3 } from 'lucide-react';
 import { toast } from "sonner";
 import { AxiomLogo } from "@/components/shared/axiom-logo";
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 
 type LoginMode = 'admin' | 'user' | 'supplier';
 
 export default function LoginPage() {
+    const { language } = useLanguage();
+    const ta = t(language, "auth");
     const [authResult, formAction, isPending] = useActionState(
         authenticate,
         undefined,
@@ -70,13 +74,13 @@ export default function LoginPage() {
         try {
             const result = await verifyAndEnableTwoFactor(setupCode, identifier);
             if (result.success) {
-                toast.success("2FA enabled! Enter a fresh code from your authenticator to log in.");
-                setShowSetup2FA(false);
-                setSetupCode('');
-                setShow2FA(true);
-            } else {
-                toast.error(result.error || "Invalid code");
-            }
+            toast.success(ta.twoFactorEnabled);
+            setShowSetup2FA(false);
+            setSetupCode('');
+            setShow2FA(true);
+        } else {
+            toast.error(result.error || ta.invalidCode);
+        }
         } finally {
             setIsVerifyingSetup(false);
         }
@@ -87,9 +91,9 @@ export default function LoginPage() {
     };
 
     const features = [
-        { icon: Zap, label: "Guarded AI execution", desc: "Autonomous workflows with routed recovery and approval gates" },
-        { icon: ShieldCheck, label: "Controlled data movement", desc: "Protected imports, matching controls, and audit-ready approvals" },
-        { icon: BarChart3, label: "Global operating visibility", desc: "Multi-currency spend with regional risk and compliance context" },
+        { icon: Zap, label: ta.featureGuardedAiLabel, desc: ta.featureGuardedAiDesc },
+        { icon: ShieldCheck, label: ta.featureControlledDataLabel, desc: ta.featureControlledDataDesc },
+        { icon: BarChart3, label: ta.featureGlobalVisibilityLabel, desc: ta.featureGlobalVisibilityDesc },
     ];
 
     const loginModes: Array<{
@@ -100,21 +104,21 @@ export default function LoginPage() {
     }> = [
         {
             mode: 'user',
-            label: 'Internal Workspace',
-            title: 'Internal team sign-in',
-            description: 'For procurement, operations, and business users.',
+            label: ta.modeInternalLabel,
+            title: ta.modeInternalTitle,
+            description: ta.modeInternalDesc,
         },
         {
             mode: 'admin',
-            label: 'Admin Console',
-            title: 'Administrator sign-in',
-            description: 'Platform-wide control, approvals, intelligence, and operating oversight.',
+            label: ta.modeAdminLabel,
+            title: ta.modeAdminTitle,
+            description: ta.modeAdminDesc,
         },
         {
             mode: 'supplier',
-            label: 'Supplier Portal',
-            title: 'Supplier portal sign-in',
-            description: 'External supplier access for RFQs, orders, and portal tasks.',
+            label: ta.modeSupplierLabel,
+            title: ta.modeSupplierTitle,
+            description: ta.modeSupplierDesc,
         },
     ];
 
@@ -145,14 +149,14 @@ export default function LoginPage() {
                         </div>
 
                         <div className="mb-5 inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-white/80">
-                            Secure procurement workspace
+                            {ta.secureProcurementWorkspace}
                         </div>
 
                         <h2 className="mb-4 text-[30px] font-black leading-tight text-white">
-                            Control procurement across currencies, regions, and supplier risk.
+                            {ta.controlProcurementHeading}
                         </h2>
                         <p className="max-w-sm text-sm leading-relaxed text-white/70">
-                            One workspace for sourcing, approvals, supplier evidence, and resilient operating routes.
+                            {ta.controlProcurementBody}
                         </p>
                     </div>
 
@@ -194,15 +198,15 @@ export default function LoginPage() {
                                     <p className="text-[10px] font-black uppercase tracking-[0.22em] text-primary/70">Axiom</p>
                                 </div>
                                 <div className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-700">
-                                    Secure sign in
+                                    {ta.secureSignIn}
                                 </div>
                             </div>
 
                             <h1 className="mb-1 text-2xl font-black tracking-tight text-foreground">
-                                {showSetup2FA ? "Secure your account" : (show2FA ? "Two-factor auth" : activeMode.title)}
+                                {showSetup2FA ? ta.secureYourAccount : (show2FA ? ta.twoFactorAuth : activeMode.title)}
                             </h1>
                             <p className="mb-6 text-sm text-muted-foreground">
-                                {showSetup2FA ? "Set up 2FA to protect your account" : (show2FA ? "Enter the code from your authenticator app" : activeMode.description)}
+                                {showSetup2FA ? ta.setup2FaBody : (show2FA ? ta.twoFactorBody : activeMode.description)}
                             </p>
 
                             <form action={formAction} className="space-y-4">
@@ -228,13 +232,13 @@ export default function LoginPage() {
 
                                         <div className="space-y-1.5">
                                             <Label htmlFor="identifier" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                                                {loginMode === 'supplier' ? 'Supplier Email Address' : 'Work Email Address'}
+                                                {loginMode === 'supplier' ? ta.supplierEmail : ta.workEmail}
                                             </Label>
                                             <Input
                                                 id="identifier"
                                                 name="identifier"
                                                 type="email"
-                                                placeholder={loginMode === 'supplier' ? 'supplier@company.com' : 'you@company.com'}
+                                                placeholder={loginMode === 'supplier' ? ta.supplierEmailPlaceholder : ta.workEmailPlaceholder}
                                                 value={identifier}
                                                 onChange={(e) => setIdentifier(e.target.value)}
                                                 required
@@ -244,12 +248,12 @@ export default function LoginPage() {
 
                                         <div className="space-y-1.5">
                                             <div className="flex items-center justify-between">
-                                                <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Password</Label>
+                                                <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{ta.password}</Label>
                                                 <Link
                                                     href="/forgot-password"
                                                     className="text-xs font-medium text-primary hover:underline"
                                                 >
-                                                    Forgot password?
+                                                    {ta.forgotPassword}
                                                 </Link>
                                             </div>
                                             <div className="relative">
@@ -278,27 +282,27 @@ export default function LoginPage() {
                                                 ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
                                                 : 'border-blue-200 bg-blue-50 text-blue-800'
                                             }`}>
-                                            {loginMode === 'admin'
-                                                ? 'Admin Console sessions can manage platform controls, approvals, intelligence, and operating routes.'
-                                                : loginMode === 'supplier'
-                                                    ? 'Supplier Portal accounts are restricted to vendor-facing RFQs, documents, requests, and order visibility.'
-                                                : 'Internal Workspace accounts can operate the procurement workspace without entering the admin control plane.'}
+                                        {loginMode === 'admin'
+                                            ? ta.adminNote
+                                            : loginMode === 'supplier'
+                                                ? ta.supplierNote
+                                                : ta.internalNote}
                                         </div>
                                     </>
                                 ) : showSetup2FA ? (
                                     <div className="space-y-4">
                                         <div className="flex flex-col items-center justify-center space-y-4">
-                                            <p className="text-center text-xs text-muted-foreground">Scan this QR code with your Authenticator app (Google or Microsoft Authenticator).</p>
+                                            <p className="text-center text-xs text-muted-foreground">{ta.scanQr}</p>
                                             <div className="rounded-xl border bg-white p-4 shadow-inner flex items-center justify-center min-h-[180px]">
                                                 {qrCodeUrl ? (
                                                     <img src={qrCodeUrl} alt="2FA QR Code" className="h-48 w-48 object-contain" />
                                                 ) : (
-                                                    <p className="text-xs text-muted-foreground text-center">Loading QR code...</p>
+                                                    <p className="text-xs text-muted-foreground text-center">{ta.loadingQr}</p>
                                                 )}
                                             </div>
                                             {setupSecret && (
                                                 <div className="w-full">
-                                                    <p className="mb-1 text-center text-[10px] text-muted-foreground">Or enter this key manually:</p>
+                                                    <p className="mb-1 text-center text-[10px] text-muted-foreground">{ta.enterKeyManually}</p>
                                                     <code className="block w-full break-all rounded-lg border bg-muted p-2 text-center font-mono text-xs select-all">
                                                         {setupSecret}
                                                     </code>
@@ -306,7 +310,7 @@ export default function LoginPage() {
                                             )}
                                         </div>
                                         <div className="space-y-1.5">
-                                            <Label htmlFor="setupCode" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Verification Code</Label>
+                                            <Label htmlFor="setupCode" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{ta.verificationCode}</Label>
                                             <Input
                                                 id="setupCode"
                                                 value={setupCode}
@@ -323,13 +327,13 @@ export default function LoginPage() {
                                             onClick={handleVerifySetup}
                                             disabled={isVerifyingSetup || setupCode.length !== 6}
                                         >
-                                            {isVerifyingSetup ? "Verifying..." : "Verify & Enable 2FA"}
+                                            {isVerifyingSetup ? ta.verifying : ta.verifyEnable2fa}
                                         </Button>
                                     </div>
                                 ) : (
                                     <div className="space-y-4">
                                         <div className="space-y-1.5">
-                                            <Label htmlFor="code" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Authenticator Code</Label>
+                                            <Label htmlFor="code" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{ta.authenticatorCode}</Label>
                                             <Input
                                                 id="code"
                                                 name="code"
@@ -343,7 +347,7 @@ export default function LoginPage() {
                                                 autoComplete="one-time-code"
                                                 className="h-12 text-center text-2xl font-bold tracking-[0.3em]"
                                             />
-                                            <p className="text-center text-[10px] text-muted-foreground">Open your Authenticator app to get the code.</p>
+                                            <p className="text-center text-[10px] text-muted-foreground">{ta.openAuthenticator}</p>
                                         </div>
                                         <input type="hidden" name="identifier" value={identifier} />
                                         <input type="hidden" name="password" value={password} />
@@ -352,7 +356,7 @@ export default function LoginPage() {
 
                                 {!showSetup2FA && (
                                     <Button className="h-11 w-full font-semibold shadow-lg shadow-emerald-100" aria-disabled={isPending} type="submit">
-                                        {isPending ? (show2FA ? "Verifying..." : "Signing in...") : (show2FA ? "Verify Code" : "Sign in")}
+                                        {isPending ? (show2FA ? ta.verifying : ta.signingIn) : (show2FA ? ta.verifyCode : ta.signIn)}
                                     </Button>
                                 )}
 
@@ -370,7 +374,7 @@ export default function LoginPage() {
                                         }}
                                         className="mt-2 w-full text-xs text-muted-foreground transition-colors hover:text-foreground hover:underline"
                                     >
-                                        Back to sign in
+                                        {ta.backToSignIn}
                                     </button>
                                 )}
 

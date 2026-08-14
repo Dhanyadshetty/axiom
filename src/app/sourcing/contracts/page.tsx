@@ -5,8 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Plus, FileText, Calendar, TrendingUp, ShieldCheck, CheckCircle2, AlertTriangle, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
-const formatDate = (date: Date) =>
-    new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(date);
+import { getActiveLanguage, t, type Language } from "@/lib/i18n";
+const formatDate = (date: Date, language: Language) =>
+    new Intl.DateTimeFormat(language === 'de' ? 'de-DE' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(date);
 
 function getDaysUntilExpiry(validTo: Date | null | undefined): number | null {
     if (!validTo) return null;
@@ -24,6 +25,8 @@ export default async function ContractsPage({ searchParams }: { searchParams?: P
     const suppliers = await getSuppliers();
     const resolvedSearchParams = searchParams ? await searchParams : undefined;
     const highlightedContractId = resolvedSearchParams?.contract;
+    const language = await getActiveLanguage();
+    const ts = t(language, "sourcing");
 
     const activeCount = contracts.filter((c) => c.status === 'active').length;
     const expiringCount = contracts.filter((c) => {
@@ -44,8 +47,8 @@ export default async function ContractsPage({ searchParams }: { searchParams?: P
         <div className="flex min-h-full flex-col bg-muted/40 p-4 lg:p-10 space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Contract Management</h1>
-                    <p className="text-muted-foreground mt-1">Monitor compliance, renewals, and framework agreements.</p>
+                    <h1 className="text-3xl font-bold tracking-tight">{ts.contractManagement}</h1>
+                    <p className="text-muted-foreground mt-1">{ts.contractManagementSubtitle}</p>
                 </div>
                 <CreateContractDialog suppliers={suppliers} />
             </div>
@@ -54,30 +57,30 @@ export default async function ContractsPage({ searchParams }: { searchParams?: P
             <div className="grid gap-4 md:grid-cols-4">
                 <Card className="border-l-4 border-l-emerald-500">
                     <CardContent className="pt-5 pb-4">
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wide">Active Contracts</p>
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wide">{ts.activeContracts}</p>
                         <p className="text-3xl font-black text-emerald-600">{activeCount}</p>
-                        <p className="text-xs text-muted-foreground mt-1">Currently in force</p>
+                        <p className="text-xs text-muted-foreground mt-1">{ts.currentlyInForce}</p>
                     </CardContent>
                 </Card>
                 <Card className="border-l-4 border-l-amber-500">
                     <CardContent className="pt-5 pb-4">
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wide">Expiring (60 days)</p>
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wide">{ts.expiring60Days}</p>
                         <p className="text-3xl font-black text-amber-600">{expiringCount}</p>
-                        <p className="text-xs text-muted-foreground mt-1">Requires renewal action</p>
+                        <p className="text-xs text-muted-foreground mt-1">{ts.requiresRenewalAction}</p>
                     </CardContent>
                 </Card>
                 <Card className="border-l-4 border-l-red-500">
                     <CardContent className="pt-5 pb-4">
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wide">Expired</p>
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wide">{ts.expired}</p>
                         <p className="text-3xl font-black text-red-600">{expiredCount}</p>
-                        <p className="text-xs text-muted-foreground mt-1">Needs renewal or closing</p>
+                        <p className="text-xs text-muted-foreground mt-1">{ts.needsRenewalOrClosing}</p>
                     </CardContent>
                 </Card>
                 <Card className="border-l-4 border-l-blue-500">
                     <CardContent className="pt-5 pb-4">
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wide">Total Contract Value</p>
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wide">{ts.totalContractValue}</p>
                         <p className="text-2xl font-black text-blue-600">{totalValue.toLocaleString()}</p>
-                        <p className="text-xs text-muted-foreground mt-1">Across all contracts</p>
+                        <p className="text-xs text-muted-foreground mt-1">{ts.acrossAllContracts}</p>
                     </CardContent>
                 </Card>
             </div>
@@ -88,9 +91,9 @@ export default async function ContractsPage({ searchParams }: { searchParams?: P
             {highlightedContractId && orderedContracts.some((contract) => contract.id === highlightedContractId) ? (
                 <Card className="border-primary/30 bg-primary/5">
                     <CardContent className="pt-6">
-                        <p className="text-sm font-semibold text-foreground">Command bar focus enabled</p>
+                        <p className="text-sm font-semibold text-foreground">{ts.commandBarFocus}</p>
                         <p className="mt-1 text-sm text-muted-foreground">
-                            The selected contract has been moved to the top so the buyer can inspect it without another search.
+                            {ts.commandBarFocusDesc}
                         </p>
                     </CardContent>
                 </Card>
@@ -120,7 +123,7 @@ export default async function ContractsPage({ searchParams }: { searchParams?: P
                                     {contract.status?.toUpperCase()}
                                 </Badge>
                                 <span className="text-xs font-medium text-muted-foreground">
-                                    Val: {Number(contract.value).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                                    {ts.valShort} {Number(contract.value).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                                 </span>
                             </div>
                             <CardTitle className="text-xl group-hover:text-primary transition-colors flex items-center justify-between">
@@ -138,19 +141,21 @@ export default async function ContractsPage({ searchParams }: { searchParams?: P
                             <div className="flex items-center justify-between text-sm">
                                 <div className="flex items-center gap-2 text-muted-foreground">
                                     <Calendar className="h-4 w-4" />
-                                    <span>Ends: {contract.validTo ? formatDate(new Date(contract.validTo)) : 'N/A'}</span>
+                                    <span>{ts.endsLabel} {contract.validTo ? formatDate(new Date(contract.validTo), language) : ts.notAvailableShort}</span>
                                 </div>
                                 <div className="flex flex-col items-end gap-1">
                                     {daysLeft !== null && (
                                         <span className={cn("text-[10px] font-bold",
                                             isExpired ? "text-red-600" : isExpiringSoon ? "text-amber-600" : "text-emerald-600"
                                         )}>
-                                            {isExpired ? `Expired ${Math.abs(daysLeft)}d ago` : `${daysLeft}d left`}
+                                            {isExpired
+                                                ? ts.expiredAgo.replace('{days}', String(Math.abs(daysLeft)))
+                                                : ts.daysLeft.replace('{days}', String(daysLeft))}
                                         </span>
                                     )}
                                     <div className="flex items-center gap-1 text-primary">
                                         <TrendingUp className="h-4 w-4" />
-                                        <span className="font-semibold text-xs">{contract.renewalStatus === 'auto_renew' ? 'Auto-renew' : 'Manual renew'}</span>
+                                        <span className="font-semibold text-xs">{contract.renewalStatus === 'auto_renew' ? ts.autoRenew : ts.manualRenew}</span>
                                     </div>
                                 </div>
                             </div>
@@ -169,9 +174,9 @@ export default async function ContractsPage({ searchParams }: { searchParams?: P
                 {contracts.length === 0 && (
                     <Card className="col-span-full py-12 border-dashed flex flex-col items-center justify-center text-center">
                         <FileText className="h-12 w-12 text-muted-foreground/50 mb-4" />
-                        <h3 className="text-lg font-medium">No contracts found</h3>
+                        <h3 className="text-lg font-medium">{ts.noContractsFound}</h3>
                         <p className="text-muted-foreground max-w-xs mx-auto">
-                            Get started by creating your first framework agreement or NDA with a supplier.
+                            {ts.noContractsFoundDesc}
                         </p>
                     </Card>
                 )}

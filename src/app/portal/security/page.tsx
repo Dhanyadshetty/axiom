@@ -5,9 +5,13 @@ import { redirect } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ShieldCheck, AlertCircle } from 'lucide-react';
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 
 export default function PortalSecurityStatus() {
     const { data: session, status } = useSession();
+    const { language } = useLanguage();
+    const tp = t(language, "portal");
 
     if (status === 'loading') {
         return (
@@ -30,8 +34,8 @@ export default function PortalSecurityStatus() {
     return (
         <div className="flex flex-col gap-6 p-6 max-w-2xl mx-auto">
             <div>
-                <h1 className="text-3xl font-bold tracking-tight">Portal Security</h1>
-                <p className="text-muted-foreground mt-2">Manage your account security settings</p>
+                <h1 className="text-3xl font-bold tracking-tight">{tp.securityTitle}</h1>
+                <p className="text-muted-foreground mt-2">{tp.securitySubtitle}</p>
             </div>
 
             <Card>
@@ -42,12 +46,12 @@ export default function PortalSecurityStatus() {
                                 <ShieldCheck className="h-5 w-5 text-primary" />
                             </div>
                             <div>
-                                <CardTitle>Two-Factor Authentication</CardTitle>
-                                <CardDescription>Secure your account with 2FA</CardDescription>
+                                <CardTitle>{tp.twoFactorTitle}</CardTitle>
+                                <CardDescription>{tp.twoFactorSubtitle}</CardDescription>
                             </div>
                         </div>
                         <Badge variant={isTwoFactorEnabled ? 'default' : 'secondary'}>
-                            {isTwoFactorEnabled ? 'Enabled' : 'Disabled'}
+                            {isTwoFactorEnabled ? tp.enabled : tp.disabled}
                         </Badge>
                     </div>
                 </CardHeader>
@@ -55,7 +59,7 @@ export default function PortalSecurityStatus() {
                     {isTwoFactorEnabled ? (
                         <div className="p-4 rounded-lg bg-green-500/5 border border-green-500/30">
                             <p className="text-sm text-green-700">
-                                Two-factor authentication is enabled on your account. Your portal data is protected with an additional security layer.
+                                {tp.twoFactorEnabledBody}
                             </p>
                         </div>
                     ) : (
@@ -63,14 +67,14 @@ export default function PortalSecurityStatus() {
                             <div className="flex gap-3">
                                 <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
                                 <p className="text-sm text-amber-700">
-                                    Two-factor authentication is required for your account. You will be prompted to set it up on your next login.
+                                    {tp.twoFactorRequiredBody}
                                 </p>
                             </div>
                         </div>
                     )}
-                    <p className="text-sm text-muted-foreground">
-                        Two-factor authentication adds an extra layer of security to your Axiom supplier portal account by requiring a code from your authenticator app in addition to your password.
-                    </p>
+                        <p className="text-sm text-muted-foreground">
+                            {tp.twoFactorExtraLayer}
+                        </p>
                 </CardContent>
             </Card>
         </div>

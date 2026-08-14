@@ -15,6 +15,8 @@ import { getGoodsReceipts } from "@/app/actions/goods-receipts";
 import { getContracts } from "@/app/actions/contracts";
 import { formatCurrencyByCode } from "@/lib/utils/currency";
 import { downloadCsvFile } from "@/lib/client/download";
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 
 type TxType = 'all' | 'orders' | 'goods_receipts' | 'invoices' | 'quantity_contracts';
 type TxRow = {
@@ -32,14 +34,16 @@ type ReceiptRow = { id?: string; inspectionStatus?: string | null; receivedAt?: 
 type ContractRow = { title?: string; value?: string; status?: string | null; createdAt?: Date | string | null };
 
 const TX_TYPES = [
-    { id: 'all' as TxType, label: 'All Transactions', icon: ArrowRightLeft },
-    { id: 'orders' as TxType, label: 'Orders', icon: ShoppingCart },
-    { id: 'goods_receipts' as TxType, label: 'Goods Receipts', icon: Truck },
-    { id: 'invoices' as TxType, label: 'Invoices', icon: FileText },
-    { id: 'quantity_contracts' as TxType, label: 'Quantity Contracts', icon: Handshake },
+    { id: 'all' as TxType, label: tc.allTransactions, icon: ArrowRightLeft },
+    { id: 'orders' as TxType, label: tc.txOrders, icon: ShoppingCart },
+    { id: 'goods_receipts' as TxType, label: tc.goodsReceipts, icon: Truck },
+    { id: 'invoices' as TxType, label: tc.invoiceStatus, icon: FileText },
+    { id: 'quantity_contracts' as TxType, label: tc.quantityContracts, icon: Handshake },
 ];
 
 export default function TransactionsPage() {
+    const { language } = useLanguage();
+    const tc = t(language, "misc");
     const [txType, setTxType] = useState<TxType>('all');
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -80,7 +84,7 @@ export default function TransactionsPage() {
         const headers = ['Type', 'Reference', 'Status', 'Amount', 'Date'];
         const csvRows = filtered.map(r => [r._type, r._ref || 'N/A', r._status || 'N/A', r._amount ? fmt(parseFloat(r._amount), r._currency) : 'N/A', r._date ? new Date(r._date).toLocaleDateString() : 'N/A']);
         downloadCsvFile(`axiom_transactions_${new Date().toISOString().split('T')[0]}.csv`, [headers, ...csvRows]);
-        toast.success("Transactions exported");
+            toast.success(tc.transactionsExported);
     };
 
     const typeColors: Record<string, string> = {
@@ -94,13 +98,13 @@ export default function TransactionsPage() {
         <div className="flex min-h-full flex-col bg-muted/40 p-4 lg:p-8 space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
-                        <ArrowRightLeft className="h-8 w-8 text-primary" /> Transactions
-                    </h1>
-                    <p className="text-muted-foreground mt-1 font-medium">Unified view of Orders, Goods Receipts, Invoices, and Contracts in their recorded currency.</p>
-                </div>
-                <div className="flex gap-2 items-center">
-                    <Button variant="outline" onClick={exportCSV} className="gap-2"><Download className="h-4 w-4" /> CSV</Button>
+                        <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
+                            <ArrowRightLeft className="h-8 w-8 text-primary" /> {tc.transactionsTitle}
+                        </h1>
+                        <p className="text-muted-foreground mt-1 font-medium">{tc.transactionsSubtitle}</p>
+                    </div>
+                    <div className="flex gap-2 items-center">
+                        <Button variant="outline" onClick={exportCSV} className="gap-2"><Download className="h-4 w-4" /> {tc.csv}</Button>
                 </div>
             </div>
 
@@ -122,21 +126,21 @@ export default function TransactionsPage() {
             {/* Filters */}
             <div className="flex flex-wrap gap-3 items-end">
                 <div className="space-y-1">
-                    <Label className="text-xs font-semibold uppercase text-muted-foreground">Search</Label>
-                    <Input placeholder="Search reference, type..." value={search} onChange={e => setSearch(e.target.value)} className="h-9 w-64" />
+                        <Label className="text-xs font-semibold uppercase text-muted-foreground">{tc.search}</Label>
+                        <Input placeholder={tc.searchReferenceType} value={search} onChange={e => setSearch(e.target.value)} className="h-9 w-64" />
                 </div>
                 <div className="space-y-1">
-                    <Label className="text-xs font-semibold uppercase text-muted-foreground">From Date</Label>
+                        <Label className="text-xs font-semibold uppercase text-muted-foreground">{tc.fromDate}</Label>
                     <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="h-9" />
                 </div>
                 <div className="space-y-1">
-                    <Label className="text-xs font-semibold uppercase text-muted-foreground">To Date</Label>
+                        <Label className="text-xs font-semibold uppercase text-muted-foreground">{tc.toDate}</Label>
                     <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="h-9" />
                 </div>
                 {(search || dateFrom || dateTo) && (
-                    <Button variant="ghost" size="sm" onClick={() => { setSearch(''); setDateFrom(''); setDateTo(''); }} className="gap-1 mb-0.5">Clear</Button>
+                    <Button variant="ghost" size="sm" onClick={() => { setSearch(''); setDateFrom(''); setDateTo(''); }} className="gap-1 mb-0.5">{tc.clear}</Button>
                 )}
-                <span className="text-sm text-muted-foreground mb-0.5">{filtered.length} records</span>
+                <span className="text-sm text-muted-foreground mb-0.5">{tc.records.replace("{n}", String(filtered.length))}</span>
             </div>
 
             <Card>
@@ -150,9 +154,9 @@ export default function TransactionsPage() {
                             <table className="w-full text-sm">
                                 <thead>
                                     <tr className="border-b bg-muted/50">
-                                        {['Type', 'Reference', 'Status', 'Amount', 'Date'].map(h => (
-                                            <th key={h} className="h-11 px-4 text-left align-middle font-semibold text-muted-foreground text-xs uppercase">{h}</th>
-                                        ))}
+                                    {['Type', 'Reference', 'Status', 'Amount', 'Date'].map(h => (
+                                        <th key={h} className="h-11 px-4 text-left align-middle font-semibold text-muted-foreground text-xs uppercase">{tc['th' + h]}</th>
+                                    ))}
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -174,7 +178,7 @@ export default function TransactionsPage() {
                                         </tr>
                                     ))}
                                     {filtered.length === 0 && (
-                                        <tr><td colSpan={5} className="p-12 text-center text-muted-foreground italic">No transactions found.</td></tr>
+                                        <tr><td colSpan={5} className="p-12 text-center text-muted-foreground italic">{tc.noTransactionsFound}</td></tr>
                                     )}
                                 </tbody>
                             </table>

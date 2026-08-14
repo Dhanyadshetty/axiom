@@ -24,6 +24,8 @@ import { ProcurementCommandBoard } from "@/components/dashboard/procurement-comm
 import { getAllTasks } from "@/app/actions/workflow-tasks";
 import { getAllTickets } from "@/app/actions/support";
 import { RouteLoadingSkeleton } from "@/components/shared/route-loading-skeleton";
+import { DashboardHeader } from "@/components/dashboard/dashboard-header";
+import { getActiveLanguage, t } from "@/lib/i18n";
 
 export const dynamic = 'force-dynamic'
 
@@ -46,6 +48,8 @@ async function DashboardContent({
 }: {
   session: Session | null;
 }) {
+  const language = await getActiveLanguage();
+  const td = t(language, "dashboard");
   const currentUser = session?.user as SessionUser | undefined;
   const userRole = currentUser?.role;
   const isAdmin = userRole === 'admin';
@@ -99,11 +103,11 @@ async function DashboardContent({
       : stats.partCount > 0
         ? `On-hand units across ${stats.stockedSkuCount} stocked SKUs`
         : "Parts catalog has not been populated yet.";
-  const dashboardTitle = isAdmin ? "Admin Command Center" : "Operations Workspace";
-  const sessionBadge = isAdmin ? "Admin Console Session" : "Internal User Session";
+  const dashboardTitle = isAdmin ? td.adminCommandCenter : td.operationsWorkspace;
+  const sessionBadge = isAdmin ? td.adminSession : td.internalSession;
   const dashboardSubtitle = isAdmin
-    ? "Platform intelligence, approvals, and operational control"
-    : "Operational sourcing and requisition workspace";
+    ? td.platformIntelligence
+    : td.operationalWorkspace;
   const renderedAt = new Date().toISOString();
 
   const roleBadgeClass = isAdmin
@@ -113,29 +117,29 @@ async function DashboardContent({
     {
       key: "support" as const,
       href: "/admin/support",
-      title: "Open Helpdesk",
-      subtitle: "Support queue and escalations",
+      title: td.openHelpdesk,
+      subtitle: td.supportQueueEscalations,
       countLabel: `${supportTickets.filter((ticket) => ticket.status !== 'closed').length} active`,
     },
     {
       key: "suppliers" as const,
       href: "/suppliers",
-      title: "All Suppliers",
-      subtitle: "Classification, onboarding, and compliance",
+      title: td.allSuppliers,
+      subtitle: td.classificationOnboardingCompliance,
       countLabel: `${stats.supplierCount} tracked`,
     },
     {
       key: "findings" as const,
       href: "/admin/risk",
-      title: "Open Findings",
-      subtitle: "Risk watchlist and intervention routes",
+      title: td.openFindings,
+      subtitle: td.riskWatchlist,
       countLabel: `${riskySuppliers.length} critical`,
     },
     {
       key: "tasks" as const,
       href: "/admin/tasks",
-      title: "All Tasks",
-      subtitle: "Workflow inbox and approvals",
+      title: td.allTasks,
+      subtitle: td.workflowInbox,
       countLabel: `${openTasks.length} open`,
     },
   ] : [];
@@ -143,18 +147,14 @@ async function DashboardContent({
   return (
     <div className="p-4 lg:p-10 space-y-8 bg-background min-h-full">
       <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-4xl font-black tracking-tighter text-foreground uppercase leading-none">{dashboardTitle}</h1>
-            {userRole && (
-              <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border ${roleBadgeClass}`}>
-                {sessionBadge}
-              </span>
-            )}
-          </div>
-          <p className="text-sm text-muted-foreground font-bold uppercase tracking-widest mt-1">{dashboardSubtitle}</p>
-        </div>
-        <div className="flex items-center space-x-3">
+        <DashboardHeader 
+          userName={session?.user?.name || "User"}
+          dashboardTitle={dashboardTitle}
+          dashboardSubtitle={dashboardSubtitle}
+          sessionBadge={sessionBadge}
+          roleBadgeClass={roleBadgeClass}
+        />
+        <div className="flex items-center space-x-3 self-end mb-6">
           <AutoRefresh />
           {isAdmin
             ? canLaunchOrders
@@ -187,23 +187,23 @@ async function DashboardContent({
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="glass-card border-l-4 border-l-emerald-600 shadow-lg hover:shadow-emerald-500/20 transition-all h-full accent-shimmer">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-tight">Purchase Requests</CardTitle>
+            <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-tight">{td.purchaseRequests}</CardTitle>
             <div className="p-2 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg">
               <CreditCard className="h-4 w-4 text-emerald-600" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-black text-foreground tracking-tighter">Request</div>
+            <div className="text-3xl font-black text-foreground tracking-tighter">{td.purchaseRequests}</div>
             <div className="flex items-center gap-1 mt-2">
               <Badge variant="outline" className="text-[10px] font-bold bg-muted/30 text-muted-foreground border-border px-1.5 py-0">
-                Internal workflow
+                {td.internalWorkflow}
               </Badge>
-              <span className="text-[10px] text-muted-foreground font-medium uppercase">Submit for approval</span>
+              <span className="text-[10px] text-muted-foreground font-medium uppercase">{td.submitForApproval}</span>
             </div>
             <div className="flex gap-2 mt-3 pt-3 border-t border-border">
               <Link href="/sourcing/requisitions" className="flex-1">
-                <Button size="sm" variant="outline" className="w-full h-7 text-[10px] font-bold uppercase">
-                  View Requisitions
+                  <Button size="sm" variant="outline" className="w-full h-7 text-[10px] font-bold uppercase">
+                  {td.viewRequisitions}
                 </Button>
               </Link>
               <RequisitionDialog />
@@ -214,7 +214,7 @@ async function DashboardContent({
         {/* Active Suppliers */}
         <Card className="glass-card border-l-4 border-l-emerald-500 shadow-lg hover:shadow-emerald-500/20 transition-all h-full">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-tight">Verified Network</CardTitle>
+            <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-tight">{td.verifiedNetwork}</CardTitle>
             <div className="p-2 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg">
               <Users className="h-4 w-4 text-emerald-600" />
             </div>
@@ -223,18 +223,18 @@ async function DashboardContent({
             <div className="text-3xl font-black text-foreground tracking-tighter">{stats.supplierCount}</div>
             <p className="text-[10px] text-muted-foreground mt-2 font-medium uppercase flex items-center gap-1">
               <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-              Active global suppliers
-            </p>
+               {td.activeGlobalSuppliers}
+             </p>
             <div className="flex gap-2 mt-3 pt-3 border-t border-border">
               <Link href="/suppliers" className="flex-1">
-                <Button size="sm" variant="outline" className="w-full h-7 text-[10px] font-bold uppercase">
-                  View Suppliers
+                 <Button size="sm" variant="outline" className="w-full h-7 text-[10px] font-bold uppercase">
+                  {td.viewSuppliers}
                 </Button>
               </Link>
               {canEditSuppliers && (
                 <Link href="/suppliers?action=new">
                   <Button size="sm" className="h-7 text-[10px] font-bold uppercase bg-emerald-500 hover:bg-emerald-600 text-white">
-                    Add
+                    {td.add}
                   </Button>
                 </Link>
               )}
@@ -245,23 +245,23 @@ async function DashboardContent({
         {/* Pending Orders */}
         <Card className="glass-card border-l-4 border-l-sky-500 shadow-lg hover:shadow-sky-500/20 transition-all h-full">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-tight">Active Funnel</CardTitle>
+            <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-tight">{td.activeFunnel}</CardTitle>
             <div className="p-2 bg-sky-50 dark:bg-sky-950/30 rounded-lg">
               <CreditCard className="h-4 w-4 text-sky-600" />
             </div>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-black text-foreground tracking-tighter">{stats.pendingCount}</div>
-            <p className="text-[10px] text-muted-foreground mt-2 font-medium uppercase font-mono">{stats.fulfilledCount} Fulfilled · {stats.pendingCount} Active</p>
+            <p className="text-[10px] text-muted-foreground mt-2 font-medium uppercase font-mono">{stats.fulfilledCount} {td.fulfilled} · {stats.pendingCount} {td.active}</p>
             <div className="flex gap-2 mt-3 pt-3 border-t border-border">
               <Link href="/sourcing/orders" className="flex-1">
                 <Button size="sm" variant="outline" className="w-full h-7 text-[10px] font-bold uppercase">
-                  View Orders
+                  {td.viewOrders}
                 </Button>
               </Link>
               <Link href="/sourcing/orders">
                 <Button size="sm" className="h-7 text-[10px] font-bold uppercase bg-sky-500 hover:bg-sky-600 text-white">
-                  Track
+                  {td.track}
                 </Button>
               </Link>
             </div>
@@ -271,7 +271,7 @@ async function DashboardContent({
         {/* Live Inventory */}
         <Card className="glass-card border-l-4 border-l-amber-500 shadow-lg hover:shadow-amber-500/20 transition-all h-full">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-tight">Warehouse Load</CardTitle>
+            <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-tight">{td.warehouseLoad}</CardTitle>
             <div className="p-2 bg-amber-50 dark:bg-amber-950/30 rounded-lg">
               <Boxes className="h-4 w-4 text-amber-600" />
             </div>
@@ -281,13 +281,13 @@ async function DashboardContent({
             <p className="text-[10px] text-muted-foreground mt-2 font-medium uppercase">{warehouseSubtitle}</p>
             <div className="flex gap-2 mt-3 pt-3 border-t border-border">
               <Link href="/sourcing/parts" className="flex-1">
-                <Button size="sm" variant="outline" className="w-full h-7 text-[10px] font-bold uppercase">
-                  Inventory
+                 <Button size="sm" variant="outline" className="w-full h-7 text-[10px] font-bold uppercase">
+                  {td.inventoryLabel}
                 </Button>
               </Link>
               <Link href="/sourcing/parts?filter=critical">
-                <Button size="sm" className="h-7 text-[10px] font-bold uppercase bg-amber-500 hover:bg-amber-600 text-white">
-                  Reorder
+                 <Button size="sm" className="h-7 text-[10px] font-bold uppercase bg-amber-500 hover:bg-amber-600 text-white">
+                  {td.reorder}
                 </Button>
               </Link>
             </div>
@@ -304,50 +304,50 @@ async function DashboardContent({
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge variant="outline" className="border-red-200 bg-red-50 text-red-700">
                     <ShieldAlert className="mr-1 h-3.5 w-3.5" />
-                    Critical Operations Watch
-                  </Badge>
-                  <Badge variant="outline" className="border-white/80 bg-white/90 text-slate-700">
-                    {riskySuppliers.length} supplier alert{riskySuppliers.length === 1 ? '' : 's'}
-                  </Badge>
-                </div>
-                <div>
-                  <h2 className="text-3xl font-black tracking-tight text-slate-950">Impact needs attention now.</h2>
-                  <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700">
-                    {topRiskSupplier.name} is currently at risk {topRiskSupplier.riskScore}. Open the risk route, scenario impact, or AI recovery flow directly from the command center.
-                  </p>
-                </div>
-              </div>
+                     {td.criticalOpsWatch}
+                    </Badge>
+                   <Badge variant="outline" className="border-white/80 bg-white/90 text-slate-700">
+                     {riskySuppliers.length} {riskySuppliers.length === 1 ? td.supplierAlert : td.supplierAlerts}
+                   </Badge>
+                 </div>
+                 <div>
+                   <h2 className="text-3xl font-black tracking-tight text-slate-950">{td.impactNeedsAttention}</h2>
+                   <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700">
+                     {topRiskSupplier.name} {td.riskRouteCopy} {topRiskSupplier.riskScore}.
+                   </p>
+                 </div>
+               </div>
 
-                <div className="grid gap-3">
-                  <Link href="/admin/risk">
-                  <Button className="w-full justify-between rounded-2xl bg-slate-900 px-5 py-6 text-left text-sm font-bold text-white hover:bg-slate-800">
-                    Open Risk Intelligence
-                    <ArrowUpRight className="h-4 w-4" />
-                  </Button>
-                </Link>
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  <Link href="/sourcing/exceptions">
-                    <Button variant="outline" className="w-full justify-between rounded-2xl px-4 py-5 text-left font-semibold">
-                      Exception Queue
-                      <ShieldAlert className="h-4 w-4" />
+                 <div className="grid gap-3">
+                   <Link href="/admin/risk">
+                      <Button className="w-full justify-between rounded-2xl bg-slate-900 px-5 py-6 text-left text-sm font-bold text-white hover:bg-slate-800">
+                      {td.openRiskIntelligence}
+                      <ArrowUpRight className="h-4 w-4" />
                     </Button>
-                  </Link>
-                  {canOpenScenarioRoutes ? (
-                    <Link href="/admin/scenarios">
-                      <Button variant="outline" className="w-full justify-between rounded-2xl px-4 py-5 text-left font-semibold">
-                        Scenario Lab
-                        <TrendingUp className="h-4 w-4" />
-                      </Button>
-                    </Link>
-                  ) : null}
-                  {canOpenAIFleet ? (
-                    <Link href="/admin/agents">
-                      <Button variant="outline" className="w-full justify-between rounded-2xl px-4 py-5 text-left font-semibold">
-                        AI Fleet
-                        <Sparkles className="h-4 w-4" />
-                      </Button>
-                    </Link>
-                  ) : null}
+                 </Link>
+                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                   <Link href="/sourcing/exceptions">
+                     <Button variant="outline" className="w-full justify-between rounded-2xl px-4 py-5 text-left font-semibold">
+                       {td.exceptionQueue}
+                       <ShieldAlert className="h-4 w-4" />
+                     </Button>
+                   </Link>
+                   {canOpenScenarioRoutes ? (
+                     <Link href="/admin/scenarios">
+                       <Button variant="outline" className="w-full justify-between rounded-2xl px-4 py-5 text-left font-semibold">
+                         {td.scenarioLab}
+                         <TrendingUp className="h-4 w-4" />
+                       </Button>
+                     </Link>
+                   ) : null}
+                   {canOpenAIFleet ? (
+                     <Link href="/admin/agents">
+                       <Button variant="outline" className="w-full justify-between rounded-2xl px-4 py-5 text-left font-semibold">
+                         {td.aiFleet}
+                         <Sparkles className="h-4 w-4" />
+                       </Button>
+                     </Link>
+                   ) : null}
                 </div>
               </div>
             </div>
@@ -358,26 +358,26 @@ async function DashboardContent({
       {isAdmin && (
         <Card className="border-slate-200 shadow-sm">
           <CardHeader className="pb-4">
-            <CardTitle className="text-lg font-black uppercase tracking-[0.16em] text-slate-900">Global Operating Controls</CardTitle>
+            <CardTitle className="text-lg font-black uppercase tracking-[0.16em] text-slate-900">{td.globalOperatingControls}</CardTitle>
             <CardDescription>
-              Multi-currency finance, regional compliance context, and guarded data movement are part of the operating layer, not an afterthought.
+              {td.controlsIntro}
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
             <div className="flex min-h-[220px] flex-col rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
               <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
                 <Landmark className="h-4 w-4 text-emerald-600" />
-                Multi-currency spend
+                {td.multiCurrencySpend}
               </div>
               <p className="mt-3 text-sm leading-6 text-slate-600">
-                Original invoice currency stays intact while user-local FX views and reporting-book rates stay in sync.
+                {td.multiCurrencyCopy}
               </p>
               <p className="mt-3 text-sm font-semibold text-slate-900">
-                {operationalSignals?.fxRates.title || "Finance settings review required"}
+                {operationalSignals?.fxRates.title || td.financeSettingsReview}
               </p>
               <div className="mt-auto border-t border-slate-200 pt-3">
                 <Link href="/admin/settings" className="inline-flex items-center text-sm font-semibold text-slate-900 hover:text-primary">
-                  Open finance console
+                  {td.openFinanceConsole}
                   <ArrowUpRight className="ml-1 h-4 w-4" />
                 </Link>
               </div>
@@ -385,17 +385,17 @@ async function DashboardContent({
             <div className="flex min-h-[220px] flex-col rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
               <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
                 <ShieldCheck className="h-4 w-4 text-blue-600" />
-                Regional compliance
+                {td.regionalCompliance}
               </div>
               <p className="mt-3 text-sm leading-6 text-slate-600">
-                Policy packs, region tags, evidence coverage, and approval controls stay attached to supplier and contract records.
+                {td.regionalComplianceCopy}
               </p>
               <p className="mt-3 text-sm font-semibold text-slate-900">
-                {stats.supplierCount} supplier records can carry compliance scope and evidence.
+                {stats.supplierCount} {td.supplierRecordsCompliance}
               </p>
               <div className="mt-auto border-t border-slate-200 pt-3">
                 <Link href="/admin/compliance" className="inline-flex items-center text-sm font-semibold text-slate-900 hover:text-primary">
-                  Open compliance routes
+                  {td.openComplianceRoutes}
                   <ArrowUpRight className="ml-1 h-4 w-4" />
                 </Link>
               </div>
@@ -403,17 +403,17 @@ async function DashboardContent({
             <div className="flex min-h-[220px] flex-col rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
               <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
                 <CreditCard className="h-4 w-4 text-sky-600" />
-                Deterministic matching
+                {td.deterministicMatching}
               </div>
               <p className="mt-3 text-sm leading-6 text-slate-600">
-                Payment release stays tied to PO, receipt, QC, and invoice math before any downstream approval.
+                {td.deterministicMatchingCopy}
               </p>
               <p className="mt-3 text-sm font-semibold text-slate-900">
-                {operationalSignals?.exceptions.financeHolds || 0} finance hold{operationalSignals?.exceptions.financeHolds === 1 ? "" : "s"} currently need review.
+                {operationalSignals?.exceptions.financeHolds || 0} {td.financeHoldsReview}
               </p>
               <div className="mt-auto border-t border-slate-200 pt-3">
                 <Link href="/admin/financial-matching" className="inline-flex items-center text-sm font-semibold text-slate-900 hover:text-primary">
-                  Open matching queue
+                  {td.openMatchingQueue}
                   <ArrowUpRight className="ml-1 h-4 w-4" />
                 </Link>
               </div>
@@ -421,17 +421,17 @@ async function DashboardContent({
             <div className="flex min-h-[220px] flex-col rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
               <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
                 <Database className="h-4 w-4 text-amber-600" />
-                Guarded imports
+                {td.guardedImports}
               </div>
               <p className="mt-3 text-sm leading-6 text-slate-600">
-                Admin-only dry runs, schema validation, referential checks, and post-import resync protect the operating dataset.
+                {td.guardedImportsCopy}
               </p>
               <p className="mt-3 text-sm font-semibold text-slate-900">
-                Use dry-run first, then commit only the rows that clear validation.
+                {td.useDryRun}
               </p>
               <div className="mt-auto border-t border-slate-200 pt-3">
                 <Link href="/admin/import" className="inline-flex items-center text-sm font-semibold text-slate-900 hover:text-primary">
-                  Open controlled import
+                  {td.openControlledImport}
                   <ArrowUpRight className="ml-1 h-4 w-4" />
                 </Link>
               </div>
@@ -439,23 +439,23 @@ async function DashboardContent({
             <div className="flex min-h-[220px] flex-col rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
               <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
                 <ShieldAlert className="h-4 w-4 text-red-600" />
-                Operational truth
+                {td.operationalTruth}
               </div>
               <p className="mt-3 text-sm font-semibold text-slate-900">
-                {operationalSignals?.telemetry.title || "Telemetry evidence pending"}
+                {operationalSignals?.telemetry.title || td.telemetryPending}
               </p>
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                {operationalSignals?.telemetry.detail || "Telemetry freshness is not available yet."}
+                {operationalSignals?.telemetry.detail || td.telemetryNotAvailable}
               </p>
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                {operationalSignals?.fxRates.detail || "FX reporting-book freshness is not available yet."}
+                {operationalSignals?.fxRates.detail || td.fxNotAvailable}
               </p>
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                {operationalSignals?.aiAssist.detail || "AI dependency posture is not available yet."}
+                {operationalSignals?.aiAssist.detail || td.aiNotAvailable}
               </p>
               <div className="mt-auto border-t border-slate-200 pt-3">
                 <Link href="/sourcing/exceptions" className="inline-flex items-center text-sm font-semibold text-slate-900 hover:text-primary">
-                  {operationalSignals?.exceptions.title || "Open exception route"}
+                  {operationalSignals?.exceptions.title || td.openExceptionRoute}
                   <ArrowUpRight className="ml-1 h-4 w-4" />
                 </Link>
               </div>
@@ -471,43 +471,43 @@ async function DashboardContent({
               <div className="space-y-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
-                    <Sparkles className="mr-1 h-3.5 w-3.5" />
-                    AI Fleet
-                  </Badge>
-                  <Badge variant="outline" className="border-slate-200 bg-white/80 text-slate-600">
-                    Shared dispatcher and recovery routes
-                  </Badge>
-                </div>
-                <div>
-                  <h2 className="text-3xl font-black tracking-tight text-slate-950">AI execution and route recovery live in the main workspace.</h2>
-                  <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-                    Launch agent runs, coordinated recovery bundles, and linked follow-up routes without leaving the dashboard.
-                  </p>
-                </div>
-              </div>
+                     <Sparkles className="mr-1 h-3.5 w-3.5" />
+                     {td.aiFleet}
+                    </Badge>
+                   <Badge variant="outline" className="border-slate-200 bg-white/80 text-slate-600">
+                     {td.aiFleet}
+                   </Badge>
+                 </div>
+                 <div>
+                   <h2 className="text-3xl font-black tracking-tight text-slate-950">{td.aiExecutionLive}</h2>
+                   <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+                     {td.aiExecutionCopy}
+                   </p>
+                 </div>
+               </div>
 
-              <div className="grid gap-3">
-                <Link href="/admin/agents">
-                  <Button className="w-full justify-between rounded-2xl bg-slate-950 px-5 py-6 text-left text-sm font-bold hover:bg-black">
-                    Open AI Fleet
-                    <ArrowUpRight className="h-4 w-4" />
-                  </Button>
-                </Link>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <Link href="/admin/fraud-alerts">
-                    <Button variant="outline" className="w-full justify-between rounded-2xl px-4 py-5 text-left font-semibold">
-                      Risk Console
-                      <ShieldCheck className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                  <Link href="/admin/scenarios">
-                    <Button variant="outline" className="w-full justify-between rounded-2xl px-4 py-5 text-left font-semibold">
-                      Scenario Lab
-                      <TrendingUp className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
-              </div>
+               <div className="grid gap-3">
+                 <Link href="/admin/agents">
+                   <Button className="w-full justify-between rounded-2xl bg-slate-950 px-5 py-6 text-left text-sm font-bold hover:bg-black">
+                     {td.openAIFleet}
+                     <ArrowUpRight className="h-4 w-4" />
+                   </Button>
+                 </Link>
+                 <div className="grid gap-3 sm:grid-cols-2">
+                   <Link href="/admin/fraud-alerts">
+                     <Button variant="outline" className="w-full justify-between rounded-2xl px-4 py-5 text-left font-semibold">
+                       {td.riskConsole}
+                       <ShieldCheck className="h-4 w-4" />
+                     </Button>
+                   </Link>
+                   <Link href="/admin/scenarios">
+                     <Button variant="outline" className="w-full justify-between rounded-2xl px-4 py-5 text-left font-semibold">
+                       {td.scenarioLab}
+                       <TrendingUp className="h-4 w-4" />
+                     </Button>
+                   </Link>
+                 </div>
+               </div>
             </div>
           </CardContent>
         </Card>
@@ -520,20 +520,20 @@ async function DashboardContent({
           ) : (
             <Card className="shadow-lg border-accent/50 overflow-hidden">
               <CardHeader className="border-b bg-muted/20">
-                <CardTitle className="text-lg">Operational Workspace</CardTitle>
-                <CardDescription>Use requisitions for internal purchasing and the shared support center for help.</CardDescription>
+                 <CardTitle className="text-lg">{td.operationalWorkspaceTitle}</CardTitle>
+                <CardDescription>{td.operationalWorkspaceCopy}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 pt-6">
                 <div className="flex flex-col gap-3 sm:flex-row">
                   <Link href="/sourcing/requisitions" className="flex-1">
-                    <Button variant="outline" className="w-full">Open Requisitions</Button>
+                    <Button variant="outline" className="w-full">{td.openRequisitions}</Button>
                   </Link>
                   <Link href="/support" className="flex-1">
-                    <Button className="w-full">Help & Support</Button>
+                    <Button className="w-full">{td.helpSupport}</Button>
                   </Link>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Enterprise spend analytics, telemetry, and supplier risk monitoring remain limited to admin sessions.
+                  {td.enterpriseSpendLimited}
                 </p>
               </CardContent>
             </Card>
@@ -543,13 +543,13 @@ async function DashboardContent({
           {isAdmin ? <CommunicationHub leads={leads} /> : null}
           {isAdmin ? <Card className="shadow-lg border-accent/50 overflow-hidden">
             <CardHeader className="border-b bg-muted/20">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Activity className="h-5 w-5 text-primary" />
-                Recent Procurement
-              </CardTitle>
-              <CardDescription>
-                Latest purchase orders and status updates.
-              </CardDescription>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Activity className="h-5 w-5 text-primary" />
+                  {td.recentProcurement}
+                </CardTitle>
+                <CardDescription>
+                  {td.recentProcurementCopy}
+                </CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
               <RecentProcurements orders={recentOrders} />
@@ -559,13 +559,13 @@ async function DashboardContent({
           {isAdmin && (
             <Card className="shadow-lg border-destructive/20 overflow-hidden">
               <CardHeader className="border-b bg-destructive/10 border-destructive/20">
-                <CardTitle className="flex items-center gap-2 text-lg text-destructive font-black uppercase tracking-widest">
-                  <ShieldAlert className="h-5 w-5 animate-pulse" />
-                  Risk Intelligence
-                </CardTitle>
-                <CardDescription className="text-destructive/70 font-medium">
-                  High-priority interventions required.
-                </CardDescription>
+                  <CardTitle className="flex items-center gap-2 text-lg text-destructive font-black uppercase tracking-widest">
+                    <ShieldAlert className="h-5 w-5 animate-pulse" />
+                    {td.riskIntelligence}
+                  </CardTitle>
+                  <CardDescription className="text-destructive/70 font-medium">
+                    {td.highPriorityInterventions}
+                  </CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
                 <div className="space-y-3">
@@ -574,13 +574,13 @@ async function DashboardContent({
                       <div className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-slate-900 border border-destructive/10 group-hover:border-destructive/30 group-hover:shadow-md transition-all">
                         <div>
                           <p className="font-bold text-foreground group-hover:text-destructive transition-colors">{s.name}</p>
-                          <p className="text-[10px] font-mono text-muted-foreground uppercase">Intervention needed</p>
+                           <p className="text-[10px] font-mono text-muted-foreground uppercase">{td.interventionNeeded}</p>
                         </div>
                         <div className="text-right">
                           <Badge variant="destructive" className="font-black text-[12px] px-2 py-0.5">
                             {s.riskScore}
                           </Badge>
-                          <p className="text-[8px] text-muted-foreground font-black uppercase tracking-tighter mt-1">Criticality</p>
+                           <p className="text-[8px] text-muted-foreground font-black uppercase tracking-tighter mt-1">{td.criticality}</p>
                         </div>
                       </div>
                     </Link>
@@ -589,18 +589,18 @@ async function DashboardContent({
                       <div className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-slate-900 border border-amber-200/60 group-hover:border-amber-400 group-hover:shadow-md transition-all">
                         <div>
                           <p className="font-bold text-foreground group-hover:text-amber-700 transition-colors">{supplier.name}</p>
-                          <p className="text-[10px] font-mono text-muted-foreground uppercase">Warning range</p>
+                           <p className="text-[10px] font-mono text-muted-foreground uppercase">{td.warningRange}</p>
                         </div>
                         <div className="text-right">
                           <Badge className="bg-amber-500 text-white hover:bg-amber-500 font-black text-[12px] px-2 py-0.5">
                             {supplier.riskScore}
                           </Badge>
-                          <p className="text-[8px] text-muted-foreground font-black uppercase tracking-tighter mt-1">Monitor closely</p>
+                           <p className="text-[8px] text-muted-foreground font-black uppercase tracking-tighter mt-1">{td.monitorClosely}</p>
                         </div>
                       </div>
                     </Link>
                   )) : (
-                    <p className="text-sm text-muted-foreground text-center py-4">All suppliers within safe risk limits.</p>
+                     <p className="text-sm text-muted-foreground text-center py-4">{td.allSafe}</p>
                   )}
                 </div>
               </CardContent>

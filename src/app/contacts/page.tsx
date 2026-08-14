@@ -12,6 +12,8 @@ import { Users, Phone, Globe, Plus, Search, Download, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getContacts, createContact, updateContactStatus } from "@/app/actions/contacts";
 import { downloadCsvFile } from "@/lib/client/download";
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 
 type ContactRecord = Awaited<ReturnType<typeof getContacts>>[number];
 type ContactFormState = {
@@ -29,6 +31,8 @@ type ContactFormState = {
 };
 
 export default function ContactsPage() {
+    const { language } = useLanguage();
+    const tc = t(language, "misc");
     const [contacts, setContacts] = useState<ContactRecord[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -63,9 +67,9 @@ export default function ContactsPage() {
             setContacts(data);
             setShowAddForm(false);
             setForm({ name: '', email: '', phone: '', company: '', jobTitle: '', region: '', country: '', continent: 'Europe', currency: 'EUR', notes: '', status: 'active' });
-            toast.success("Contact added successfully");
+            toast.success(tc.contactAdded);
         } else {
-            toast.error(result.error || "Failed to add contact");
+            toast.error(result.error || tc.contactAddFailed);
         }
         setSaving(false);
     };
@@ -74,7 +78,7 @@ export default function ContactsPage() {
         const result = await updateContactStatus(id, status);
         if (result.success) {
             setContacts(prev => prev.map(c => c.id === id ? { ...c, status } : c));
-            toast.success("Status updated");
+            toast.success(tc.statusUpdated);
         }
     };
 
@@ -82,7 +86,7 @@ export default function ContactsPage() {
         const headers = ['Name', 'Email', 'Phone', 'Company', 'Job Title', 'Country', 'Region', 'Continent', 'Currency', 'Status'];
         const rows = filtered.map(c => [c.name, c.email, c.phone || '', c.company || '', c.jobTitle || '', c.country || '', c.region || '', c.continent || '', c.currency || '', c.status]);
         downloadCsvFile(`axiom_contacts_${new Date().toISOString().split('T')[0]}.csv`, [headers, ...rows]);
-        toast.success("Contacts exported");
+        toast.success(tc.exportCsv + " ✓");
     };
 
     const statusColors: Record<string, string> = {
@@ -92,27 +96,27 @@ export default function ContactsPage() {
     };
 
     const formFields: Array<{ key: keyof ContactFormState; label: string; required?: boolean; type?: string }> = [
-        { key: 'name', label: 'Full Name', required: true },
-        { key: 'email', label: 'Email Address', required: true, type: 'email' },
-        { key: 'phone', label: 'Phone Number' },
-        { key: 'company', label: 'Company / Supplier' },
-        { key: 'jobTitle', label: 'Job Title' },
-        { key: 'country', label: 'Country' },
-        { key: 'region', label: 'Region / Zone' },
+        { key: 'name', label: tc.fullName, required: true },
+        { key: 'email', label: tc.email, required: true, type: 'email' },
+        { key: 'phone', label: tc.phoneNumber },
+        { key: 'company', label: tc.companySupplier },
+        { key: 'jobTitle', label: tc.jobTitle },
+        { key: 'country', label: tc.countryScope },
+        { key: 'region', label: tc.regionScope },
     ];
 
     return (
         <div className="flex min-h-full flex-col bg-muted/40 p-4 lg:p-8 space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
-                        <Users className="h-8 w-8 text-primary" /> Contacts
-                    </h1>
-                    <p className="text-muted-foreground mt-1 font-medium">Manage supplier and partner contact directory.</p>
-                </div>
-                <div className="flex gap-2">
-                    <Button variant="outline" onClick={exportCSV} className="gap-2"><Download className="h-4 w-4" /> Export CSV</Button>
-                    <Button onClick={() => setShowAddForm(true)} className="gap-2"><Plus className="h-4 w-4" /> Add Contact</Button>
+                        <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
+                            <Users className="h-8 w-8 text-primary" /> {tc.contactsTitle}
+                        </h1>
+                        <p className="text-muted-foreground mt-1 font-medium">{tc.contactsSubtitle}</p>
+                    </div>
+                    <div className="flex gap-2">
+                        <Button variant="outline" onClick={exportCSV} className="gap-2"><Download className="h-4 w-4" /> {tc.exportCsv}</Button>
+                        <Button onClick={() => setShowAddForm(true)} className="gap-2"><Plus className="h-4 w-4" /> {tc.addContact}</Button>
                 </div>
             </div>
 
@@ -121,7 +125,7 @@ export default function ContactsPage() {
                 <Card className="border-primary/30">
                     <CardHeader className="pb-3">
                         <div className="flex items-center justify-between">
-                            <CardTitle className="text-base">New Contact</CardTitle>
+                            <CardTitle className="text-base">{tc.newContact}</CardTitle>
                             <Button variant="ghost" size="sm" onClick={() => setShowAddForm(false)} className="h-7 w-7 p-0"><X className="h-4 w-4" /></Button>
                         </div>
                     </CardHeader>
@@ -136,14 +140,14 @@ export default function ContactsPage() {
                                     </div>
                                 ))}
                                 <div className="space-y-1">
-                                    <Label className="text-xs font-semibold">Continent</Label>
+                                    <Label className="text-xs font-semibold">{tc.continent}</Label>
                                     <select value={form.continent} onChange={e => setForm(f => ({ ...f, continent: e.target.value }))}
                                         className="h-9 w-full rounded-md border bg-background px-3 text-sm">
                                         {['Europe', 'Asia', 'Americas', 'Africa', 'Oceania'].map(c => <option key={c}>{c}</option>)}
                                     </select>
                                 </div>
                                 <div className="space-y-1">
-                                    <Label className="text-xs font-semibold">Currency</Label>
+                                    <Label className="text-xs font-semibold">{tc.currency}</Label>
                                     <select value={form.currency} onChange={e => setForm(f => ({ ...f, currency: e.target.value }))}
                                         className="h-9 w-full rounded-md border bg-background px-3 text-sm">
                                         <option value="EUR">EUR (€)</option>
@@ -154,13 +158,13 @@ export default function ContactsPage() {
                                 </div>
                             </div>
                             <div className="space-y-1 mb-4">
-                                <Label className="text-xs font-semibold">Notes</Label>
+                                <Label className="text-xs font-semibold">{tc.notes}</Label>
                                 <textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
                                     className="w-full rounded-md border bg-background px-3 py-2 text-sm min-h-[60px] focus:outline-none focus:ring-2 focus:ring-primary" />
                             </div>
                             <div className="flex gap-2">
-                                <Button type="submit" disabled={saving}>{saving ? "Saving..." : "Save Contact"}</Button>
-                                <Button type="button" variant="outline" onClick={() => setShowAddForm(false)}>Cancel</Button>
+                                <Button type="submit" disabled={saving}>{saving ? tc.applying : tc.saveContact}</Button>
+                                <Button type="button" variant="outline" onClick={() => setShowAddForm(false)}>{tc.cancel}</Button>
                             </div>
                         </form>
                     </CardContent>
@@ -171,19 +175,19 @@ export default function ContactsPage() {
             <div className="flex flex-wrap gap-3 items-center">
                 <div className="relative flex-1 min-w-[200px] max-w-sm">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search by name, email, company..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+                    <Input placeholder={tc.searchNameEmailCompany} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
                 </div>
                 <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="h-9 rounded-md border bg-background px-3 text-sm">
-                    <option value="all">All Statuses</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                    <option value="on_hold">On Hold</option>
+                    <option value="all">{tc.allStatuses}</option>
+                    <option value="active">{tc.activeStatus}</option>
+                    <option value="inactive">{tc.inactiveStatus}</option>
+                    <option value="on_hold">{tc.onHold}</option>
                 </select>
                 <select value={filterContinent} onChange={e => setFilterContinent(e.target.value)} className="h-9 rounded-md border bg-background px-3 text-sm">
-                    <option value="all">All Continents</option>
+                    <option value="all">{tc.allContinents}</option>
                     {['Europe', 'Asia', 'Americas', 'Africa', 'Oceania'].map(c => <option key={c}>{c}</option>)}
                 </select>
-                <span className="text-sm text-muted-foreground">{filtered.length} contacts</span>
+                <span className="text-sm text-muted-foreground">{tc.contactsCount.replace("{n}", String(filtered.length))}</span>
             </div>
 
             {/* Contacts Grid */}
@@ -237,7 +241,7 @@ export default function ContactsPage() {
                     ))}
                     {filtered.length === 0 && !loading && (
                         <div className="col-span-3 text-center py-16 text-muted-foreground italic">
-                            No contacts found. Add your first contact to get started.
+                            {tc.noContactsFound}
                         </div>
                     )}
                 </div>

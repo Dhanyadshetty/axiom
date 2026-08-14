@@ -17,6 +17,7 @@ import {
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { t, getActiveLanguage } from "@/lib/i18n";
 
 export const dynamic = 'force-dynamic';
 
@@ -26,6 +27,9 @@ export default async function SustainabilityPage() {
     const session = await auth();
     const role = (session?.user as SessionUser | undefined)?.role;
     if (role === 'supplier') redirect('/portal');
+
+    const language = await getActiveLanguage();
+    const tc = t(language, "misc");
 
     const allSuppliers = await getSustainabilityData();
 
@@ -77,9 +81,9 @@ export default async function SustainabilityPage() {
     }
 
     function getConflictBadge(status: string | null) {
-        if (status === 'compliant') return <span className="badge-success"><CheckCircle2 className="h-3 w-3" />Compliant</span>;
-        if (status === 'non_compliant') return <span className="badge-danger"><XCircle className="h-3 w-3" />Non-Compliant</span>;
-        return <span className="badge-warning"><HelpCircle className="h-3 w-3" />Unknown</span>;
+        if (status === 'compliant') return <span className="badge-success"><CheckCircle2 className="h-3 w-3" />{tc.compliant}</span>;
+        if (status === 'non_compliant') return <span className="badge-danger"><XCircle className="h-3 w-3" />{tc.nonCompliant}</span>;
+        return <span className="badge-warning"><HelpCircle className="h-3 w-3" />{tc.unknown}</span>;
     }
 
     return (
@@ -91,41 +95,41 @@ export default async function SustainabilityPage() {
                         <Leaf className="h-5 w-5 text-emerald-600" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-black tracking-tight text-foreground">Sustainability & ESG</h1>
-                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest">Carbon Footprint / ESG Scores / Compliance</p>
+                        <h1 className="text-2xl font-black tracking-tight text-foreground">{tc.sustainabilityTitle}</h1>
+                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest">{tc.sustainabilitySubtitle}</p>
                     </div>
                 </div>
                 <Badge className="badge-success text-sm px-3 py-1">
-                    <Leaf className="h-3.5 w-3.5" />
-                    {allSuppliers.length} Suppliers Tracked
+                        <Leaf className="h-3.5 w-3.5" />
+                        {tc.suppliersTracked.replace("{n}", String(allSuppliers.length))}
                 </Badge>
             </div>
 
             {/* Carbon Footprint KPIs */}
             <div>
                 <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
-                    <Wind className="h-3.5 w-3.5" /> Carbon Footprint (tCO2e)
+                    <Wind className="h-3.5 w-3.5" /> {tc.carbonFootprint}
                 </h2>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                     <Card className="border-l-4 border-l-slate-400 shadow-sm">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-tight">Total Emissions</CardTitle>
+                            <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-tight">{tc.totalEmissions}</CardTitle>
                             <Factory className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-3xl font-black tracking-tight">{totalCarbon.toFixed(1)}</div>
-                            <p className="text-xs text-muted-foreground mt-1">tCO2e across all scopes</p>
+                            <p className="text-xs text-muted-foreground mt-1">{tc.tco2eAllScopes}</p>
                         </CardContent>
                     </Card>
 
                     <Card className="border-l-4 border-l-red-400 shadow-sm">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-tight">Scope 1 (Direct)</CardTitle>
+                            <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-tight">{tc.scope1Direct}</CardTitle>
                             <Factory className="h-4 w-4 text-red-400" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-3xl font-black tracking-tight text-red-600">{totalScope1.toFixed(1)}</div>
-                            <p className="text-xs text-muted-foreground mt-1">Direct supplier emissions</p>
+                            <p className="text-xs text-muted-foreground mt-1">{tc.directSupplierEmissions}</p>
                             {totalCarbon > 0 && (
                                 <Progress value={(totalScope1 / totalCarbon) * 100} className="mt-2 h-1.5" />
                             )}
@@ -134,12 +138,12 @@ export default async function SustainabilityPage() {
 
                     <Card className="border-l-4 border-l-amber-400 shadow-sm">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-tight">Scope 2 (Energy)</CardTitle>
+                            <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-tight">{tc.scope2Energy}</CardTitle>
                             <Wind className="h-4 w-4 text-amber-400" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-3xl font-black tracking-tight text-amber-600">{totalScope2.toFixed(1)}</div>
-                            <p className="text-xs text-muted-foreground mt-1">Indirect energy emissions</p>
+                            <p className="text-xs text-muted-foreground mt-1">{tc.indirectEnergyEmissions}</p>
                             {totalCarbon > 0 && (
                                 <Progress value={(totalScope2 / totalCarbon) * 100} className="mt-2 h-1.5" />
                             )}
@@ -148,12 +152,12 @@ export default async function SustainabilityPage() {
 
                     <Card className="border-l-4 border-l-blue-400 shadow-sm">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-tight">Scope 3 (Value Chain)</CardTitle>
+                            <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-tight">{tc.scope3ValueChain}</CardTitle>
                             <Globe className="h-4 w-4 text-blue-400" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-3xl font-black tracking-tight text-blue-600">{totalScope3.toFixed(1)}</div>
-                            <p className="text-xs text-muted-foreground mt-1">Value chain emissions</p>
+                            <p className="text-xs text-muted-foreground mt-1">{tc.valueChainEmissions}</p>
                             {totalCarbon > 0 && (
                                 <Progress value={(totalScope3 / totalCarbon) * 100} className="mt-2 h-1.5" />
                             )}
@@ -168,17 +172,17 @@ export default async function SustainabilityPage() {
                     <CardHeader>
                         <CardTitle className="text-sm font-bold uppercase tracking-wide flex items-center gap-2">
                             <Award className="h-4 w-4 text-primary" />
-                            Average ESG Scores
+                            {tc.avgEsgScores}
                         </CardTitle>
-                        <CardDescription>Across {allSuppliers.length} suppliers</CardDescription>
+                        <CardDescription>{tc.acrossSuppliers.replace("{n}", String(allSuppliers.length))}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         {[
-                            { label: 'Overall ESG', score: avgEsg, icon: Award, color: 'text-primary' },
-                            { label: 'Environmental', score: avgEnv, icon: Leaf, color: 'text-emerald-600' },
-                            { label: 'Social', score: avgSocial, icon: Globe, color: 'text-blue-600' },
-                            { label: 'Governance', score: avgGov, icon: ShieldCheck, color: 'text-purple-600' },
-                            { label: 'Renewable Share', score: avgRenewableShare, icon: Wind, color: 'text-emerald-600' },
+                            { label: tc.overallEsg, score: avgEsg, icon: Award, color: 'text-primary' },
+                            { label: tc.environmental, score: avgEnv, icon: Leaf, color: 'text-emerald-600' },
+                            { label: tc.social, score: avgSocial, icon: Globe, color: 'text-blue-600' },
+                            { label: tc.governance, score: avgGov, icon: ShieldCheck, color: 'text-purple-600' },
+                            { label: tc.renewableShare, score: avgRenewableShare, icon: Wind, color: 'text-emerald-600' },
                         ].map(({ label, score, icon: Icon, color }) => (
                             <div key={label} className="space-y-1.5">
                                 <div className="flex items-center justify-between">
@@ -200,35 +204,35 @@ export default async function SustainabilityPage() {
                     <CardHeader>
                         <CardTitle className="text-sm font-bold uppercase tracking-wide flex items-center gap-2">
                             <ShieldCheck className="h-4 w-4 text-primary" />
-                            Compliance Overview
+                            {tc.complianceOverview}
                         </CardTitle>
-                        <CardDescription>Conflict minerals, modern slavery & certifications</CardDescription>
+                        <CardDescription>{tc.conflictMineralsDesc}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="grid grid-cols-3 gap-3">
                             <div className="text-center p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/50">
                                 <div className="text-2xl font-black text-emerald-600">{conflictCompliant}</div>
-                                <div className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide mt-0.5">Compliant</div>
+                                <div className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide mt-0.5">{tc.compliant}</div>
                             </div>
                             <div className="text-center p-3 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/50">
                                 <div className="text-2xl font-black text-amber-600">{conflictUnknown}</div>
-                                <div className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wide mt-0.5">Unknown</div>
+                                <div className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wide mt-0.5">{tc.unknown}</div>
                             </div>
                             <div className="text-center p-3 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800/50">
                                 <div className="text-2xl font-black text-red-600">{conflictNonCompliant}</div>
-                                <div className="text-[10px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wide mt-0.5">Non-Compliant</div>
+                                <div className="text-[10px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wide mt-0.5">{tc.nonCompliant}</div>
                             </div>
                         </div>
-                        <div className="text-xs text-muted-foreground text-center font-medium">Conflict Minerals Status (OECD/Dodd-Frank)</div>
+                        <div className="text-xs text-muted-foreground text-center font-medium">{tc.conflictMineralsStatus}</div>
 
                         <div className="pt-2 border-t border-border/60 space-y-2">
                             <div className="flex items-center justify-between text-sm">
-                                <span className="text-muted-foreground">Modern Slavery Statements</span>
+                                <span className="text-muted-foreground">{tc.modernSlaveryStatements}</span>
                                 <span className="font-bold">{modernSlaveryYes} / {allSuppliers.length}</span>
                             </div>
                             <Progress value={allSuppliers.length > 0 ? (modernSlaveryYes / allSuppliers.length) * 100 : 0} className="h-1.5" />
                             <div className="flex items-center justify-between text-sm">
-                                <span className="text-muted-foreground">ISO Certified Suppliers</span>
+                                <span className="text-muted-foreground">{tc.isoCertifiedSuppliers}</span>
                                 <span className="font-bold">{isoCount} / {allSuppliers.length}</span>
                             </div>
                             <Progress value={allSuppliers.length > 0 ? (isoCount / allSuppliers.length) * 100 : 0} className="h-1.5" />
@@ -239,11 +243,11 @@ export default async function SustainabilityPage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-sm font-bold uppercase tracking-wide flex items-center gap-2">
-                        <Leaf className="h-4 w-4 text-primary" />
-                        Lowest Carbon Suppliers
-                    </CardTitle>
-                    <CardDescription>Fast shortlist for greener sourcing decisions.</CardDescription>
+                        <CardTitle className="text-sm font-bold uppercase tracking-wide flex items-center gap-2">
+                            <Leaf className="h-4 w-4 text-primary" />
+                            {tc.lowestCarbonSuppliers}
+                        </CardTitle>
+                        <CardDescription>{tc.greenerSourcing}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     {lowCarbonSuppliers.length === 0 ? (
@@ -255,11 +259,11 @@ export default async function SustainabilityPage() {
                             {lowCarbonSuppliers.map((supplier) => (
                                 <div key={supplier.id} className="rounded-2xl border bg-muted/20 p-4">
                                     <p className="font-semibold text-foreground">{supplier.name}</p>
-                                    <p className="mt-1 text-xs text-muted-foreground">
-                                        Renewable share {supplier.esgEnvironmentScore || 0}%
+                                         <p className="mt-1 text-xs text-muted-foreground">
+                                        {tc.renewableSharePct.replace("{n}", String(supplier.esgEnvironmentScore || 0))}
                                     </p>
                                     <p className="mt-4 text-2xl font-black text-emerald-600">{supplier.totalCO2.toFixed(1)}</p>
-                                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">tCO2e total</p>
+                                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{tc.tco2eTotal}</p>
                                 </div>
                             ))}
                         </div>
@@ -270,18 +274,18 @@ export default async function SustainabilityPage() {
             {/* Supplier ESG Leaderboard */}
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-sm font-bold uppercase tracking-wide flex items-center gap-2">
-                        <TrendingUp className="h-4 w-4 text-primary" />
-                        Supplier ESG Leaderboard
-                    </CardTitle>
-                    <CardDescription>Ranked by overall ESG score - top {Math.min(allSuppliers.length, 25)} suppliers</CardDescription>
+                        <CardTitle className="text-sm font-bold uppercase tracking-wide flex items-center gap-2">
+                            <TrendingUp className="h-4 w-4 text-primary" />
+                            {tc.supplierEsgLeaderboard}
+                        </CardTitle>
+                        <CardDescription>{tc.rankedByEsg.replace("{n}", String(Math.min(allSuppliers.length, 25)))}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     {allSuppliers.length === 0 ? (
                         <div className="py-12 text-center">
                             <Leaf className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-                            <p className="text-muted-foreground font-medium">No supplier ESG data yet.</p>
-                            <p className="text-sm text-muted-foreground/60 mt-1">ESG scores are populated when suppliers are onboarded and audited.</p>
+                            <p className="text-muted-foreground font-medium">{tc.noEsgData}</p>
+                            <p className="text-sm text-muted-foreground/60 mt-1">{tc.esgPopulated}</p>
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
@@ -289,15 +293,15 @@ export default async function SustainabilityPage() {
                                 <thead>
                                     <tr className="border-b border-border/60">
                                         <th className="text-left py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground w-8">#</th>
-                                        <th className="text-left py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Supplier</th>
-                                        <th className="text-center py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">ESG</th>
-                                        <th className="text-center py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Env</th>
-                                        <th className="text-center py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Renewables</th>
-                                        <th className="text-center py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Social</th>
-                                        <th className="text-center py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Gov</th>
-                                        <th className="text-right py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Scope 1+2+3</th>
-                                        <th className="text-center py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Conflict Minerals</th>
-                                        <th className="text-center py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">ISO Certs</th>
+                                        <th className="text-left py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">{tc.thSupplier}</th>
+                                        <th className="text-center py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">{tc.thEsg}</th>
+                                        <th className="text-center py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">{tc.thEnv}</th>
+                                        <th className="text-center py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">{tc.thRenewables}</th>
+                                        <th className="text-center py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">{tc.thSocial}</th>
+                                        <th className="text-center py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">{tc.thGov}</th>
+                                        <th className="text-right py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">{tc.thScope123}</th>
+                                        <th className="text-center py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">{tc.thConflictMinerals}</th>
+                                        <th className="text-center py-2 px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">{tc.thIsoCerts}</th>
                                     </tr>
                                 </thead>
                                 <tbody>

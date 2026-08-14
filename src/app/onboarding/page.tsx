@@ -11,8 +11,12 @@ import { CheckCircle2, Circle, Loader2, ChevronRight, AlertCircle } from 'lucide
 import { getOnboardingChecklist, completeOnboarding, isOnboardingComplete } from '@/app/actions/onboarding';
 import { toast } from 'sonner';
 import type { OnboardingTask } from '@/app/actions/onboarding';
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 
 export default function OnboardingPage() {
+    const { language } = useLanguage();
+    const ta = t(language, "auth");
     const router = useRouter();
     const { data: session, status, update } = useSession();
     const [tasks, setTasks] = useState<OnboardingTask[]>([]);
@@ -47,7 +51,7 @@ export default function OnboardingPage() {
             setTasks(checklist);
         } catch (error) {
             console.error('Failed to load onboarding:', error);
-            toast.error('Failed to load onboarding checklist');
+            toast.error(ta.onboardingFailedLoad);
         } finally {
             setLoading(false);
         }
@@ -63,17 +67,17 @@ export default function OnboardingPage() {
         try {
             const result = await completeOnboarding();
             if (result.success) {
-                toast.success('Welcome! Onboarding complete.');
+                toast.success(ta.onboardingCompleteToast);
                 // Refresh the JWT so onboardingCompleted=true lands in the
                 // token — this prevents the middleware from looping back here
                 await update({ onboardingCompleted: true });
                 router.push(session?.user?.role === 'supplier' ? '/portal' : '/');
             } else {
-                toast.error(result.error || 'Failed to complete onboarding');
+                toast.error(result.error || ta.onboardingFailedComplete);
             }
         } catch (error) {
             console.error('Error completing onboarding:', error);
-            toast.error('Failed to complete onboarding');
+            toast.error(ta.onboardingFailedComplete);
         } finally {
             setCompleting(false);
         }
@@ -91,23 +95,23 @@ export default function OnboardingPage() {
         <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-4 lg:p-8">
             <div className="max-w-2xl mx-auto space-y-8">
                 <div className="text-center space-y-2">
-                    <h1 className="text-4xl font-bold tracking-tight">Welcome to Axiom!</h1>
+                    <h1 className="text-4xl font-bold tracking-tight">{ta.onboardingWelcome}</h1>
                     <p className="text-lg text-muted-foreground">
-                        Complete these quick steps to get started
+                        {ta.onboardingSubtitle}
                     </p>
                 </div>
 
                 <Card className="shadow-lg">
                     <CardHeader>
-                        <CardTitle>Onboarding Progress</CardTitle>
+                        <CardTitle>{ta.onboardingProgress}</CardTitle>
                         <CardDescription>
-                            {completedCount} of {totalCount} tasks completed
+                            {ta.onboardingTasksCompleted.replace('{completed}', String(completedCount)).replace('{total}', String(totalCount))}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
                             <Progress value={progress} className="h-2" />
-                            <p className="text-xs text-muted-foreground">{Math.round(progress)}% complete</p>
+                            <p className="text-xs text-muted-foreground">{ta.onboardingPercentComplete.replace('{percent}', String(Math.round(progress)))}</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -154,9 +158,9 @@ export default function OnboardingPage() {
                             <div className="flex gap-3">
                                 <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
                                 <div>
-                                    <p className="font-semibold text-green-900">All set!</p>
+                                    <p className="font-semibold text-green-900">{ta.onboardingAllSet}</p>
                                     <p className="text-sm text-green-800 mt-1">
-                                        You've completed all onboarding tasks. You're ready to start using Axiom.
+                                        {ta.onboardingAllSetBody}
                                     </p>
                                 </div>
                             </div>
@@ -175,10 +179,10 @@ export default function OnboardingPage() {
                             {completing ? (
                                 <>
                                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                    Completing...
+                                    {ta.onboardingCompleting}
                                 </>
                             ) : (
-                                'Complete Onboarding'
+                                ta.onboardingComplete
                             )}
                         </Button>
                         <Button
@@ -187,7 +191,7 @@ export default function OnboardingPage() {
                             size="lg"
                             className="flex-1"
                         >
-                            Skip for Now
+                            {ta.onboardingSkip}
                         </Button>
                     </div>
                 )}
@@ -203,10 +207,10 @@ export default function OnboardingPage() {
                             {completing ? (
                                 <>
                                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                    Getting Started...
+                                    {ta.onboardingGettingStarted}
                                 </>
                             ) : (
-                                'Get Started'
+                                ta.onboardingGetStarted
                             )}
                         </Button>
                     </div>
@@ -217,7 +221,7 @@ export default function OnboardingPage() {
                         <div className="flex gap-3">
                             <AlertCircle className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
                             <p className="text-sm text-blue-800">
-                                Need help? Check out our <Link href="/docs" className="underline font-medium hover:text-blue-900">documentation</Link> or contact support.
+                                {ta.onboardingHelp}
                             </p>
                         </div>
                     </CardContent>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,8 @@ import { Lock, Loader2, CheckCircle2, AlertCircle, Eye, EyeOff } from 'lucide-re
 import Link from 'next/link';
 import { resetPassword } from '@/app/actions/password-reset';
 import { Progress } from '@/components/ui/progress';
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 
 function getPasswordStrength(password: string) {
     let strength = 0;
@@ -22,17 +24,19 @@ function getPasswordStrength(password: string) {
     return Math.ceil((strength / 6) * 100);
 }
 
-function validatePassword(password: string) {
+function validatePassword(password: string, ta: Record<string, string>) {
     const errors = [];
-    if (password.length < 8) errors.push('At least 8 characters');
-    if (!/[A-Z]/.test(password)) errors.push('One uppercase letter');
-    if (!/[a-z]/.test(password)) errors.push('One lowercase letter');
-    if (!/\d/.test(password)) errors.push('One number');
-    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) errors.push('One special character');
+    if (password.length < 8) errors.push(ta.resetPasswordAtLeast8);
+    if (!/[A-Z]/.test(password)) errors.push(ta.resetPasswordUppercase);
+    if (!/[a-z]/.test(password)) errors.push(ta.resetPasswordLowercase);
+    if (!/\d/.test(password)) errors.push(ta.resetPasswordNumber);
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) errors.push(ta.resetPasswordSpecial);
     return errors;
 }
 
 export default function ResetPasswordPage() {
+    const { language } = useLanguage();
+    const ta = t(language, "auth");
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -40,18 +44,12 @@ export default function ResetPasswordPage() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
-    const [tokenError, setTokenError] = useState(false);
     const router = useRouter();
     const searchParams = useSearchParams();
     const token = searchParams.get('token');
+    const tokenError = !token;
 
-    useEffect(() => {
-        if (!token) {
-            setTokenError(true);
-        }
-    }, [token]);
-
-    const passwordErrors = validatePassword(password);
+    const passwordErrors = validatePassword(password, ta);
     const passwordStrength = getPasswordStrength(password);
     const isPasswordValid = passwordErrors.length === 0;
     const passwordsMatch = password && confirmPassword && password === confirmPassword;
@@ -61,17 +59,17 @@ export default function ResetPasswordPage() {
         setError('');
 
         if (!isPasswordValid) {
-            setError('Password does not meet requirements');
+            setError(ta.resetPasswordRequirements);
             return;
         }
 
         if (!passwordsMatch) {
-            setError('Passwords do not match');
+            setError(ta.resetPasswordMismatch);
             return;
         }
 
         if (!token) {
-            setError('Reset token is missing');
+            setError(ta.resetPasswordTokenMissing);
             return;
         }
 
@@ -96,10 +94,10 @@ export default function ResetPasswordPage() {
                         </div>
                         <h2 className="text-2xl font-bold">Invalid Reset Link</h2>
                         <p className="text-muted-foreground">
-                            The password reset link is missing or invalid. Please request a new one.
+                            {ta.resetPasswordInvalidBody}
                         </p>
                         <Link href="/forgot-password">
-                            <Button className="w-full">Request New Reset Link</Button>
+                            <Button className="w-full">{ta.resetPasswordRequestNew}</Button>
                         </Link>
                     </CardContent>
                 </Card>
@@ -116,13 +114,13 @@ export default function ResetPasswordPage() {
                             <CheckCircle2 className="h-10 w-10 text-green-500" />
                         </div>
                         <div>
-                            <h2 className="text-2xl font-bold mb-2">Password Reset Successful!</h2>
+                            <h2 className="text-2xl font-bold mb-2">{ta.resetPasswordSuccessTitle}</h2>
                             <p className="text-muted-foreground">
-                                Your password has been changed. You can now log in with your new password.
+                                {ta.resetPasswordSuccessBody}
                             </p>
                         </div>
                         <Link href="/login">
-                            <Button className="w-full">Go to Login</Button>
+                            <Button className="w-full">{ta.resetPasswordGoToLogin}</Button>
                         </Link>
                     </CardContent>
                 </Card>
@@ -139,8 +137,8 @@ export default function ResetPasswordPage() {
                             <Lock className="h-5 w-5 text-primary" />
                         </div>
                         <div>
-                            <CardTitle>Reset Password</CardTitle>
-                            <CardDescription>Create a new secure password</CardDescription>
+                            <CardTitle>{ta.resetPasswordTitle}</CardTitle>
+                            <CardDescription>{ta.resetPasswordSubtitle}</CardDescription>
                         </div>
                     </div>
                 </CardHeader>
@@ -156,13 +154,13 @@ export default function ResetPasswordPage() {
 
                         <div className="space-y-2">
                             <Label htmlFor="password" className="text-sm font-medium">
-                                New Password
+                                {ta.resetPasswordNewLabel}
                             </Label>
                             <div className="relative">
                                 <Input
                                     id="password"
                                     type={showPassword ? 'text' : 'password'}
-                                    placeholder="Enter new password"
+                                    placeholder={ta.resetPasswordNewPlaceholder}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     disabled={loading}
@@ -186,7 +184,7 @@ export default function ResetPasswordPage() {
                                 <div className="space-y-2">
                                     <Progress value={passwordStrength} className="h-1" />
                                     <p className="text-xs text-muted-foreground">
-                                        Strength: {passwordStrength}%
+                                        {ta.resetPasswordStrength.replace('{strength}', String(passwordStrength))}
                                     </p>
                                     {passwordErrors.length > 0 && (
                                         <ul className="text-xs text-muted-foreground space-y-1">
@@ -203,13 +201,13 @@ export default function ResetPasswordPage() {
 
                         <div className="space-y-2">
                             <Label htmlFor="confirmPassword" className="text-sm font-medium">
-                                Confirm Password
+                                {ta.resetPasswordConfirmLabel}
                             </Label>
                             <div className="relative">
                                 <Input
                                     id="confirmPassword"
                                     type={showConfirmPassword ? 'text' : 'password'}
-                                    placeholder="Confirm your password"
+                                    placeholder={ta.resetPasswordConfirmPlaceholder}
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                     disabled={loading}
@@ -229,10 +227,10 @@ export default function ResetPasswordPage() {
                                 </button>
                             </div>
                             {confirmPassword && !passwordsMatch && (
-                                <p className="text-xs text-red-500">Passwords do not match</p>
+                                <p className="text-xs text-red-500">{ta.resetPasswordMismatch}</p>
                             )}
                             {passwordsMatch && (
-                                <p className="text-xs text-green-500">Passwords match</p>
+                                <p className="text-xs text-green-500">{ta.passwordsMatch}</p>
                             )}
                         </div>
 
@@ -244,16 +242,16 @@ export default function ResetPasswordPage() {
                             {loading ? (
                                 <>
                                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                    Resetting...
+                                    {ta.resetPasswordResetting}
                                 </>
                             ) : (
-                                'Reset Password'
+                                ta.resetPasswordTitle
                             )}
                         </Button>
 
                         <div className="pt-2">
                             <Link href="/login" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition">
-                                Back to login
+                                {ta.backToLogin}
                             </Link>
                         </div>
                     </CardContent>

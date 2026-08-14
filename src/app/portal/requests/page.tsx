@@ -4,6 +4,7 @@ import { getPortalRequests } from "@/app/actions/supplier-intelligence";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClipboardList } from "lucide-react";
+import { t, getActiveLanguage } from "@/lib/i18n";
 
 const statusColors: Record<string, string> = {
     draft: 'bg-gray-100 text-gray-800',
@@ -22,6 +23,9 @@ export default async function PortalRequestsPage() {
         redirect('/');
     }
 
+    const language = await getActiveLanguage();
+    const tc = t(language, "portal");
+
     let requests: any[] = [];
     try {
         requests = await getPortalRequests();
@@ -34,22 +38,22 @@ export default async function PortalRequestsPage() {
             <div>
                 <h1 className="text-2xl font-bold flex items-center gap-2">
                     <ClipboardList className="h-6 w-6 text-primary" />
-                    Requests & Tasks
+                    {tc.requestsTasksTitle}
                 </h1>
                 <p className="text-muted-foreground text-sm mt-1">
-                    Document requests, corrective actions, and compliance attestations from your buyer
+                    {tc.requestsTasksSubtitle}
                 </p>
             </div>
 
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-lg">Your Requests</CardTitle>
+                    <CardTitle className="text-lg">{tc.yourRequests}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     {requests.length === 0 ? (
                         <div className="text-center py-12 text-muted-foreground">
                             <ClipboardList className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                            <p className="text-sm">No requests at this time.</p>
+                            <p className="text-sm">{tc.noRequestsAtThisTime}</p>
                         </div>
                     ) : (
                         <div className="divide-y">
