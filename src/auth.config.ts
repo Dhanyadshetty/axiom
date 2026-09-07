@@ -24,9 +24,13 @@ export const authConfig = {
             const isOnAdminPage = nextUrl.pathname.startsWith('/admin');
             const isOnPortalPage = nextUrl.pathname.startsWith('/portal');
             const isOnOnboardingPage = nextUrl.pathname === '/onboarding';
+            const isOnExternalPage = nextUrl.pathname.startsWith('/external/');
 
             // Allow public access to supplier registration
             if (isOnRegisterPage) return true;
+
+            // Allow public access to external assessment links (magic token flow)
+            if (isOnExternalPage) return true;
 
             if (isOnLoginPage) {
                 if (isLoggedIn) {

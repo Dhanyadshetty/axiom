@@ -7,7 +7,11 @@ import { Button } from '@/components/ui/button';
 import { AlertCircle, ArrowRight } from 'lucide-react';
 
 export function OnboardingReminder() {
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
+
+    if (status === "loading") {
+        return null;
+    }
 
     if (!session?.user || session.user.onboardingCompleted) {
         return null;

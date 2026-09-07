@@ -119,8 +119,8 @@ export default async function TaskInboxPage() {
                         </div>
                     ) : (
                         <div className="space-y-6">
-                            <TaskSection title={ta.activeQueue} tasks={activeTasks} emptyMessage={ta.noActiveTasks} />
-                            <TaskSection title={ta.resolvedRecently} tasks={resolvedTasks.slice(0, 10)} emptyMessage={ta.noResolvedTasks} />
+                            <TaskSection title={ta.activeQueue} tasks={activeTasks} emptyMessage={ta.noActiveTasks} dueLabel={ta.due} />
+                            <TaskSection title={ta.resolvedRecently} tasks={resolvedTasks.slice(0, 10)} emptyMessage={ta.noResolvedTasks} dueLabel={ta.due} />
                         </div>
                     )}
                 </CardContent>
@@ -149,10 +149,12 @@ function TaskSection({
     title,
     tasks,
     emptyMessage,
+    dueLabel,
 }: {
     title: string;
     tasks: TaskData;
     emptyMessage: string;
+    dueLabel: string;
 }) {
     return (
         <div>
@@ -194,7 +196,7 @@ function TaskSection({
                                         {assigneeName && <span>to {assigneeName}</span>}
                                                 {task.dueDate && (
                                                     <span className={isOverdue ? 'font-medium text-red-600' : ''}>
-                                                        {ta.due}: {new Date(task.dueDate).toLocaleDateString()}
+                                                        {dueLabel}: {new Date(task.dueDate).toLocaleDateString()}
                                                     </span>
                                                 )}
                                     </div>

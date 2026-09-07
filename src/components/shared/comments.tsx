@@ -30,14 +30,19 @@ export function CommentsSection({
     entityType,
     entityId,
     initialComments,
-    title = t(language, "common").teamCollaboration,
-    placeholder = t(language, "common").addComment,
-    buttonLabel = t(language, "common").postComment,
-    emptyState = t(language, "common").noComments,
+    title,
+    placeholder,
+    buttonLabel,
+    emptyState,
 }: CommentsSectionProps) {
     const { language } = useLanguage();
     const tc = t(language, "common");
+    const resolvedTitle = title ?? tc.teamCollaboration;
+    const resolvedPlaceholder = placeholder ?? tc.addComment;
+    const resolvedButtonLabel = buttonLabel ?? tc.postComment;
+    const resolvedEmptyState = emptyState ?? tc.noComments;
     const [text, setText] = useState("");
+    const [comments, setComments] = useState<Comment[]>(initialComments);
     const [isPending, startTransition] = useTransition();
 
     useEffect(() => {
@@ -67,26 +72,26 @@ export function CommentsSection({
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <MessageSquare className="h-5 w-5" />
-                    {title}
+                    {resolvedTitle}
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
                 <form onSubmit={handleSubmit} className="space-y-2">
                     <Textarea
-                        placeholder={placeholder}
+                        placeholder={resolvedPlaceholder}
                         value={text}
                         onChange={(e) => setText(e.target.value)}
                         className="min-h-[100px]"
                     />
                     <Button type="submit" disabled={isPending || !text.trim()}>
-                        {isPending ? tc.posting : buttonLabel}
+                        {isPending ? tc.posting : resolvedButtonLabel}
                     </Button>
                 </form>
 
                 <div className="space-y-4">
                     {comments.length === 0 && (
                         <p className="text-sm text-muted-foreground text-center py-4">
-                            {emptyState}
+                            {resolvedEmptyState}
                         </p>
                     )}
                     {comments.map((comment) => (

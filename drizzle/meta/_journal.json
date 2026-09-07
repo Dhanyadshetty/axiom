@@ -50,6 +50,55 @@
       "when": 1778749857861,
       "tag": "0006_production_hardening",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1786957277029,
+      "tag": "0007_loving_lyja",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1787115129682,
+      "tag": "0008_little_meltdown",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1787204381681,
+      "tag": "0009_lethal_mariko_yashida",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1787312904863,
+      "tag": "0010_romantic_may_parker",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1787998943821,
+      "tag": "0011_add_supplier_classification",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1788000000000,
+      "tag": "0012_supplier_profile",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1788200000000,
+      "tag": "0013_contacts_import_source",
+      "breakpoints": true
     }
   ]
 }

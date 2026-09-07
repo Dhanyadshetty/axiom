@@ -29,8 +29,9 @@ import {
     Layers,
     Building2,
     Leaf,
+    LogOut,
 } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { AxiomLogo } from "@/components/shared/axiom-logo";
 import { NavLink } from "@/components/layout/nav-link";
@@ -80,9 +81,42 @@ const sectionLabelCls = "text-[10.5px] font-black uppercase tracking-[0.16em] te
 const sectionDividerCls = "h-px flex-1 bg-sidebar-foreground/18";
 
 export function Sidebar({ className }: { className?: string }) {
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
     const { language } = useLanguage();
     const ts = t(language, "sidebar");
+
+    if (status === "loading") {
+        return (
+            <div
+                className={cn(
+                    "flex h-[100dvh] min-h-[100dvh] w-[17rem] min-w-[17rem] flex-col overflow-hidden border-r border-sidebar-border/80 bg-sidebar text-sidebar-foreground xl:w-[18rem] xl:min-w-[18rem]",
+                    className,
+                )}
+            >
+                <div className="show-scrollbar min-h-0 flex-1 overflow-y-auto pb-6">
+                    <div className="mb-1 flex items-center gap-3 border-b border-sidebar-border/70 px-4 py-4">
+                        <div className="h-8 w-8 shrink-0 rounded-lg bg-primary shadow-md shadow-primary/30 flex items-center justify-center">
+                            <div className="h-5 w-5 animate-pulse rounded bg-primary-foreground/20" />
+                        </div>
+                        <div className="flex flex-col leading-none">
+                            <div className="h-4 w-24 animate-pulse rounded bg-sidebar-foreground/10" />
+                            <div className="h-2 w-16 animate-pulse rounded bg-sidebar-foreground/10 mt-1" />
+                        </div>
+                    </div>
+                    <div className="mx-3 mt-4 space-y-3">
+                        {[1, 2, 3, 4, 5].map((i) => (
+                            <div key={i} className="h-8 animate-pulse rounded-md bg-sidebar-foreground/10" />
+                        ))}
+                    </div>
+                    <div className="mt-4 px-3 space-y-3">
+                        {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                            <div key={i} className="h-8 animate-pulse rounded-md bg-sidebar-foreground/10" />
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     const user = session?.user as SessionUser | undefined;
     const role = user?.role;
@@ -133,7 +167,15 @@ export function Sidebar({ className }: { className?: string }) {
                         {homeLabel}
                     </NavLink>
                     {role !== "supplier" && (
-                        <NavLink href="/suppliers" className={navCls}>
+                        <NavLink
+                            href="/suppliers"
+                            className={navCls}
+                            onClick={() => {
+                                if (typeof window !== "undefined") {
+                                    window.dispatchEvent(new CustomEvent("suppliers:reset-to-default-view"));
+                                }
+                            }}
+                        >
                             <Building2 className="mr-2 h-4 w-4" />
                             {ts.suppliers}
                         </NavLink>
@@ -273,6 +315,19 @@ export function Sidebar({ className }: { className?: string }) {
                                 </div>
                             </div>
                         )}
+                    </div>
+                )}
+
+                {role === "admin" && (
+                    <div className="mt-auto pt-4 px-3 pb-6">
+                        <button
+                            type="button"
+                            onClick={() => signOut({ redirect: true, callbackUrl: "/signout" })}
+                            className="w-full flex items-center gap-3 rounded-lg bg-red-50 px-4 py-3 text-red-600 font-medium text-[13px] transition-colors hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                        >
+                            <LogOut className="h-4 w-4 shrink-0" />
+                            {ts.logout}
+                        </button>
                     </div>
                 )}
             </div>

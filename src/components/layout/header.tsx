@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { LogOut, ShieldCheck } from "lucide-react";
 import { LanguageToggle } from "@/components/layout/language-toggle";
 import { NotificationBell } from "@/components/layout/notification-bell";
@@ -8,8 +8,34 @@ import { useLanguage } from "@/components/i18n/language-provider";
 import { t } from "@/lib/i18n";
 
 export function Header() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const { language } = useLanguage();
+
+  if (status === "loading") {
+    return (
+      <header className="z-30 flex h-16 shrink-0 items-center justify-between gap-4 border-b border-border bg-background/80 px-4 backdrop-blur-sm lg:px-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+            <div className="h-5 w-5 animate-pulse rounded bg-primary-foreground/20" />
+          </div>
+          <div className="leading-tight">
+            <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+            <div className="h-2 w-16 animate-pulse rounded bg-muted mt-1" />
+          </div>
+        </div>
+        <div className="flex items-center gap-2 lg:gap-3">
+          <div className="h-9 w-9 animate-pulse rounded-xl bg-muted" />
+          <div className="h-9 w-9 animate-pulse rounded-xl bg-muted" />
+          <div className="h-9 w-24 animate-pulse rounded-full bg-muted" />
+          <div className="h-9 w-9 animate-pulse rounded-xl bg-muted" />
+        </div>
+      </header>
+    );
+  }
+
+  const handleSignOut = async () => {
+    await signOut({ redirect: true, callbackUrl: "/login" });
+  };
 
   const user = session?.user;
   const role = user?.role;
@@ -57,7 +83,9 @@ export function Header() {
 
         <button
           type="button"
+          onClick={handleSignOut}
           title="Sign out"
+          aria-label="Sign out"
           className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border text-muted-foreground transition-colors hover:bg-muted"
         >
           <LogOut className="h-4 w-4" />

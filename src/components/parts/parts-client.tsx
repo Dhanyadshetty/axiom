@@ -124,6 +124,8 @@ function getSuggestedReorders(parts: InventoryPart[]) {
 }
 
 export function PartsClient({ initialParts }: { initialParts: InventoryPart[] }) {
+    const { language } = useLanguage();
+    const ts = t(language, "sourcing");
     return (
         <Suspense fallback={<div className="p-20 text-center">{ts.loadingInventory}</div>}>
             <PartsTable initialParts={initialParts} />

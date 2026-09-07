@@ -252,6 +252,13 @@ export function canManageSuppliers(user: SessionAccessUser | null | undefined) {
     return profile === "super_admin" || profile === "sourcing_manager";
 }
 
+export function canManageRequests(user: SessionAccessUser | null | undefined) {
+    if (!user) return false;
+    if (user.role === "supplier") return false;
+    const profile = resolveAccessProfile(user);
+    return profile === "super_admin" || profile === "sourcing_manager" || profile === "internal_user" || profile === "regional_operator";
+}
+
 export function canManageSourcing(user: SessionAccessUser | null | undefined) {
     const profile = resolveAccessProfile(user);
     return profile === "super_admin" || profile === "sourcing_manager";

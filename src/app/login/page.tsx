@@ -37,7 +37,13 @@ export default function LoginPage() {
         let processedError = '';
         if (authResult) {
             if (authResult.status === 'success') {
-                window.location.assign(authResult.redirectUrl);
+                // Perform a full navigation so the server re-renders the
+                // authenticated shell (sidebar/header) with the freshly
+                // established session cookie. A client-side soft navigation keeps
+                // the stale (unauthenticated) root session on the persisted
+                // layout, which can leave the shell without its sidebar and cause
+                // intermittent reload/race errors after MFA login.
+                window.location.href = authResult.redirectUrl;
                 return;
             }
 

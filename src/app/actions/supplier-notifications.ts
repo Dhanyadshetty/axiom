@@ -36,7 +36,7 @@ export async function notifySupplierStatusChange(
             return { success: true, notified: false, reason: 'Email not yet verified' };
         }
 
-        const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3001';
+        const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
         const portalLink = `${baseUrl}/portal`;
         let emailData;
         let shouldNotify = false;
@@ -105,7 +105,7 @@ export async function notifySupplierApproved(
             return { success: false, error: 'Supplier email not verified' };
         }
 
-        const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3001';
+        const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
         const portalLink = `${baseUrl}/portal`;
 
         const emailData = generateSupplierApprovedEmail(

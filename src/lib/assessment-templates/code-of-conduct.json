@@ -1,0 +1,77 @@
+{
+  "id": "code_of_conduct",
+  "name": "Code of Conduct",
+  "category": "code_of_conduct",
+  "version": "1.0",
+  "description": "Supplier acknowledgement of the buyer's Code of Conduct.",
+  "sections": [
+    {
+      "key": "buyer_message",
+      "title": "Message from the buyer",
+      "titleDe": "Nachricht des Käufers",
+      "order": 0,
+      "blocks": [
+        {
+          "key": "buyer_message_block",
+          "title": "Message from the buyer",
+          "titleDe": "Nachricht des Käufers",
+          "icon": "message-square",
+          "message": "Dear Supplier,\n\nPlease review and acknowledge our Code of Conduct. Completion of this form confirms that you have read, understood and agree to abide by its principles.\n\nKind regards,\n[Buyer Name]\n[Buyer Company]",
+          "messageDe": "Sehr geehrte(r) Lieferant(in),\n\nBitte überprüfen und bestätigen Sie unseren Verhaltenskodex. Mit dem Ausfüllen dieses Formulars bestätigen Sie, dass Sie dessen Grundsätze gelesen, verstanden und akzeptiert haben.\n\nMit freundlichen Grüßen,\n[Name des Käufers]\n[Firma des Käufers]",
+          "fields": []
+        }
+      ]
+    },
+    {
+      "key": "supplier_identification",
+      "title": "1. Supplier Identification",
+      "titleDe": "1. Lieferantenidentifikation",
+      "order": 1,
+      "blocks": [
+        {
+          "key": "company_address",
+          "title": "Company address",
+          "titleDe": "Unternehmensanschrift",
+          "icon": "building",
+          "fields": [
+            { "key": "supplier_number", "label": "Supplier number", "labelDe": "Lieferantennummer", "type": "short_text", "required": false },
+            { "key": "company_name", "label": "Company name", "labelDe": "Firmenname", "type": "short_text", "required": true },
+            { "key": "address", "label": "Address", "labelDe": "Anschrift", "type": "short_text", "required": true },
+            { "key": "country", "label": "Country", "labelDe": "Land", "type": "short_text", "required": false }
+          ]
+        },
+        {
+          "key": "primary_contact",
+          "title": "Primary contact",
+          "titleDe": "Primärkontakt",
+          "icon": "user",
+          "fields": [
+            { "key": "contact_person_name", "label": "Contact name", "labelDe": "Kontaktname", "type": "short_text", "required": false },
+            { "key": "contact_email", "label": "Contact email", "labelDe": "Kontakt-E-Mail", "type": "short_text", "required": false },
+            { "key": "contact_phone", "label": "Contact phone", "labelDe": "Kontakttelefon", "type": "short_text", "required": false }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "code_of_conduct_acknowledgement",
+      "title": "2. Code of Conduct Acknowledgement",
+      "titleDe": "2. Bestätigung Verhaltenskodex",
+      "order": 2,
+      "blocks": [
+        {
+          "key": "acknowledgement",
+          "title": "Acknowledgement",
+          "titleDe": "Bestätigung",
+          "icon": "check-square",
+          "fields": [
+            { "key": "coc_read_and_understood", "label": "We have read and understood the Code of Conduct", "labelDe": "Wir haben den Verhaltenskodex gelesen und verstanden", "type": "yes_no_confirm", "required": true },
+            { "key": "coc_commit_to_comply", "label": "We commit to comply with the Code of Conduct", "labelDe": "Wir verpflichten uns zur Einhaltung des Verhaltenskodex", "type": "yes_no_confirm", "required": true },
+            { "key": "coc_communicate_to_employees", "label": "We will communicate the Code of Conduct to our employees and subcontractors", "labelDe": "Wir werden den Verhaltenskodex unseren Mitarbeitern und Subunternehmern mitteilen", "type": "yes_no_confirm", "required": true },
+            { "key": "comments", "label": "Additional comments", "labelDe": "Zusätzliche Kommentare", "type": "long_text_rich", "required": false }
+          ]
+        }
+      ]
+    }
+  ]
+}

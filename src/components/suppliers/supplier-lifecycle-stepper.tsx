@@ -64,7 +64,17 @@ export function SupplierLifecycleStepper({
 
     const currentStepId = STATUS_MAP[rawStatus] || 'registration';
     const currentIndex = STEPS.findIndex(s => s.id === currentStepId);
-    
+
+    if (rawStatus === 'suspended' || rawStatus === 'terminated') {
+        return (
+            <SuspendedBanner
+                rawStatus={rawStatus}
+                isAdmin={isAdmin}
+                onStatusChange={onStatusChange}
+            />
+        );
+    }
+
     const handlePromote = async () => {
         if (!isAdmin || isUpdating) return;
 
@@ -124,38 +134,6 @@ export function SupplierLifecycleStepper({
         setTimeout(() => setCopied(false), 2000);
         toast.success("Password copied to clipboard");
     };
-
-    if (rawStatus === 'suspended' || rawStatus === 'terminated') {
-        const isTerminated = rawStatus === 'terminated';
-        return (
-            <div className={cn(
-                "rounded-lg border p-4 flex items-center justify-between",
-                isTerminated ? "bg-slate-50 border-slate-200" : "bg-destructive/5 border-destructive/20"
-            )}>
-                <div className="flex items-center gap-3">
-                    <AlertCircle className={cn("h-5 w-5", isTerminated ? "text-slate-500" : "text-destructive")} />
-                    <div>
-                        <p className={cn("font-bold text-sm uppercase tracking-tight", isTerminated ? "text-slate-700" : "text-destructive")}>
-                            Lifecycle {isTerminated ? 'Terminated' : 'Suspended'}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                            {isTerminated ? 'This supplier record is archived and cannot be promoted.' : 'This supplier is currently blocked from all procurement activities.'}
-                        </p>
-                    </div>
-                </div>
-                {onStatusChange && !isTerminated && isAdmin && (
-                    <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="text-xs font-bold uppercase"
-                        onClick={() => onStatusChange('registration')}
-                    >
-                        Re-Activate
-                    </Button>
-                )}
-            </div>
-        );
-    }
 
     return (
         <div className="flex flex-col gap-6">
@@ -226,7 +204,11 @@ export function SupplierLifecycleStepper({
                     const isCompleted = idx < currentIndex;
                     const isActive = idx === currentIndex;
                     
-                    return (
+    if (false) {
+        // unreachable: suspended/terminated branches handled via early return above
+    }
+
+    return (
                         <div key={step.id} className="flex flex-col items-center gap-2 relative">
                             <div className={cn(
                                 "h-10 w-10 rounded-full flex items-center justify-center border-2 transition-all duration-300 bg-background",
@@ -312,6 +294,46 @@ export function SupplierLifecycleStepper({
                     </div>
                 )}
             </div>
+        </div>
+    );
+}
+
+function SuspendedBanner({
+    rawStatus,
+    isAdmin,
+    onStatusChange,
+}: {
+    rawStatus: string;
+    isAdmin: boolean;
+    onStatusChange?: (status: string) => void;
+}) {
+    const isTerminated = rawStatus === 'terminated';
+    return (
+        <div className={cn(
+            "rounded-lg border p-4 flex items-center justify-between",
+            isTerminated ? "bg-slate-50 border-slate-200" : "bg-destructive/5 border-destructive/20"
+        )}>
+            <div className="flex items-center gap-3">
+                <AlertCircle className={cn("h-5 w-5", isTerminated ? "text-slate-500" : "text-destructive")} />
+                <div>
+                    <p className={cn("font-bold text-sm uppercase tracking-tight", isTerminated ? "text-slate-700" : "text-destructive")}>
+                        Lifecycle {isTerminated ? 'Terminated' : 'Suspended'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                        {isTerminated ? 'This supplier record is archived and cannot be promoted.' : 'This supplier is currently blocked from all procurement activities.'}
+                    </p>
+                </div>
+            </div>
+            {onStatusChange && !isTerminated && isAdmin && (
+                <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs font-bold uppercase"
+                    onClick={() => onStatusChange('registration')}
+                >
+                    Re-Activate
+                </Button>
+            )}
         </div>
     );
 }

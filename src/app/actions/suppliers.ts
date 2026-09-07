@@ -30,7 +30,7 @@ const CATEGORY_KEYWORDS: Array<{ category: string; keywords: string[] }> = [
     { category: "Chemicals", keywords: ["chemical", "coating", "adhesive", "solvent"] },
     { category: "Industrial Services", keywords: ["maintenance", "calibration", "field service", "industrial service"] },
 ];
-const LIST_QUERY_LIMIT = 500;
+const LIST_QUERY_LIMIT = Number.MAX_SAFE_INTEGER;
 
 function extractEmailDomain(email: string) {
     return email.split("@")[1]?.trim().toLowerCase() || "";
@@ -307,6 +307,17 @@ export async function getSuppliers(): Promise<Supplier[]> {
     }
 }
 
+/**
+ * Resolve a supplier by either its internal uuid `id` or its external
+ * `supplierNumber` (used in URLs like /suppliers/79793903).
+ */
+async function resolveSupplier(id: string): Promise<Supplier | null> {
+    const [byNumber] = await db.select().from(suppliers).where(eq(suppliers.supplierNumber, id)).limit(1);
+    if (byNumber) return byNumber;
+    const [byId] = await db.select().from(suppliers).where(eq(suppliers.id, id)).limit(1);
+    return byId || null;
+}
+
 export async function getSupplierById(id: string): Promise<Supplier | null> {
     const session = await auth();
     if (!session) return null;
@@ -317,18 +328,83 @@ export async function getSupplierById(id: string): Promise<Supplier | null> {
     if (userRole === 'supplier' && userSupplierId !== id) return null;
 
     try {
-        const [supplier] = await db.select().from(suppliers).where(eq(suppliers.id, id));
-        if (supplier && isRegionalOperator(session.user) && !isWithinRegionalScope(session.user, {
+        const supplier = await resolveSupplier(id);
+        if (!supplier) return null;
+        if (isRegionalOperator(session.user) && !isWithinRegionalScope(session.user, {
             country: supplier.countryCode,
             region: supplier.city,
         })) {
             return null;
         }
-        return supplier || null;
+        return supplier;
     } catch (error) {
         console.error("Failed to fetch supplier:", error);
         return null;
     }
+}
+
+export type SupplierProfile = Record<string, unknown>;
+
+/**
+ * Merge-and-persist the extended supplier master-data profile (bank account,
+ * legal information, sites, key figures, user-defined properties, etc.).
+ */
+export async function updateSupplierProfile(id: string, profilePatch: SupplierProfile) {
+    const session = await auth();
+    if (!session || session.user.role === 'supplier' || !canManageSuppliers(session.user)) {
+        return { success: false, error: "Unauthorized" };
+    }
+
+    try {
+        const supplier = await resolveSupplier(id);
+        if (!supplier) return { success: false, error: "Supplier not found" };
+
+        const existing = (supplier.profile as SupplierProfile) || {};
+        const merged = deepMergeProfile(existing, profilePatch);
+
+        // Sync editable scalar supplier columns that are managed from the
+        // "User Defined Properties" section of the properties page.
+        const scalarUpdate: Record<string, unknown> = {};
+        if (Array.isArray(merged.responsibleBuyer)) scalarUpdate.responsibleBuyer = merged.responsibleBuyer;
+        if (Array.isArray(merged.commodityGroup)) scalarUpdate.commodityGroup = merged.commodityGroup;
+        if (Array.isArray(merged.areaOfNeed)) scalarUpdate.areaOfNeed = merged.areaOfNeed;
+        if (typeof merged.supplierType === "string") scalarUpdate.supplierType = merged.supplierType;
+        if (typeof merged.strategicClassification === "string") scalarUpdate.strategicClassification = merged.strategicClassification;
+        if (typeof merged.abcClassification === "string" && ["A", "B", "C", "X", "Y", "Z", "None"].includes(merged.abcClassification)) {
+            scalarUpdate.abcClassification = merged.abcClassification;
+        }
+
+        await db.update(suppliers)
+            .set({ profile: merged, ...scalarUpdate })
+            .where(eq(suppliers.id, supplier.id));
+
+        await logActivity('UPDATE', 'supplier', supplier.id, `Supplier profile attributes updated`);
+        revalidatePath(`/suppliers/${id}`);
+        revalidatePath(`/suppliers/${id}/overview`);
+        revalidatePath(`/suppliers/${id}/properties`);
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to update supplier profile:", error);
+        return { success: false, error: "Failed to update supplier profile" };
+    }
+}
+
+function deepMergeProfile(base: SupplierProfile, patch: SupplierProfile): SupplierProfile {
+    const result: SupplierProfile = Array.isArray(base) ? [...(base as unknown[])] as unknown as SupplierProfile : { ...base };
+    for (const [key, value] of Object.entries(patch)) {
+        const baseVal = result[key];
+        if (
+            value && typeof value === "object" && !Array.isArray(value) &&
+            baseVal && typeof baseVal === "object" && !Array.isArray(baseVal)
+        ) {
+            result[key] = deepMergeProfile(baseVal as SupplierProfile, value as SupplierProfile);
+        } else if (Array.isArray(value)) {
+            result[key] = [...value];
+        } else {
+            result[key] = value;
+        }
+    }
+    return result;
 }
 
 export async function getSupplierWorkspaceRows() {
@@ -350,7 +426,20 @@ export async function getSupplierWorkspaceRows() {
             return [];
         }
 
-        const supplierIds = scopedSuppliers.map((supplier) => supplier.id);
+        // Safety net: collapse accidental duplicates by normalized (trimmed,
+        // case-insensitive) name so a runaway import can never inflate the
+        // visible row count again — even if the duplicates have different
+        // (or missing) country codes.
+        const seen = new Map<string, typeof scopedSuppliers[number]>();
+        const dedupedSuppliers = [] as typeof scopedSuppliers;
+        for (const s of scopedSuppliers) {
+            const key = (s.name ?? "").trim().toLowerCase();
+            if (!key) continue;
+            if (seen.has(key)) continue;
+            seen.set(key, s);
+            dedupedSuppliers.push(s);
+        }
+        const supplierIds = dedupedSuppliers.map((supplier) => supplier.id);
         const [orderRows, documentRows, rfqRows] = await Promise.all([
             db.select({
                 supplierId: procurementOrders.supplierId,
@@ -412,7 +501,7 @@ export async function getSupplierWorkspaceRows() {
         const documentMap = new Map(documentRows.map((row) => [row.supplierId, row.count]));
         const rfqMap = new Map(rfqRows.map((row) => [row.supplierId, { invited: row.invited, quoted: row.quoted }]));
 
-        return scopedSuppliers.map((supplier, index) => {
+        return dedupedSuppliers.map((supplier, index) => {
             const orderMetrics = orderMap.get(supplier.id) || {
                 currentYearVolume: 0,
                 previousYearVolume: 0,
@@ -443,12 +532,19 @@ export async function getSupplierWorkspaceRows() {
 
             return {
                 id: supplier.id,
+                supplierNumber: supplier.supplierNumber ?? null,
                 supplierCode: String(index + 1).padStart(6, '0'),
                 name: supplier.name,
                 contactEmail: supplier.contactEmail,
                 countryCode: supplier.countryCode || null,
                 city: supplier.city || null,
                 status: supplier.status || 'active',
+                supplierType: supplier.supplierType || null,
+                segment: supplier.segment || null,
+                areaOfNeed: supplier.areaOfNeed || [],
+                commodityGroup: supplier.commodityGroup || [],
+                responsibleBuyer: supplier.responsibleBuyer || [],
+                strategicClassification: supplier.strategicClassification || null,
                 lifecycleStatus: supplier.lifecycleStatus || 'prospect',
                 tierLevel: supplier.tierLevel || 'tier_3',
                 abcClassification: supplier.abcClassification || 'None',
@@ -617,6 +713,11 @@ interface UpdateSupplierData {
     financialHealthRating?: string;
     tierLevel?: 'tier_1' | 'tier_2' | 'tier_3' | 'critical';
     modernSlaveryStatement?: string;
+    supplierType?: string;
+    areaOfNeed?: string[];
+    commodityGroup?: string[];
+    responsibleBuyer?: string[];
+    strategicClassification?: string;
 }
 
 export async function updateSupplier(id: string, data: Partial<UpdateSupplierData>) {
@@ -664,6 +765,11 @@ export async function updateSupplier(id: string, data: Partial<UpdateSupplierDat
                 financialHealthRating: data.financialHealthRating,
                 tierLevel: data.tierLevel,
                 modernSlaveryStatement: data.modernSlaveryStatement,
+                supplierType: data.supplierType,
+                areaOfNeed: data.areaOfNeed,
+                commodityGroup: data.commodityGroup,
+                responsibleBuyer: data.responsibleBuyer,
+                strategicClassification: data.strategicClassification,
                 countryCode: normalizedCountryCode,
                 carbonFootprintScope1: data.carbonFootprintScope1?.toString(),
                 carbonFootprintScope2: data.carbonFootprintScope2?.toString(),
@@ -699,6 +805,12 @@ export async function addSupplier(formData: FormData) {
     try {
         const name = formData.get("name") as string;
         const contactEmail = formData.get("email") as string;
+        const supplierStatus = (formData.get("status") as string || "active") as "active" | "inactive" | "blacklisted";
+        const supplierType = (formData.get("supplierType") as string || "").trim() || null;
+        const areaOfNeed = formData.getAll("areaOfNeed").map((value) => String(value).trim()).filter(Boolean);
+        const commodityGroup = formData.getAll("commodityGroup").map((value) => String(value).trim()).filter(Boolean);
+        const responsibleBuyer = formData.getAll("responsibleBuyer").map((value) => String(value).trim()).filter(Boolean);
+        const strategicClassification = (formData.get("strategicClassification") as string || "").trim() || null;
         const riskScore = parseInt(formData.get("risk") as string) || 0;
         const esgScore = parseInt(formData.get("esg") as string) || 0;
         const financialScore = parseInt(formData.get("financial") as string) || 0;
@@ -727,6 +839,23 @@ export async function addSupplier(formData: FormData) {
             return { success: false, error: "Longitude must be between -180 and 180" };
         }
 
+        // De-duplicate: refuse to create a second supplier whose normalized
+        // (case-insensitive, trimmed) name already exists in the database.
+        // Returns the existing id so the caller can refresh instead of
+        // inserting a duplicate.
+        const trimmedName = name.trim();
+        const [existing] = await db.select({ id: suppliers.id })
+            .from(suppliers)
+            .where(sql`lower(trim(${suppliers.name})) = lower(trim(${trimmedName}))`)
+            .limit(1);
+        if (existing) {
+            return {
+                success: false,
+                error: `A supplier named "${trimmedName}" already exists.`,
+                existingId: existing.id,
+            };
+        }
+
         const [newSupplier] = await db.insert(suppliers).values({
             name,
             contactEmail,
@@ -736,7 +865,7 @@ export async function addSupplier(formData: FormData) {
             esgScore,
             financialScore,
             performanceScore,
-            status: "active",
+            status: supplierStatus,
             lifecycleStatus: "prospect",
             abcClassification: "None",
             conflictMineralsStatus: "unknown",
@@ -746,6 +875,11 @@ export async function addSupplier(formData: FormData) {
             esgSocialScore: parseInt(formData.get("esg_soc") as string) || 0,
             esgGovernanceScore: parseInt(formData.get("esg_gov") as string) || 0,
             modernSlaveryStatement: formData.get("modern_slavery") === "on" ? "yes" : "no",
+            supplierType,
+            areaOfNeed,
+            commodityGroup,
+            responsibleBuyer,
+            strategicClassification,
             latitude: Number.isFinite(latitude) ? latitude.toString() : null,
             longitude: Number.isFinite(longitude) ? longitude.toString() : null,
         }).returning();
@@ -756,7 +890,7 @@ export async function addSupplier(formData: FormData) {
         await calculateSupplierESG(newSupplier.id);
 
         revalidatePath("/suppliers");
-        return { success: true };
+        return { success: true, id: newSupplier.id };
     } catch (error) {
         console.error("Failed to add supplier:", error);
         return { success: false, error: "Failed to add supplier" };
@@ -986,5 +1120,131 @@ export async function deleteSupplier(id: string) {
     } catch (error) {
         console.error("Failed to delete supplier:", error);
         return { success: false, error: "Failed to delete supplier" };
+    }
+}
+
+export type ClassificationImportRow = {
+    name: string;
+    countryCode?: string | null;
+    status?: "active" | "inactive" | "blacklisted" | null;
+    supplierType?: string | null;
+    areaOfNeed?: string[];
+    commodityGroup?: string[];
+    responsibleBuyer?: string[];
+    strategicClassification?: string | null;
+    importErrors?: string[];
+};
+
+export type ClassificationImportResult = {
+    success: boolean;
+    error?: string;
+    created: number;
+    skipped: number;
+    errors: string[];
+};
+
+/**
+ * Bulk import for the Suppliers module classification template (8 editable
+ * columns). Used by the Excel/CSV import wizard. Computed columns
+ * (order volume, ABC) are derived server-side and left untouched here.
+ */
+export async function importClassificationSuppliers(rows: ClassificationImportRow[]) {
+    const session = await auth();
+    if (!session || session.user.role === "supplier" || !canManageSuppliers(session.user)) {
+        return { success: false, error: "Unauthorized", created: 0, skipped: 0, errors: ["Unauthorized"] } as ClassificationImportResult;
+    }
+
+    const result: ClassificationImportResult = { success: true, created: 0, skipped: 0, errors: [] };
+
+    if (!Array.isArray(rows) || rows.length === 0) {
+        return { success: false, error: "No rows to import", created: 0, skipped: 0, errors: ["No rows to import"] } as ClassificationImportResult;
+    }
+
+    try {
+        const seen = new Set<string>();
+        let placeholderCounter = 0;
+
+        // Pre-load all existing supplier names so we can skip rows that would
+        // create duplicates against the database, not just within the current
+        // upload. Name is normalized (trim + lowercase) so cosmetic variants
+        // like " ACME " / "acme" / "Acme GmbH" all collapse to one row.
+        const existingRows = await db
+            .select({ name: suppliers.name })
+            .from(suppliers);
+        const existingKeys = new Set(
+            existingRows.map((r) => (r.name ?? "").trim().toLowerCase()).filter(Boolean),
+        );
+
+        for (let i = 0; i < rows.length; i += 1) {
+            const row = rows[i];
+            const rawName = (row.name ?? "").trim();
+            const importErrors = (row.importErrors ?? []).filter(Boolean);
+            const hasError = importErrors.length > 0 || !rawName;
+            const name = rawName || `Unknown supplier (row ${i + 1})`;
+            const normalizedCountry = (row.countryCode ?? "").trim().toUpperCase();
+            const dedupeKey = name.toLowerCase();
+
+            if (!dedupeKey) continue;
+
+            if (seen.has(dedupeKey)) {
+                result.skipped += 1;
+                result.errors.push(`"${name}" was skipped because a supplier with the same name was already included earlier in this upload.`);
+                continue;
+            }
+            seen.add(dedupeKey);
+
+            if (existingKeys.has(dedupeKey)) {
+                result.skipped += 1;
+                result.errors.push(`"${name}" already exists in the supplier database and was skipped to avoid creating a duplicate.`);
+                continue;
+            }
+
+            let countryCode = normalizedCountry;
+            if (countryCode && !/^[A-Z]{2}$/.test(countryCode)) {
+                importErrors.push(`Invalid country code "${row.countryCode}"`);
+                countryCode = "";
+            }
+
+            const placeholderId = hasError ? ++placeholderCounter : null;
+            const finalName = placeholderId ? `${name} #${placeholderId}` : name;
+
+            const profilePatch = importErrors.length > 0
+                ? { importErrors, importFlags: ["needs_review"] }
+                : null;
+
+            const [created] = await db.insert(suppliers).values({
+                name: finalName,
+                contactEmail: "",
+                countryCode: countryCode || null,
+                status: row.status ?? "active",
+                lifecycleStatus: "prospect",
+                abcClassification: "None",
+                conflictMineralsStatus: "unknown",
+                tierLevel: "tier_3",
+                supplierType: row.supplierType?.trim() || null,
+                areaOfNeed: row.areaOfNeed ?? [],
+                commodityGroup: row.commodityGroup ?? [],
+                responsibleBuyer: row.responsibleBuyer ?? [],
+                strategicClassification: row.strategicClassification?.trim() || null,
+                profile: profilePatch,
+            }).returning();
+            // Keep the in-memory existingKeys map in sync so a second row
+            // targeting the same canonical name later in this batch is also
+            // caught.
+            existingKeys.add(dedupeKey);
+            result.created += 1;
+            if (hasError) {
+                result.errors.push(`"${finalName}" was imported with errors: ${importErrors.join("; ")}.`);
+            }
+            await logActivity("CREATE", "supplier", created.id, `Supplier imported via classification template: ${finalName}`);
+        }
+
+        if (result.errors.length) result.success = false;
+        await logActivity("UPDATE", "supplier", "bulk", `Imported ${result.created} supplier(s) via classification template`);
+        revalidatePath("/suppliers");
+        return result;
+    } catch (error) {
+        console.error("Failed to import classification suppliers:", error);
+        return { success: false, error: "Failed to import suppliers", created: result.created, skipped: result.skipped, errors: ["Failed to import suppliers"] } as ClassificationImportResult;
     }
 }

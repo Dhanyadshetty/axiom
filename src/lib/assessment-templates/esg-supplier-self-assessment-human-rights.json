@@ -1,0 +1,76 @@
+{
+  "id": "esg_supplier_self_assessment_human_rights",
+  "name": "ESG Lieferantenselbstauskunft - Menschenrechte",
+  "category": "esg_supplier_self_assessment_human_rights",
+  "version": "1.0",
+  "description": "ESG supplier self-assessment for human rights.",
+  "sections": [
+    {
+      "key": "buyer_message",
+      "title": "Message from the buyer",
+      "titleDe": "Nachricht des Käufers",
+      "order": 0,
+      "blocks": [
+        {
+          "key": "buyer_message_block",
+          "title": "Message from the buyer",
+          "titleDe": "Nachricht des Käufers",
+          "icon": "message-square",
+          "message": "Dear Supplier,\n\nPlease complete this ESG self-assessment regarding human rights in your operations and supply chain.\n\nKind regards,\n[Buyer Name]\n[Buyer Company]",
+          "messageDe": "Sehr geehrte(r) Lieferant(in),\n\nBitte füllen Sie diese ESG-Selbstauskunft zu Menschenrechten in Ihrem Betrieb und Ihrer Lieferkette aus.\n\nMit freundlichen Grüßen,\n[Name des Käufers]\n[Firma des Käufers]",
+          "fields": []
+        }
+      ]
+    },
+    {
+      "key": "supplier_identification",
+      "title": "1. Supplier Identification",
+      "titleDe": "1. Lieferantenidentifikation",
+      "order": 1,
+      "blocks": [
+        {
+          "key": "company_address",
+          "title": "Company address",
+          "titleDe": "Unternehmensanschrift",
+          "icon": "building",
+          "fields": [
+            { "key": "supplier_number", "label": "Supplier number", "labelDe": "Lieferantennummer", "type": "short_text", "required": false },
+            { "key": "company_name", "label": "Company name", "labelDe": "Firmenname", "type": "short_text", "required": true },
+            { "key": "address", "label": "Address", "labelDe": "Anschrift", "type": "short_text", "required": true },
+            { "key": "country", "label": "Country", "labelDe": "Land", "type": "short_text", "required": false }
+          ]
+        },
+        {
+          "key": "primary_contact",
+          "title": "Primary contact",
+          "titleDe": "Primärkontakt",
+          "icon": "user",
+          "fields": [
+            { "key": "contact_person_name", "label": "Contact name", "labelDe": "Kontaktname", "type": "short_text", "required": false },
+            { "key": "contact_email", "label": "Contact email", "labelDe": "Kontakt-E-Mail", "type": "short_text", "required": false }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "human_rights",
+      "title": "2. Human Rights",
+      "titleDe": "2. Menschenrechte",
+      "order": 2,
+      "blocks": [
+        {
+          "key": "human_rights_commitments",
+          "title": "Human rights commitments",
+          "titleDe": "Menschenrechtsverpflichtungen",
+          "icon": "shield",
+          "fields": [
+            { "key": "human_rights_policy", "label": "A human rights policy is in place and communicated", "labelDe": "Eine Menschenrechtsrichtlinie ist vorhanden und wird kommuniziert", "type": "yes_no_confirm", "required": true },
+            { "key": "human_rights_due_diligence", "label": "Human rights due diligence is performed", "labelDe": "Menschenrechts-Sorgfaltspflichten werden durchgeführt", "type": "yes_no_confirm", "required": true },
+            { "key": "grievance_mechanism", "label": "A grievance mechanism is available to workers and stakeholders", "labelDe": "Ein Beschwerdemechanismus steht Mitarbeitern und Stakeholdern zur Verfügung", "type": "yes_no_confirm", "required": true },
+            { "key": "human_rights_comments", "label": "Comments / evidence", "labelDe": "Kommentare / Nachweise", "type": "long_text_rich", "required": false }
+          ]
+        }
+      ]
+    }
+  ]
+}

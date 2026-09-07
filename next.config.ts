@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV !== "production";
 
+// NOTE: Strict-Transport-Security + upgrade-insecure-requests are intentionally NOT set here.
+// They are applied at request time by src/middleware.ts ONLY when the connection is HTTPS, so
+// a plain-HTTP local/dev deployment does not break the browser with ERR_SSL_PROTOCOL_ERROR.
 const securityHeaders = [
   { key: "X-DNS-Prefetch-Control", value: "on" },
   { key: "X-Frame-Options", value: "DENY" },
@@ -9,12 +12,6 @@ const securityHeaders = [
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
-  ...(!isDev
-    ? [{
-        key: "Strict-Transport-Security",
-        value: "max-age=63072000; includeSubDomains; preload",
-      }]
-    : []),
   {
     key: "Content-Security-Policy",
     value: [
@@ -28,11 +25,8 @@ const securityHeaders = [
       // 'unsafe-eval' is only permitted in development (needed by Next.js HMR/React DevTools).
       // It is intentionally excluded from production to harden against XSS escalation.
       isDev ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'" : "script-src 'self' 'unsafe-inline'",
-      isDev
-        ? "connect-src 'self' http: https: ws: wss: blob:"
-        : "connect-src 'self' https: wss: blob:",
+      "connect-src 'self' http: https: ws: wss: blob:",
       "form-action 'self'",
-      ...(!isDev ? ["upgrade-insecure-requests"] : []),
     ].join("; "),
   },
 ];
@@ -40,6 +34,9 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
+  turbopack: {
+    root: __dirname,
+  },
   async rewrites() {
     return [
       {

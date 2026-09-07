@@ -1,0 +1,77 @@
+{
+  "id": "esg_supplier_self_assessment_environmental_rights",
+  "name": "ESG Lieferantenselbstauskunft - Umweltrechte",
+  "category": "esg_supplier_self_assessment_environmental_rights",
+  "version": "1.0",
+  "description": "ESG supplier self-assessment for environmental rights.",
+  "sections": [
+    {
+      "key": "buyer_message",
+      "title": "Message from the buyer",
+      "titleDe": "Nachricht des Käufers",
+      "order": 0,
+      "blocks": [
+        {
+          "key": "buyer_message_block",
+          "title": "Message from the buyer",
+          "titleDe": "Nachricht des Käufers",
+          "icon": "message-square",
+          "message": "Dear Supplier,\n\nPlease complete this ESG self-assessment regarding environmental responsibility in your operations and supply chain.\n\nKind regards,\n[Buyer Name]\n[Buyer Company]",
+          "messageDe": "Sehr geehrte(r) Lieferant(in),\n\nBitte füllen Sie diese ESG-Selbstauskunft zur Umweltverantwortung in Ihrem Betrieb und Ihrer Lieferkette aus.\n\nMit freundlichen Grüßen,\n[Name des Käufers]\n[Firma des Käufers]",
+          "fields": []
+        }
+      ]
+    },
+    {
+      "key": "supplier_identification",
+      "title": "1. Supplier Identification",
+      "titleDe": "1. Lieferantenidentifikation",
+      "order": 1,
+      "blocks": [
+        {
+          "key": "company_address",
+          "title": "Company address",
+          "titleDe": "Unternehmensanschrift",
+          "icon": "building",
+          "fields": [
+            { "key": "supplier_number", "label": "Supplier number", "labelDe": "Lieferantennummer", "type": "short_text", "required": false },
+            { "key": "company_name", "label": "Company name", "labelDe": "Firmenname", "type": "short_text", "required": true },
+            { "key": "address", "label": "Address", "labelDe": "Anschrift", "type": "short_text", "required": true },
+            { "key": "country", "label": "Country", "labelDe": "Land", "type": "short_text", "required": false }
+          ]
+        },
+        {
+          "key": "primary_contact",
+          "title": "Primary contact",
+          "titleDe": "Primärkontakt",
+          "icon": "user",
+          "fields": [
+            { "key": "contact_person_name", "label": "Contact name", "labelDe": "Kontaktname", "type": "short_text", "required": false },
+            { "key": "contact_email", "label": "Contact email", "labelDe": "Kontakt-E-Mail", "type": "short_text", "required": false }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "environmental_rights",
+      "title": "2. Environmental Responsibility",
+      "titleDe": "2. Umweltverantwortung",
+      "order": 2,
+      "blocks": [
+        {
+          "key": "environmental_management",
+          "title": "Environmental management",
+          "titleDe": "Umweltmanagement",
+          "icon": "globe",
+          "fields": [
+            { "key": "environmental_management_system", "label": "An environmental management system is in place (e.g. ISO 14001)", "labelDe": "Ein Umweltmanagementsystem ist vorhanden (z. B. ISO 14001)", "type": "yes_no_confirm", "required": true },
+            { "key": "environmental_permits", "label": "Required environmental permits and registrations are valid", "labelDe": "Erforderliche Umweltgenehmigungen und Registrierungen sind gültig", "type": "yes_no_confirm", "required": true },
+            { "key": "waste_management", "label": "Waste is managed in accordance with applicable laws", "labelDe": "Abfall wird gemäß den geltenden Gesetzen behandelt", "type": "yes_no_confirm", "required": true },
+            { "key": "carbon_emissions_tracked", "label": "Carbon emissions (Scope 1 / 2) are tracked and reported", "labelDe": "CO2-Emissionen (Scope 1 / 2) werden erfasst und berichtet", "type": "yes_no_confirm", "required": true },
+            { "key": "environmental_comments", "label": "Comments / evidence", "labelDe": "Kommentare / Nachweise", "type": "long_text_rich", "required": false }
+          ]
+        }
+      ]
+    }
+  ]
+}

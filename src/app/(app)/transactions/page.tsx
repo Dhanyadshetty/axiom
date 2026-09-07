@@ -33,17 +33,16 @@ type InvoiceRow = { invoiceNumber?: string; amount?: string; currency?: string |
 type ReceiptRow = { id?: string; inspectionStatus?: string | null; receivedAt?: Date | string | null };
 type ContractRow = { title?: string; value?: string; status?: string | null; createdAt?: Date | string | null };
 
-const TX_TYPES = [
-    { id: 'all' as TxType, label: tc.allTransactions, icon: ArrowRightLeft },
-    { id: 'orders' as TxType, label: tc.txOrders, icon: ShoppingCart },
-    { id: 'goods_receipts' as TxType, label: tc.goodsReceipts, icon: Truck },
-    { id: 'invoices' as TxType, label: tc.invoiceStatus, icon: FileText },
-    { id: 'quantity_contracts' as TxType, label: tc.quantityContracts, icon: Handshake },
-];
-
 export default function TransactionsPage() {
     const { language } = useLanguage();
     const tc = t(language, "misc");
+    const TX_TYPES = [
+        { id: 'all' as TxType, label: tc.allTransactions, icon: ArrowRightLeft },
+        { id: 'orders' as TxType, label: tc.txOrders, icon: ShoppingCart },
+        { id: 'goods_receipts' as TxType, label: tc.goodsReceipts, icon: Truck },
+        { id: 'invoices' as TxType, label: tc.invoiceStatus, icon: FileText },
+        { id: 'quantity_contracts' as TxType, label: tc.quantityContracts, icon: Handshake },
+    ];
     const [txType, setTxType] = useState<TxType>('all');
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');

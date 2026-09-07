@@ -1,0 +1,581 @@
+{
+  "id": "supplier_self_assessment_pma_code_of_conduct",
+  "name": "Supplier Self Assessment PMA & Code of Conduct",
+  "category": "supplier_self_assessment_pma_code_of_conduct",
+  "version": "1.0",
+  "description": "Supplier Self Assessment covering Product Material Declaration (PMA) and Code of Conduct",
+  "sections": [
+    {
+      "key": "buyer_message",
+      "title": "Message from the buyer",
+      "titleDe": "Nachricht des Käufers",
+      "order": 0,
+      "blocks": [
+        { Right Ur Madway, left or do you bundle natural stage morta mortak pkane shiva Shiva Part Records like for the one minutes and what is your password? What is this for tact to domin? Do you only do that I have forgotten your password get next one two three I check it is not Patsurp sir in the new culture, no case and vondant notifications Saturday the axiom with axiom procurement o I see the LDO Sime procurement was either means you read me if I left that axiomadilla procure me to vice later on maximum check no went for another red dismarriage black cotishstrong lady other only trimmers remote sect branch branch app store package store packaging app store design according to design and stop feature made stating check out branch have a commitin march in local states and fourth in the lien red drittle change market mail than branch branch to river east branch copale smart nola in rock branches branches branch are sorry status are insert to branch out another remote branches on that and the outer branch branch to switch the lad commit to push and then tell it push the lad push which come out switch command switch command will directly in the directly create a feature bank service number old co to urban theplace comments changed file self full file
+          "key": "buyer_message_block",
+          "title": "Message from the buyer",
+          "titleDe": "Nachricht des Käufers",
+          "icon": "message-square",
+          "message": "Dear Supplier,\n\nWe are pleased about the opportunity to work with you and kindly ask you to complete this Supplier Self Assessment covering our Product Material Declaration (PMA) requirements and Supplier Code of Conduct.\n\nPlease fill out all sections completely and accurately. Your responses will help us evaluate our supply chain compliance and sustainability commitments.\n\nIf you have any questions, please contact your assigned procurement representative.\n\nKind regards,\n[Buyer Name]\n[Buyer Company]",
+          "messageDe": "Sehr geehrte(r) Lieferant(in),\n\nWir freuen uns über die Möglichkeit, mit Ihnen zusammenzuarbeiten, und bitten Sie höflich, diese Lieferanten-Selbstauskunft zu unseren Anforderungen an die Produktmaterialdeklaration (PMA) und den Lieferantenverhaltenskodex auszufüllen.\n\nBitte füllen Sie alle Abschnitte vollständig und korrekt aus. Ihre Angaben helfen uns, die Compliance und Nachhaltigkeitsverpflichtungen unserer Lieferkette zu bewerten.\n\nBei Fragen wenden Sie sich bitte an Ihre(n) zuständige(n) Beschaffungsmitarbeiter(in).\n\nMit freundlichen Grüßen,\n[Name des Käufers]\n[Firma des Käufers]",
+          "fields": []
+        }
+      ]
+    },
+    {
+      "key": "general_information",
+      "title": "1. General Information",
+      "titleDe": "1. Allgemeine Informationen",
+      "order": 1,
+      "blocks": [
+{
+            "key": "company_address",
+            "title": "Company address",
+            "titleDe": "Unternehmensanschrift",
+            "icon": "building",
+            "fields": [
+              { "key": "supplier_number", "label": "Supplier number", "labelDe": "Lieferantennummer", "type": "short_text", "required": false },
+              { "key": "company_name", "label": "Name", "labelDe": "Name", "type": "short_text", "required": true },
+              { "key": "address", "label": "Address", "labelDe": "Anschrift", "type": "short_text", "required": true }
+            ]
+          },
+        {
+          "key": "legal_details",
+          "title": "Legal details",
+          "titleDe": "Rechtliche Angaben",
+          "icon": "file-text",
+          "fields": [
+            { "key": "legal_form", "label": "Legal form", "labelDe": "Rechtsform", "type": "short_text", "required": false },
+            { "key": "parent_company", "label": "Parent company", "labelDe": "Muttergesellschaft", "type": "short_text", "required": false },
+            { "key": "tax_id", "label": "Tax ID", "labelDe": "Steuernummer", "type": "short_text", "required": false },
+            { "key": "vat_id", "label": "VAT ID", "labelDe": "USt-IdNr.", "type": "short_text", "required": true },
+            { "key": "foundation_year", "label": "Foundation year", "labelDe": "Gründungsjahr", "type": "number", "required": false, "min": 1800, "max": 2100 }
+          ]
+        },
+{
+            "key": "public_appearance",
+            "title": "Public appearance",
+            "titleDe": "Öffentliches Auftreten",
+            "icon": "globe",
+            "fields": [
+              { "key": "website", "label": "Website", "labelDe": "Website", "type": "short_text", "required": true, "help": "Enter full URL including https://", "helpDe": "Vollständige URL inklusive https:// eingeben" }
+            ]
+          },
+{
+            "key": "other_basic_information",
+            "title": "Other basic information",
+            "titleDe": "Weitere Basisinformationen",
+            "icon": "info",
+            "fields": [
+              { "key": "headquarters_location", "label": "Headquarters location", "labelDe": "Standort des Hauptsitzes", "type": "short_text", "required": true },
+              { "key": "eori_number", "label": "EORI number", "labelDe": "EORI-Nummer", "type": "short_text", "required": true },
+              { "key": "duns_number", "label": "D-U-N-S number", "labelDe": "D-U-N-S-Nummer", "type": "short_text", "required": true },
+              { "key": "trade_register_entry", "label": "Local trade register entry", "labelDe": "Eintrag im lokalen Handelsregister", "type": "short_text", "required": true }
+            ]
+          },
+{
+            "key": "bank_connection",
+            "title": "Bank connection",
+            "titleDe": "Bankverbindung",
+            "icon": "credit-card",
+            "fields": [
+              { "key": "bank_name", "label": "Bank Name", "labelDe": "Bankname", "type": "short_text", "required": false },
+              { "key": "iban", "label": "IBAN", "labelDe": "IBAN", "type": "short_text", "required": false, "help": "Format: 2 letters followed by digits (e.g., DE89370400440532013000)", "helpDe": "Format: 2 Buchstaben gefolgt von Ziffern (z. B. DE89370400440532013000)" },
+              { "key": "bic_swift", "label": "BIC/SWIFT", "labelDe": "BIC/SWIFT", "type": "short_text", "required": false },
+              { "key": "currency", "label": "Currency", "labelDe": "Währung", "type": "select_single", "required": false, "options": [
+                { "value": "EUR", "label": "EUR € Euro", "labelDe": "EUR € Euro" },
+                { "value": "USD", "label": "USD $ US Dollar", "labelDe": "USD $ US-Dollar" },
+                { "value": "GBP", "label": "GBP £ British Pound", "labelDe": "GBP £ Britisches Pfund" },
+                { "value": "CHF", "label": "CHF Swiss Franc", "labelDe": "CHF Schweizer Franken" },
+                { "value": "CNY", "label": "CNY ¥ Chinese Yuan", "labelDe": "CNY ¥ Chinesischer Yuan" },
+                { "value": "INR", "label": "INR ₹ Indian Rupee", "labelDe": "INR ₹ Indische Rupie" }
+              ]}
+            ]
+          },
+{
+            "key": "product_liability",
+            "title": "Product liability / manufacturer's liability",
+            "titleDe": "Produkthaftung / Herstellergarantie",
+            "icon": "shield",
+            "fields": [
+              { "key": "insurer_name", "label": "Insurer name", "labelDe": "Name des Versicherers", "type": "short_text", "required": true },
+              { "key": "insurance_number", "label": "Insurance number", "labelDe": "Versicherungsnummer", "type": "short_text", "required": true },
+              { "key": "insured_amount", "label": "Insured amount (€)", "labelDe": "Versicherte Summe (€)", "type": "short_text", "required": true }
+            ]
+          },
+{
+            "key": "production_sales_sites",
+            "title": "Production and sales Sites",
+            "titleDe": "Produktions- und Vertriebsstandorte",
+            "icon": "factory",
+            "message": "Please list all production and sales sites. For each site, provide the details below.",
+            "messageDe": "Bitte listen Sie alle Produktions- und Vertriebsstandorte auf. Geben Sie für jeden Standort die Details unten an.",
+            "fields": [
+              {
+                "key": "sites_table",
+                "label": "Production and sales sites",
+                "labelDe": "Produktions- und Vertriebsstandorte",
+                "type": "table_rows",
+                "required": true,
+                "columns": [
+                  { "key": "site", "label": "Site", "labelDe": "Standort", "type": "short_text", "required": true },
+                  { "key": "divisions", "label": "Divisions", "labelDe": "Sparten", "type": "select_multi_tags", "required": false, "options": [
+                    { "value": "sales", "label": "Sales", "labelDe": "Vertrieb" },
+                    { "value": "production", "label": "Production", "labelDe": "Produktion" }
+                  ]},
+                  { "key": "shifts", "label": "Shifts", "labelDe": "Schichten", "type": "select_multi_tags", "required": false, "options": [
+                    { "value": "0", "label": "0", "labelDe": "0" },
+                    { "value": "1", "label": "1", "labelDe": "1" },
+                    { "value": "2", "label": "2", "labelDe": "2" },
+                    { "value": "3", "label": "3", "labelDe": "3" },
+                    { "value": "4", "label": "4", "labelDe": "4" }
+                  ]}
+                ],
+                "emptyState": "No production or sales sites have been provided yet.",
+                "emptyStateDe": "Es wurden noch keine Produktions- oder Vertriebsstandorte angegeben.",
+                "addButtonLabel": "+ Add site",
+                "addButtonLabelDe": "+ Standort hinzufügen"
+              }
+            ],
+            "subBlocks": [
+              {
+                "key": "production_site_details",
+                "title": "Production site details",
+                "titleDe": "Details zum Produktionsstandort",
+                "icon": "map-pin",
+                "fields": [
+                  { "key": "company_name", "label": "Company name", "labelDe": "Firmenname", "type": "short_text", "required": true },
+                  { "key": "country", "label": "Country", "labelDe": "Land", "type": "short_text", "required": true },
+                  { "key": "postal_code_city", "label": "Postal code & City", "labelDe": "Postleitzahl & Ort", "type": "short_text", "required": true },
+                  { "key": "production_area", "label": "Production area (m²)", "labelDe": "Produktionsfläche (m²)", "type": "number", "required": false, "min": 0 },
+                  { "key": "contact_person_name", "label": "Contact person name", "labelDe": "Name der Kontaktperson", "type": "short_text", "required": true },
+                  { "key": "contact_email", "label": "Contact email", "labelDe": "Kontakt-E-Mail", "type": "short_text", "required": true },
+                  { "key": "contact_phone", "label": "Contact phone", "labelDe": "Kontakttelefon", "type": "short_text", "required": true }
+                ]
+              }
+            ]
+          },
+{
+            "key": "contacts",
+            "title": "Contacts",
+            "titleDe": "Kontakte",
+            "icon": "users",
+            "message": "Please provide information about the main production facility contacts. Use the department filter to organize contacts.",
+            "messageDe": "Bitte geben Sie Informationen zu den Kontakten der Hauptproduktionsstätte an. Nutzen Sie den Bereichsfilter zur Organisation der Kontakte.",
+            "fields": [
+              {
+                "key": "department_filter",
+                "label": "Department filter",
+                "labelDe": "Bereichsfilter",
+                "type": "select_multi_tags",
+                "required": false,
+                "options": [
+                  { "value": "sales", "label": "Sales", "labelDe": "Vertrieb" },
+                  { "value": "quality_management", "label": "Quality Management", "labelDe": "Qualitätsmanagement" },
+                  { "value": "logistics_supply_chain", "label": "Logistics/Supply Chain", "labelDe": "Logistik/Lieferkette" },
+                  { "value": "executive_management", "label": "Executive Management", "labelDe": "Geschäftsleitung" },
+                  { "value": "complaints", "label": "Complaints", "labelDe": "Beschwerden" },
+                  { "value": "engineering", "label": "Engineering", "labelDe": "Konstruktion" },
+                  { "value": "purchasing_procurement", "label": "Purchasing/Procurement", "labelDe": "Einkauf/Beschaffung" }
+                ]
+              },
+              {
+                "key": "contacts_table",
+                "label": "Contacts",
+                "labelDe": "Kontakte",
+                "type": "contact_table",
+                "required": true,
+                "columns": [
+                  { "key": "name", "label": "Contact", "labelDe": "Kontakt", "type": "short_text", "required": true },
+                  { "key": "email", "label": "Email", "labelDe": "E-Mail", "type": "short_text", "required": true },
+                  { "key": "language", "label": "Language", "labelDe": "Sprache", "type": "select_single", "required": false, "options": [
+                    { "value": "en", "label": "English", "labelDe": "Englisch" },
+                    { "value": "de", "label": "German", "labelDe": "Deutsch" },
+                    { "value": "fr", "label": "French", "labelDe": "Französisch" },
+                    { "value": "it", "label": "Italian", "labelDe": "Italienisch" },
+                    { "value": "pl", "label": "Polish", "labelDe": "Polnisch" },
+                    { "value": "sl", "label": "Slovenian", "labelDe": "Slowenisch" },
+                    { "value": "zh", "label": "Chinese", "labelDe": "Chinesisch" },
+                    { "value": "es", "label": "Spanish", "labelDe": "Spanisch" }
+                  ]},
+                  { "key": "department", "label": "Department", "labelDe": "Bereich", "type": "select_multi_tags", "required": false, "options": [
+                    { "value": "purchasing_procurement", "label": "Purchasing/Procurement", "labelDe": "Einkauf/Beschaffung" },
+                    { "value": "sales", "label": "Sales", "labelDe": "Vertrieb" },
+                    { "value": "marketing", "label": "Marketing", "labelDe": "Marketing" },
+                    { "value": "product_management", "label": "Product Management", "labelDe": "Produktmanagement" },
+                    { "value": "research_development", "label": "Research & Development", "labelDe": "Forschung & Entwicklung" },
+                    { "value": "production_manufacturing", "label": "Production/Manufacturing", "labelDe": "Produktion/Fertigung" },
+                    { "value": "quality_management", "label": "Quality Management", "labelDe": "Qualitätsmanagement" },
+                    { "value": "finance_controlling", "label": "Finance/Controlling", "labelDe": "Finanzen/Controlling" },
+                    { "value": "human_resources", "label": "Human Resources/HR", "labelDe": "Personalwesen/HR" },
+                    { "value": "it_digital", "label": "IT/Digital", "labelDe": "IT/Digital" },
+                    { "value": "logistics_supply_chain", "label": "Logistics/Supply Chain", "labelDe": "Logistik/Lieferkette" },
+                    { "value": "legal", "label": "Legal", "labelDe": "Recht" },
+                    { "value": "executive_management", "label": "Executive Management", "labelDe": "Geschäftsleitung" },
+                    { "value": "complaints", "label": "Complaints", "labelDe": "Beschwerden" },
+                    { "value": "engineering", "label": "Engineering", "labelDe": "Konstruktion" }
+                  ]}
+                ],
+                "addButtonLabel": "+ Add Contact",
+                "addButtonLabelDe": "+ Kontakt hinzufügen",
+                "modalFields": [
+                  { "key": "first_name", "label": "First name", "labelDe": "Vorname", "type": "short_text", "required": false },
+                  { "key": "last_name", "label": "Last name", "labelDe": "Nachname", "type": "short_text", "required": false },
+                  { "key": "email", "label": "Email", "labelDe": "E-Mail", "type": "short_text", "required": true },
+                  { "key": "phone", "label": "Phone", "labelDe": "Telefon", "type": "short_text", "required": false },
+                  { "key": "language", "label": "Language", "labelDe": "Sprache", "type": "select_single", "required": false, "options": [
+                    { "value": "de", "label": "German", "labelDe": "Deutsch" },
+                    { "value": "en", "label": "English", "labelDe": "Englisch" },
+                    { "value": "fr", "label": "French", "labelDe": "Französisch" },
+                    { "value": "it", "label": "Italian", "labelDe": "Italienisch" },
+                    { "value": "pl", "label": "Polish", "labelDe": "Polnisch" },
+                    { "value": "sl", "label": "Slovenian", "labelDe": "Slowenisch" },
+                    { "value": "zh", "label": "Chinese", "labelDe": "Chinesisch" },
+                    { "value": "es", "label": "Spanish", "labelDe": "Spanisch" }
+                  ]},
+                  { "key": "department", "label": "Department", "labelDe": "Bereich", "type": "select_multi_tags", "required": false, "options": [
+                    { "value": "purchasing_procurement", "label": "Purchasing/Procurement", "labelDe": "Einkauf/Beschaffung" },
+                    { "value": "sales", "label": "Sales", "labelDe": "Vertrieb" },
+                    { "value": "marketing", "label": "Marketing", "labelDe": "Marketing" },
+                    { "value": "product_management", "label": "Product Management", "labelDe": "Produktmanagement" },
+                    { "value": "research_development", "label": "Research & Development", "labelDe": "Forschung & Entwicklung" },
+                    { "value": "production_manufacturing", "label": "Production/Manufacturing", "labelDe": "Produktion/Fertigung" },
+                    { "value": "quality_management", "label": "Quality Management", "labelDe": "Qualitätsmanagement" },
+                    { "value": "finance_controlling", "label": "Finance/Controlling", "labelDe": "Finanzen/Controlling" },
+                    { "value": "human_resources", "label": "Human Resources/HR", "labelDe": "Personalwesen/HR" },
+                    { "value": "it_digital", "label": "IT/Digital", "labelDe": "IT/Digital" },
+                    { "value": "logistics_supply_chain", "label": "Logistics/Supply Chain", "labelDe": "Logistik/Lieferkette" },
+                    { "value": "legal", "label": "Legal", "labelDe": "Recht" },
+                    { "value": "executive_management", "label": "Executive Management", "labelDe": "Geschäftsleitung" },
+                    { "value": "complaints", "label": "Complaints", "labelDe": "Beschwerden" },
+                    { "value": "engineering", "label": "Engineering", "labelDe": "Konstruktion" }
+                  ]},
+                  { "key": "responsibility", "label": "Responsibility", "labelDe": "Verantwortung", "type": "select_single", "required": false, "options": [
+                    { "value": "price_inquiries_articles", "label": "Price Inquiries for Articles", "labelDe": "Preisanfragen für Artikel" },
+                    { "value": "info_requests_articles", "label": "Information Requests about Articles", "labelDe": "Informationsanfragen zu Artikeln" },
+                    { "value": "info_requests_supplier_org", "label": "Information Requests about Supplier Organization", "labelDe": "Informationsanfragen zur Lieferantenorganisation" },
+                    { "value": "automated_doc_requests", "label": "Automated Document Requests", "labelDe": "Automatisierte Dokumentanfragen" },
+                    { "value": "compliance_queries", "label": "Compliance Queries", "labelDe": "Compliance-Anfragen" }
+                  ]},
+                  { "key": "position", "label": "Position", "labelDe": "Position", "type": "select_single", "required": false, "options": [
+                    { "value": "ceo", "label": "Chief Executive Officer/CEO", "labelDe": "Geschäftsführer/CEO" },
+                    { "value": "division_head", "label": "Division Head/Director", "labelDe": "Bereichsleiter/Direktor" },
+                    { "value": "department_head", "label": "Department Head/Manager", "labelDe": "Abteilungsleiter/Manager" },
+                    { "value": "team_leader", "label": "Team Leader", "labelDe": "Teamleiter" },
+                    { "value": "group_leader", "label": "Group Leader", "labelDe": "Gruppenleiter" },
+                    { "value": "project_manager", "label": "Project Manager", "labelDe": "Projektmanager" },
+                    { "value": "specialist_officer", "label": "Specialist/Officer", "labelDe": "Spezialist/Sachbearbeiter" },
+                    { "value": "administrator", "label": "Administrator", "labelDe": "Administrator" },
+                    { "value": "manager", "label": "Manager", "labelDe": "Manager" },
+                    { "value": "specialist", "label": "Specialist", "labelDe": "Spezialist" },
+                    { "value": "assistant", "label": "Assistant", "labelDe": "Assistent" }
+                  ]}
+                ]
+              }
+            ]
+          },
+        {
+          "key": "employees",
+          "title": "Employees",
+          "titleDe": "Mitarbeiter",
+          "icon": "users",
+          "fields": [
+            { "key": "previous_year_total", "label": "Previous year total", "labelDe": "Vorjahr gesamt", "type": "number", "required": true, "min": 0 },
+            { "key": "current_year_total", "label": "Current year total", "labelDe": "Laufendes Jahr gesamt", "type": "number", "required": true, "min": 0 },
+            { "key": "direct_employees", "label": "Direct employees", "labelDe": "Direkte Mitarbeiter", "type": "number", "required": false, "min": 0 },
+            { "key": "indirect_employees", "label": "Indirect employees", "labelDe": "Indirekte Mitarbeiter", "type": "number", "required": false, "min": 0 },
+            { "key": "management_employees", "label": "Employees in management", "labelDe": "Mitarbeiter in der Geschäftsleitung", "type": "number", "required": false, "min": 0 },
+            { "key": "engineering_employees", "label": "Employees in engineering", "labelDe": "Mitarbeiter in der Konstruktion", "type": "number", "required": false, "min": 0 }
+          ]
+        },
+        {
+          "key": "customers",
+          "title": "Customers",
+          "titleDe": "Kunden",
+          "icon": "user-check",
+          "message": "Please provide your top customers. Format example: Max Mustermann GmbH, 10%\n\nTotal customers and customers representing 80% of sales are required fields.",
+          "messageDe": "Bitte geben Sie Ihre wichtigsten Kunden an. Formatbeispiel: Max Mustermann GmbH, 10%\n\nGesamtzahl der Kunden und Kunden, die 80 % des Umsatzes ausmachen, sind Pflichtfelder.",
+          "fields": [
+            { "key": "total_customers", "label": "Total customers", "labelDe": "Kunden gesamt", "type": "number", "required": true, "min": 0 },
+            { "key": "customers_80_percent", "label": "Customers = 80% of sales", "labelDe": "Kunden = 80 % des Umsatzes", "type": "number", "required": true, "min": 0 },
+            { "key": "top_customers_list", "label": "Top customers with %", "labelDe": "Top-Kunden mit %", "type": "long_text_rich", "required": true },
+            { "key": "recent_audits", "label": "Recent customer audits (name, type, date, result)", "labelDe": "Aktuelle Kundenaudits (Name, Art, Datum, Ergebnis)", "type": "long_text_rich", "required": true }
+          ]
+        },
+        {
+          "key": "annual_revenues",
+          "title": "Annual revenues in EUR",
+          "titleDe": "Jahresumsätze in EUR",
+          "icon": "euro",
+          "fields": [
+            {
+              "key": "required_years",
+              "label": "Required years",
+              "labelDe": "Erforderliche Jahre",
+              "type": "select_multi_tags",
+              "required": false,
+              "options": [
+                { "value": "2024", "label": "2024", "labelDe": "2024" },
+                { "value": "2025", "label": "2025", "labelDe": "2025" },
+                { "value": "2026", "label": "2026", "labelDe": "2026" }
+              ]
+            },
+            {
+              "key": "revenues_table",
+              "label": "Annual revenues",
+              "labelDe": "Jahresumsätze",
+              "type": "table_rows",
+              "required": true,
+              "columns": [
+                { "key": "year", "label": "Year", "labelDe": "Jahr", "type": "number", "required": true, "min": 2020, "max": 2030 },
+                { "key": "annual_revenue", "label": "Annual revenue (EUR)", "labelDe": "Jahresumsatz (EUR)", "type": "number", "required": true, "min": 0 }
+              ],
+              "emptyState": "No revenue data provided yet.",
+              "emptyStateDe": "Es wurden noch keine Umsatzdaten angegeben.",
+              "addButtonLabel": "+ Add year",
+              "addButtonLabelDe": "+ Jahr hinzufügen"
+            }
+          ]
+        },
+        {
+          "key": "share_revenue",
+          "title": "Share Revenue in %",
+          "titleDe": "Umsatzanteil in %",
+          "icon": "pie-chart",
+          "fields": [
+            { "key": "automotive_pct", "label": "Automotive (%)", "labelDe": "Automotive (%)", "type": "number", "required": false, "min": 0, "max": 100 },
+            { "key": "industry_pct", "label": "Industry (%)", "labelDe": "Industrie (%)", "type": "number", "required": false, "min": 0, "max": 100 },
+            { "key": "medicine_pct", "label": "Medicine (%)", "labelDe": "Medizin (%)", "type": "number", "required": false, "min": 0, "max": 100 },
+            { "key": "aerospace_pct", "label": "Aerospace (%)", "labelDe": "Luft- und Raumfahrt (%)", "type": "number", "required": false, "min": 0, "max": 100 },
+            { "key": "other_sectors_pct", "label": "Other sectors (%)", "labelDe": "Sonstige Branchen (%)", "type": "number", "required": false, "min": 0, "max": 100 }
+          ]
+        },
+        {
+          "key": "main_suppliers",
+          "title": "List of Main Suppliers",
+          "titleDe": "Liste der Hauptlieferanten",
+          "icon": "truck",
+          "message": "Please list your main suppliers with their percentage of purchase volume.",
+          "messageDe": "Bitte listen Sie Ihre Hauptlieferanten mit ihrem Anteil am Beschaffungsvolumen auf.",
+          "fields": [
+            { "key": "main_suppliers_list", "label": "Main suppliers with %", "labelDe": "Hauptlieferanten mit %", "type": "long_text_rich", "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "technical_information",
+      "title": "2. Technical Information",
+      "titleDe": "2. Technische Informationen",
+      "order": 2,
+      "blocks": [
+        {
+          "key": "main_equipment",
+          "title": "List of Main Equipment / Machinery",
+          "titleDe": "Liste der Hauptausrüstung / Maschinen",
+          "icon": "cog",
+          "message": "Please list your main equipment/machinery. Format: quantity, type, manufacturer/brand (e.g., '5, CNC Milling Machines, DMG Mori')",
+          "messageDe": "Bitte listen Sie Ihre Hauptausrüstung/Maschinen auf. Format: Menge, Typ, Hersteller/Marke (z. B. '5, CNC-Fräsmaschinen, DMG Mori')",
+          "fields": [
+            { "key": "equipment_list", "label": "Equipment list", "labelDe": "Ausrüstungsliste", "type": "long_text_rich", "required": false }
+          ]
+        },
+        {
+          "key": "core_competences",
+          "title": "Core Competences",
+          "titleDe": "Kernkompetenzen",
+          "icon": "target",
+          "message": "Select commodity groups and describe your core products/processes for each.",
+          "messageDe": "Wählen Sie Warengruppen aus und beschreiben Sie Ihre Kernprodukte/-prozesse für jede.",
+          "fields": [
+            {
+              "key": "commodity_groups",
+              "label": "Commodity groups",
+              "labelDe": "Warengruppen",
+              "type": "select_multi_tags",
+              "required": false,
+              "options": [
+                { "value": "stamping", "label": "Stamping", "labelDe": "Stanzteile" },
+                { "value": "casting", "label": "Casting", "labelDe": "Guss" },
+                { "value": "forging", "label": "Forging", "labelDe": "Schmieden" },
+                { "value": "machining", "label": "Machining", "labelDe": "Zerspanung" },
+                { "value": "welding", "label": "Welding", "labelDe": "Schweißen" },
+                { "value": "heat_treatment", "label": "Heat Treatment", "labelDe": "Wärmebehandlung" },
+                { "value": "surface_treatment", "label": "Surface Treatment", "labelDe": "Oberflächenbehandlung" },
+                { "value": "assembly", "label": "Assembly", "labelDe": "Montage" },
+                { "value": "electronics", "label": "Electronics", "labelDe": "Elektronik" },
+                { "value": "plastic_injection", "label": "Plastic Injection", "labelDe": "Kunststoffspritzguss" }
+              ]
+            },
+            { "key": "core_products_description", "label": "Core products/processes per commodity group", "labelDe": "Kernprodukte/-prozesse pro Warengruppe", "type": "long_text_rich", "required": false }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "quality_systems",
+      "title": "3. Quality Systems",
+      "titleDe": "3. Qualitätsmanagementsysteme",
+      "order": 3,
+      "blocks": [
+        {
+          "key": "document_requests_certifications",
+          "title": "Document requests - Certifications",
+          "titleDe": "Dokumentenanforderungen – Zertifizierungen",
+          "icon": "file-check",
+          "message": "Please upload the requested certification documents.",
+          "messageDe": "Bitte laden Sie die angeforderten Zertifizierungsdokumente hoch.",
+          "fields": [
+            {
+              "key": "iso_13485",
+              "label": "ISO 13485",
+              "labelDe": "ISO 13485",
+              "type": "document_upload",
+              "required": true,
+              "helperText": "Please upload the requested document",
+              "helperTextDe": "Bitte laden Sie das angeforderte Dokument hoch",
+              "templates": []
+            },
+            {
+              "key": "iatf_16949",
+              "label": "IATF 16949",
+              "labelDe": "IATF 16949",
+              "type": "document_upload",
+              "required": true,
+              "helperText": "Please upload the requested document",
+              "helperTextDe": "Bitte laden Sie das angeforderte Dokument hoch",
+              "templates": []
+            },
+            {
+              "key": "iso_45001",
+              "label": "ISO 45001",
+              "labelDe": "ISO 45001",
+              "type": "document_upload",
+              "required": true,
+              "helperText": "Please upload the requested document",
+              "helperTextDe": "Bitte laden Sie das angeforderte Dokument hoch",
+              "templates": []
+            },
+            {
+              "key": "iso_50001",
+              "label": "ISO 50001",
+              "labelDe": "ISO 50001",
+              "type": "document_upload",
+              "required": true,
+              "helperText": "Please upload the requested document",
+              "helperTextDe": "Bitte laden Sie das angeforderte Dokument hoch",
+              "templates": []
+            },
+            {
+              "key": "iso_9001",
+              "label": "ISO 9001",
+              "labelDe": "ISO 9001",
+              "type": "document_upload",
+              "required": true,
+              "helperText": "Please upload the requested document",
+              "helperTextDe": "Bitte laden Sie das angeforderte Dokument hoch",
+              "templates": []
+            },
+            {
+              "key": "iso_14001",
+              "label": "ISO 14001",
+              "labelDe": "ISO 14001",
+              "type": "document_upload",
+              "required": true,
+              "helperText": "Please upload the requested document",
+              "helperTextDe": "Bitte laden Sie das angeforderte Dokument hoch",
+              "templates": []
+            }
+          ]
+        },
+        {
+          "key": "additional_documents_block",
+          "title": "Additional documents",
+          "titleDe": "Zusätzliche Dokumente",
+          "icon": "file-text",
+          "message": "You may provide additional documents relevant to this request.",
+          "messageDe": "Sie können weitere, für diese Anfrage relevante Dokumente bereitstellen.",
+          "fields": [
+            {
+              "key": "additional_documents",
+              "label": "Additional documents",
+              "labelDe": "Zusätzliche Dokumente",
+              "type": "file_upload",
+              "required": false,
+              "modalUpload": true,
+              "helperText": "Upload any additional certification documents",
+              "helperTextDe": "Laden Sie alle zusätzlichen Zertifizierungsdokumente hoch",
+              "multiple": true
+            }
+          ]
+        },
+        {
+          "key": "contracts",
+          "title": "Contracts",
+          "titleDe": "Verträge",
+          "icon": "file-signature",
+          "fields": [
+            {
+              "key": "consignation_stock",
+              "label": "Is a consignation stock possible?",
+              "labelDe": "Ist ein Konsignationslager möglich?",
+              "type": "yes_no_confirm",
+              "required": true,
+              "clearable": true
+            }
+          ]
+        },
+        {
+          "key": "document_requests_code_of_conduct",
+          "title": "Document requests - Code of Conduct",
+          "titleDe": "Dokumentenanforderungen – Verhaltenskodex",
+          "icon": "file-text",
+          "message": "Please review and confirm the Code of Conduct documents.",
+          "messageDe": "Bitte sehen Sie den Verhaltenskodex durch und bestätigen Sie ihn.",
+          "fields": [
+            {
+              "key": "code_of_conduct",
+              "label": "Verhaltenskodex (Code of Conduct)",
+              "labelDe": "Verhaltenskodex (Code of Conduct)",
+              "type": "document_review_confirm",
+              "required": true,
+              "helperText": "Please review and confirm · N templates provided",
+              "helperTextDe": "Bitte durchsehen und bestätigen · N Vorlagen bereitgestellt",
+              "templates": [
+                { "id": "coc_1", "name": "Supplier Code of Conduct v2.1", "nameDe": "Lieferantenverhaltenskodex v2.1", "url": "/documents/supplier-code-of-conduct-v2.1.pdf" },
+                { "id": "coc_2", "name": "Anti-Corruption Policy", "nameDe": "Antikorruptionsrichtlinie", "url": "/documents/anti-corruption-policy.pdf" }
+              ]
+            },
+            {
+              "key": "additional_coc_documents",
+              "label": "Additional documents",
+              "labelDe": "Zusätzliche Dokumente",
+              "type": "file_upload",
+              "required": false,
+              "modalUpload": true,
+              "helperText": "Upload any additional Code of Conduct related documents",
+              "helperTextDe": "Laden Sie alle zusätzlichen, den Verhaltenskodex betreffenden Dokumente hoch",
+              "multiple": true
+            }
+          ]
+        },
+        {
+          "key": "confirmation",
+          "title": "Confirmation",
+          "titleDe": "Bestätigung",
+          "icon": "check-circle",
+          "fields": [
+            {
+              "key": "truthfulness_confirmation",
+              "label": "Please confirm that all of the above questions have been answered truthfully",
+              "labelDe": "Bitte bestätigen Sie, dass alle obigen Fragen wahrheitsgemäß beantwortet wurden",
+              "type": "yes_no_confirm",
+              "required": true,
+              "clearable": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

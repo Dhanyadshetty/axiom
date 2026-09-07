@@ -4,6 +4,7 @@ export interface EmailPayload {
     to: string;
     subject: string;
     body: string;
+    html?: string;
     replyTo?: string;
 }
 
@@ -15,7 +16,7 @@ export interface EmailSendResult {
 
 const SUPPORT_EMAIL = 'pma.axiom.support@gmail.com';
 
-export async function sendEmail({ to, subject, body, replyTo }: EmailPayload) {
+export async function sendEmail({ to, subject, body, html, replyTo }: EmailPayload) {
     const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com';
     const rawPort = Number(process.env.SMTP_PORT || 587);
     const smtpPort = Number.isFinite(rawPort) && rawPort > 0 && rawPort <= 65_535 ? rawPort : 587;
@@ -49,13 +50,16 @@ export async function sendEmail({ to, subject, body, replyTo }: EmailPayload) {
         // Fail fast if the SMTP connection/auth is not accepted
         await transporter.verify();
 
-        const info = await transporter.sendMail({
+        const mailOptions = {
             from: smtpFrom,
             to,
             replyTo: replyTo || smtpFrom,
             subject,
             text: body,
-        });
+            html: html,
+        };
+
+        const info = await transporter.sendMail(mailOptions);
 
         console.log(`[EMAIL] SENT | host=${smtpHost} | from=${smtpFrom} | to=${to} | messageId=${info.messageId}`);
         return {

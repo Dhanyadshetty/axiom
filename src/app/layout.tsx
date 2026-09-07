@@ -1,12 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Geist } from "next/font/google";
+import { Geist_Mono } from "next/font/google";
+import type { Session } from "next-auth";
 
 import { auth } from "@/auth";
-import { Header } from "@/components/layout/header";
-import { Sidebar } from "@/components/layout/sidebar";
-import { CommandPalette } from "@/components/layout/command-palette";
+import { ShellRouter } from "@/components/layout/shell-router";
 import { CurrencyProvider } from "@/components/currency-provider";
-import { InactivityTracker } from "@/components/shared/inactivity-tracker";
 import { PageTransition } from "@/components/shared/page-transition";
 import { SessionProvider } from "@/components/shared/session-provider";
 import { VersionShield } from "@/components/shared/version-shield";
@@ -20,10 +18,11 @@ import { LANGUAGE_COOKIE, normalizeLanguage } from "@/lib/i18n";
 
 import "./globals.css";
 
-const geistSans = Geist({
+const geistMono = Geist_Mono({
   subsets: ["latin"],
-  variable: "--font-geist-sans",
+  variable: "--font-geist-mono",
   display: "swap",
+  fallback: ["ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "monospace"],
 });
 
 export const metadata: Metadata = {
@@ -36,21 +35,41 @@ export const viewport: Viewport = {
   themeColor: "#10634a",
 };
 
+export const dynamic = 'force-dynamic';
+
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await auth();
-  const settings = await getPlatformSettingsForLayout();
+  let session: Session | null = null;
+  let settings: Awaited<ReturnType<typeof getPlatformSettingsForLayout>> | null = null;
   const runtimeVersion = getRuntimeVersionSnapshot();
-  const cookieStore = await cookies();
-  const initialLanguage = normalizeLanguage(cookieStore.get(LANGUAGE_COOKIE)?.value);
+  let initialLanguage: ReturnType<typeof normalizeLanguage> = "en";
 
-  return (
+  try {
+    session = await auth();
+  } catch (error) {
+    console.error("Root layout: auth() failed, continuing without a session", error);
+  }
+
+  try {
+    settings = await getPlatformSettingsForLayout();
+  } catch (error) {
+    console.error("Root layout: failed to load platform settings", error);
+  }
+
+  try {
+    const cookieStore = await cookies();
+    initialLanguage = normalizeLanguage(cookieStore.get(LANGUAGE_COOKIE)?.value);
+  } catch (error) {
+    console.error("Root layout: failed to read language cookie", error);
+  }
+
+return (
     <html lang={initialLanguage} suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} min-h-[100dvh] overflow-hidden bg-background text-foreground antialiased`}
+        className={`${geistMono.variable} min-h-[100dvh] overflow-hidden bg-background text-foreground antialiased`}
         suppressHydrationWarning
       >
         <ThemeProvider
@@ -61,30 +80,16 @@ export default async function RootLayout({
         >
           <SessionProvider session={session}>
             <LanguageProvider initialLanguage={initialLanguage}>
-              <CurrencyProvider initialSettings={settings}>
-                {session ? (
-                  <div className="flex h-[100dvh] w-full overflow-hidden">
-                    <Sidebar className="hidden h-[100dvh] shrink-0 self-stretch lg:flex" />
-                    <div className="flex h-[100dvh] min-w-0 flex-1 flex-col overflow-hidden">
-                      <Header />
-                      <main className="min-h-0 flex-1 overflow-auto">
-                        <PageTransition>{children}</PageTransition>
-                      </main>
-                      <CommandPalette />
-                    </div>
-                    <InactivityTracker />
-                  </div>
-                ) : (
-                  <div className="flex h-[100dvh] w-full min-w-0 flex-1 flex-col overflow-hidden">
-                    <main className="flex-1 overflow-auto">{children}</main>
-                  </div>
-                )}
-                <VersionShield
-                  initialVersion={runtimeVersion.version}
-                  initialLabel={runtimeVersion.label}
-                />
-                <Toaster position="top-right" richColors />
-              </CurrencyProvider>
+                <CurrencyProvider initialSettings={settings ?? undefined}>
+                  <ShellRouter session={session}>
+                    <PageTransition>{children}</PageTransition>
+                  </ShellRouter>
+                  <VersionShield
+                    initialVersion={runtimeVersion.version}
+                    initialLabel={runtimeVersion.label}
+                  />
+                  <Toaster position="top-right" richColors />
+                </CurrencyProvider>
             </LanguageProvider>
           </SessionProvider>
         </ThemeProvider>

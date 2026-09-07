@@ -1,0 +1,86 @@
+{
+  "id": "reach_enquiry",
+  "name": "REACH Anfrage",
+  "category": "reach_enquiry",
+  "version": "1.0",
+  "description": "REACH (Registration, Evaluation, Authorisation of Chemicals) enquiry.",
+  "sections": [
+    {
+      "key": "buyer_message",
+      "title": "Message from the buyer",
+      "titleDe": "Nachricht des Käufers",
+      "order": 0,
+      "blocks": [
+        {
+          "key": "buyer_message_block",
+          "title": "Message from the buyer",
+          "titleDe": "Nachricht des Käufers",
+          "icon": "message-square",
+          "message": "Dear Supplier,\n\nPlease complete this REACH enquiry. REACH (EC 1907/2006) regulates chemicals manufactured or imported into the EEA. Your responses help us ensure ongoing compliance in our supply chain.\n\nKind regards,\n[Buyer Name]\n[Buyer Company]",
+          "messageDe": "Sehr geehrte(r) Lieferant(in),\n\nBitte füllen Sie diese REACH-Anfrage aus. REACH (EG 1907/2006) regelt Chemikalien, die im EWR hergestellt oder importiert werden. Ihre Antworten helfen uns, die laufende Compliance in unserer Lieferkette sicherzustellen.\n\nMit freundlichen Grüßen,\n[Name des Käufers]\n[Firma des Käufers]",
+          "fields": []
+        }
+      ]
+    },
+    {
+      "key": "supplier_identification",
+      "title": "1. Supplier Identification",
+      "titleDe": "1. Lieferantenidentifikation",
+      "order": 1,
+      "blocks": [
+        {
+          "key": "company_address",
+          "title": "Company address",
+          "titleDe": "Unternehmensanschrift",
+          "icon": "building",
+          "fields": [
+            { "key": "supplier_number", "label": "Supplier number", "labelDe": "Lieferantennummer", "type": "short_text", "required": false },
+            { "key": "company_name", "label": "Company name", "labelDe": "Firmenname", "type": "short_text", "required": true },
+            { "key": "address", "label": "Address", "labelDe": "Anschrift", "type": "short_text", "required": true },
+            { "key": "country", "label": "Country", "labelDe": "Land", "type": "short_text", "required": false }
+          ]
+        },
+        {
+          "key": "primary_contact",
+          "title": "Primary contact",
+          "titleDe": "Primärkontakt",
+          "icon": "user",
+          "fields": [
+            { "key": "contact_person_name", "label": "Contact name", "labelDe": "Kontaktname", "type": "short_text", "required": false },
+            { "key": "contact_email", "label": "Contact email", "labelDe": "Kontakt-E-Mail", "type": "short_text", "required": false }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "reach_compliance",
+      "title": "2. REACH Compliance",
+      "titleDe": "2. REACH-Compliance",
+      "order": 2,
+      "blocks": [
+        {
+          "key": "reach_status",
+          "title": "REACH status",
+          "titleDe": "REACH-Status",
+          "icon": "flask",
+          "fields": [
+            { "key": "reach_aware", "label": "We are aware of REACH obligations (EC 1907/2006)", "labelDe": "Wir kennen die REACH-Verpflichtungen (EG 1907/2006)", "type": "yes_no_confirm", "required": true },
+            { "key": "reach_pre_registered", "label": "Substances we supply are pre-registered / registered with ECHA", "labelDe": "Die von uns gelieferten Stoffe sind bei der ECHA vorregistriert / registriert", "type": "yes_no_confirm", "required": true },
+            { "key": "svhc_communicated", "label": "We communicate SVHC information per Article 33 when > 0.1% w/w", "labelDe": "Wir kommunizieren SVHC-Informationen gemäß Artikel 33 bei > 0,1 Gew.-%", "type": "yes_no_confirm", "required": true },
+            { "key": "reach_comments", "label": "Comments / evidence", "labelDe": "Kommentare / Nachweise", "type": "long_text_rich", "required": false }
+          ]
+        },
+        {
+          "key": "reach_documents",
+          "title": "REACH documentation",
+          "titleDe": "REACH-Dokumentation",
+          "icon": "file-text",
+          "fields": [
+            { "key": "reach_declaration", "label": "REACH compliance declaration", "labelDe": "REACH-Compliance-Erklärung", "type": "document_upload", "required": false },
+            { "key": "svhc_statement", "label": "SVHC statement (if applicable)", "labelDe": "SVHC-Erklärung (falls zutreffend)", "type": "document_upload", "required": false }
+          ]
+        }
+      ]
+    }
+  ]
+}
