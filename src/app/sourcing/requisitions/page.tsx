@@ -11,6 +11,7 @@ import { Progress } from "@/components/ui/progress";
 
 import { getSuppliers } from "@/app/actions/suppliers";
 import { RequisitionActions } from "./requisition-actions";
+import { getActiveLanguage, t } from "@/lib/i18n";
 
 export default async function RequisitionsPage() {
     const session = await auth();
@@ -18,10 +19,12 @@ export default async function RequisitionsPage() {
     const suppliers = await getSuppliers();
     const userRole = (session?.user as any)?.role;
     const isAdmin = userRole === 'admin';
-    const pageTitle = isAdmin ? 'Internal Requisitions' : 'My Requisitions';
+    const language = await getActiveLanguage();
+    const ts = t(language, "sourcing");
+    const pageTitle = isAdmin ? ts.internalRequisitions : ts.myRequisitions;
     const pageDescription = isAdmin
-        ? 'P2P Workflow: Manage internal purchase requests and approvals.'
-        : 'Track the purchase requests you have raised and their current approval state.';
+        ? ts.requisitionsAdminDesc
+        : ts.requisitionsUserDesc;
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -60,11 +63,11 @@ export default async function RequisitionsPage() {
                         <ShoppingCart size={64} className="text-primary" />
                     </div>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{isAdmin ? 'Total Requests' : 'My Requests'}</CardTitle>
+                        <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{isAdmin ? ts.totalRequests : ts.myRequests}</CardTitle>
                         <CardTitle className="text-4xl font-bold">{reqs.length}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-xs text-muted-foreground">{isAdmin ? 'Across all departments' : 'Raised by your account'}</p>
+                        <p className="text-xs text-muted-foreground">{isAdmin ? ts.acrossAllDepartments : ts.raisedByYourAccount}</p>
                     </CardContent>
                 </Card>
                 <Card className="bg-gradient-to-br from-white to-amber-50 border-amber-200 shadow-sm overflow-hidden relative">
@@ -72,13 +75,13 @@ export default async function RequisitionsPage() {
                         <Clock size={64} className="text-amber-500" />
                     </div>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Pending Approval</CardTitle>
+                        <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{ts.pendingApproval}</CardTitle>
                         <CardTitle className="text-4xl font-bold text-amber-600">
                             {reqs.filter(r => r.status === 'pending_approval').length}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-xs text-muted-foreground">{isAdmin ? 'Awaiting budget verification' : 'Waiting for admin review'}</p>
+                        <p className="text-xs text-muted-foreground">{isAdmin ? ts.awaitingBudgetVerification : ts.waitingForAdminReview}</p>
                     </CardContent>
                 </Card>
                 <Card className="bg-gradient-to-br from-white to-green-50 border-green-200 shadow-sm overflow-hidden relative">
@@ -86,33 +89,33 @@ export default async function RequisitionsPage() {
                         <CheckCircle2 size={64} className="text-green-500" />
                     </div>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Approved Volume</CardTitle>
+                        <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{ts.approvedVolume}</CardTitle>
                         <CardTitle className="text-4xl font-bold text-green-600">
                             ₹{reqs.filter(r => r.status === 'approved').reduce((acc, r) => acc + Number(r.estimatedAmount), 0).toLocaleString()}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-xs text-muted-foreground">Ready for conversion to PO</p>
+                        <p className="text-xs text-muted-foreground">{ts.readyForConversion}</p>
                     </CardContent>
                 </Card>
             </div>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Requisition Ledger</CardTitle>
-                    <CardDescription>Comprehensive audit trail of internal procurement requests.</CardDescription>
+                    <CardTitle>{ts.requisitionLedger}</CardTitle>
+                    <CardDescription>{ts.requisitionLedgerDesc}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="rounded-md border overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead className="bg-slate-50 border-b">
                                 <tr className="text-muted-foreground font-medium">
-                                    <th className="h-12 px-4 text-left align-middle">ID</th>
-                                    <th className="h-12 px-4 text-left align-middle">Title / Department</th>
-                                    <th className="h-12 px-4 text-left align-middle">Est. Amount</th>
-                                    <th className="h-12 px-4 text-left align-middle">Status</th>
-                                    <th className="h-12 px-4 text-left align-middle">Requested On</th>
-                                    <th className="h-12 px-4 text-right align-middle">Actions</th>
+                                    <th className="h-12 px-4 text-left align-middle">{ts.idLabel}</th>
+                                    <th className="h-12 px-4 text-left align-middle">{ts.titleDepartment}</th>
+                                    <th className="h-12 px-4 text-left align-middle">{ts.estAmount}</th>
+                                    <th className="h-12 px-4 text-left align-middle">{ts.status}</th>
+                                    <th className="h-12 px-4 text-left align-middle">{ts.requestedOn}</th>
+                                    <th className="h-12 px-4 text-right align-middle">{ts.actions}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y">
@@ -124,7 +127,7 @@ export default async function RequisitionsPage() {
                                         <td className="p-4 align-middle">
                                             <div className="flex flex-col">
                                                 <span className="font-semibold text-slate-900">{req.title}</span>
-                                                <span className="text-xs text-muted-foreground uppercase">{req.department || 'Unassigned'}</span>
+                                                <span className="text-xs text-muted-foreground uppercase">{req.department || ts.unassigned}</span>
                                             </div>
                                         </td>
                                         <td className="p-4 align-middle font-bold text-slate-700">
@@ -145,7 +148,7 @@ export default async function RequisitionsPage() {
                                             </div>
                                         </td>
                                         <td className="p-4 align-middle text-muted-foreground whitespace-nowrap">
-                                            {req.createdAt ? new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(req.createdAt)) : 'N/A'}
+                                            {req.createdAt ? new Intl.DateTimeFormat(language === 'de' ? 'de-DE' : 'en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(req.createdAt)) : ts.notAvailableShort}
                                         </td>
                                         <td className="p-4 align-middle text-right">
                                             <RequisitionActions
@@ -163,7 +166,7 @@ export default async function RequisitionsPage() {
                                 {reqs.length === 0 && (
                                     <tr>
                                         <td colSpan={6} className="p-12 text-center text-muted-foreground italic">
-                                            No requisitions found. Start by creating an internal request.
+                                            {ts.noRequisitionsFound}
                                         </td>
                                     </tr>
                                 )}

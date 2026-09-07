@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { getActiveLanguage, t } from "@/lib/i18n";
 import { getOpenFraudAlerts } from "@/app/actions/agents/fraud-detection";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -37,6 +38,8 @@ const alertTypeLabels: Record<string, string> = {
 };
 
 export default async function FraudAlertsPage({ searchParams }: { searchParams?: Promise<{ id?: string }> }) {
+    const language = await getActiveLanguage();
+    const ta = t(language, "admin");
     const session = await auth();
     if (!session?.user || (session.user as { role: string }).role !== 'admin') {
         redirect('/');
@@ -65,24 +68,24 @@ export default async function FraudAlertsPage({ searchParams }: { searchParams?:
                         <div className="h-10 w-10 rounded-lg bg-red-100 flex items-center justify-center">
                             <Shield className="h-5 w-5 text-red-600" />
                         </div>
-                        Fraud Detection Alerts
+                        {ta.fraudDetectionAlerts}
                     </h1>
                     <p className="text-muted-foreground mt-1">
-                        AI-detected anomalies requiring investigation
+                        {ta.aiAnomalies}
                     </p>
                 </div>
                 <div className="flex gap-3">
                     <div className="text-center px-4 py-2 rounded-lg bg-red-50 border border-red-200">
                         <p className="text-2xl font-bold text-red-600">{criticalCount}</p>
-                        <p className="text-xs text-red-500">Critical</p>
+                        <p className="text-xs text-red-500">{ta.critical}</p>
                     </div>
                     <div className="text-center px-4 py-2 rounded-lg bg-orange-50 border border-orange-200">
                         <p className="text-2xl font-bold text-orange-600">{highCount}</p>
-                        <p className="text-xs text-orange-500">High</p>
+                        <p className="text-xs text-orange-500">{ta.high}</p>
                     </div>
                     <div className="text-center px-4 py-2 rounded-lg bg-stone-50 border border-stone-200">
                         <p className="text-2xl font-bold text-stone-600">{alerts.length}</p>
-                        <p className="text-xs text-stone-500">Total</p>
+                        <p className="text-xs text-stone-500">{ta.total}</p>
                     </div>
                 </div>
             </div>
@@ -92,9 +95,9 @@ export default async function FraudAlertsPage({ searchParams }: { searchParams?:
                 <Card className="bg-emerald-50 border-emerald-200">
                     <CardContent className="pt-6 text-center">
                         <CheckCircle2 className="h-12 w-12 text-emerald-500 mx-auto mb-4" />
-                        <h3 className="text-lg font-semibold text-emerald-700">All Clear!</h3>
+                        <h3 className="text-lg font-semibold text-emerald-700">{ta.allClear}</h3>
                         <p className="text-emerald-600 text-sm">
-                            No fraud alerts detected. Your transactions look healthy.
+                            {ta.noFraudAlerts}
                         </p>
                     </CardContent>
                 </Card>
@@ -151,7 +154,7 @@ export default async function FraudAlertsPage({ searchParams }: { searchParams?:
 
                                 {alert.indicators && alert.indicators.length > 0 && (
                                     <div className="bg-stone-50 rounded-lg p-3">
-                                        <p className="text-xs font-semibold text-stone-500 uppercase mb-2">Indicators</p>
+                                        <p className="text-xs font-semibold text-stone-500 uppercase mb-2">{ta.indicators}</p>
                                         <ul className="space-y-1">
                                             {alert.indicators.map((indicator: string, i: number) => (
                                                 <li key={i} className="text-xs text-stone-600 flex items-start gap-2">
@@ -165,7 +168,7 @@ export default async function FraudAlertsPage({ searchParams }: { searchParams?:
 
                                 {alert.suggestedAction && (
                                     <div className="bg-blue-50 rounded-lg p-3 border border-blue-100">
-                                        <p className="text-xs font-semibold text-blue-600 uppercase mb-1">Suggested Action</p>
+                                        <p className="text-xs font-semibold text-blue-600 uppercase mb-1">{ta.suggestedAction}</p>
                                         <p className="text-sm text-blue-700">{alert.suggestedAction}</p>
                                     </div>
                                 )}

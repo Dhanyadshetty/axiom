@@ -1,0 +1,1674 @@
+﻿
+> procurement-platform@0.1.0 lint
+> eslint
+
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\analyze-reorder.js
+  1:7   warning  'ts' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  1:12  error    A `require()` style import is forbidden                                        @typescript-eslint/no-require-imports
+  2:12  error    A `require()` style import is forbidden                                        @typescript-eslint/no-require-imports
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\check-duplicates.js
+  2:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\find-duplicates.js
+   1:12  error    A `require()` style import is forbidden                                                        @typescript-eslint/no-require-imports
+  18:7   warning  'currentObjectStart' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\scripts\make-test-assessment.ts
+  84:9  warning  'baseUrl' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\actions\assessments.ts
+  856:17  warning  'supplierName' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\actions\auth.ts
+  147:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\actions\enterprise-readiness.ts
+  41:10  warning  'notifySupplierStatusChange' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\actions\external-assessments.ts
+  413:5  warning  'reason' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\actions\goods-receipts.ts
+  105:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  124:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  199:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  208:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\actions\password-reset.ts
+  7:37  warning  'getVerificationTokenExpiresAt' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\actions\supplier-registration.ts
+  3:10  warning  'createRegistrationOnboardingPack' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  3:44  warning  'notifyAdminsAboutRegistration' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\admin\import\page.tsx
+  66:8  warning  React Hook useEffect has a missing dependency: 'loadSapConnectorStatus'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\admin\support\page.tsx
+  22:52  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\admin\support\support-admin-client.tsx
+  10:66  warning  'Clock' is defined but never used. Allowed unused vars must match /^_/u             @typescript-eslint/no-unused-vars
+  10:73  warning  'AlertTriangle' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+  99:23  warning  'updated' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\api\assessments\[id]\response\route.ts
+  3:79  warning  'contacts' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  3:89  warning  'users' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\api\assessments\[id]\suppliers\[supplierId]\contacts\route.ts
+  6:3  warning  'suppliers' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\api\external\assessments\[assessmentId]\requests\[requestId]\reject\route.ts
+   4:38  warning  'assessmentRequests' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   5:14  warning  'and' is defined but never used. Allowed unused vars must match /^_/u                 @typescript-eslint/no-unused-vars
+  13:27  warning  'requestId' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\api\external\assessments\[assessmentId]\requests\[requestId]\share\route.ts
+   4:103  warning  'users' is defined but never used. Allowed unused vars must match /^_/u                  @typescript-eslint/no-unused-vars
+   7:10   warning  'createMagicToken' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+  20:27   warning  'requestId' is assigned a value but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+  72:17   warning  'supplierName' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\api\external\assessments\[assessmentId]\requests\[requestId]\submit\route.ts
+  15:27  warning  'requestId' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\api\external\login\route.ts
+    4:51  warning  'assessmentRequests' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+    4:71  warning  'contacts' is defined but never used. Allowed unused vars must match /^_/u                @typescript-eslint/no-unused-vars
+    5:14  warning  'and' is defined but never used. Allowed unused vars must match /^_/u                     @typescript-eslint/no-unused-vars
+   76:15  warning  'baseUrl' is assigned a value but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+  132:11  warning  'sessionExpiry' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\api\external\requests\[requestId]\share\route.ts
+  10:19  warning  'isNull' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\api\reports\esg\[supplierId]\route.ts
+   5:19  warning  'and' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  18:38  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\api\suppliers\[id]\score\route.ts
+  14:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\api\suppliers\verify-email\route.ts
+  60:19  warning  'onboardingPack' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\copilot\page.tsx
+  80:8  warning  React Hook useEffect has a missing dependency: 'tc.copilotGreetingFiles'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\external\__debug__\[id]\page.tsx
+  44:6  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\external\assessments\[assessmentId]\requests\[requestId]\ExternalAssessmentLandingClient.tsx
+   7:10  warning  'Button' is defined but never used. Allowed unused vars must match /^_/u                @typescript-eslint/no-unused-vars
+   8:10  warning  'Card' is defined but never used. Allowed unused vars must match /^_/u                  @typescript-eslint/no-unused-vars
+   8:16  warning  'CardContent' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+  27:20  warning  'setResponse' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\external\assessments\[assessmentId]\requests\[requestId]\form\ExternalAssessmentFormClient.tsx
+   60:10  warning  'getFieldValidationErrors' is defined but never used. Allowed unused vars must match /^_/u                                                                                                          @typescript-eslint/no-unused-vars
+   84:20  error    React Hook "useRouter" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                        react-hooks/rules-of-hooks
+   85:35  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+   86:33  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+   87:39  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+   88:33  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+   89:41  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+   90:41  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+   91:47  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+   92:41  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+   93:45  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+   94:51  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+   95:47  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+   96:43  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+   97:49  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+   98:37  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+   99:63  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+  100:67  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+  104:29  error    React Hook "React.useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?     react-hooks/rules-of-hooks
+  109:23  error    React Hook "React.useRef" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?      react-hooks/rules-of-hooks
+  112:11  warning  The 'sections' logical expression could make the dependencies of useEffect Hook (at line 156) change on every render. To fix this, wrap the initialization of 'sections' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  115:5   error    React Hook "React.useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?   react-hooks/rules-of-hooks
+  138:5   error    React Hook "React.useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?   react-hooks/rules-of-hooks
+  177:18  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u                                                                                                                        @typescript-eslint/no-unused-vars
+  219:18  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u                                                                                                                        @typescript-eslint/no-unused-vars
+  242:18  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u                                                                                                                        @typescript-eslint/no-unused-vars
+  272:18  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u                                                                                                                        @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\external\assessments\[assessmentId]\requests\[requestId]\page.tsx
+  2:10  warning  'auth' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+  3:10  warning  'redirect' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\external\assessments\[assessmentId]\requests\[requestId]\share\ShareRequestClient.tsx
+  5:21  warning  'Check' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+  9:10  warning  'Textarea' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\external\assessments\[assessmentId]\requests\[requestId]\share\page.tsx
+  9:14  warning  'and' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\external\assessments\[assessmentId]\requests\[requestId]\success\SubmissionSuccessClient.tsx
+  40:86  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\forgot-password\page.tsx
+  22:11  warning  'router' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\login\page.tsx
+   95:11  warning  'handleForgotPassword' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+  304:53  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\onboarding\page.tsx
+  36:8  warning  React Hook useEffect has a missing dependency: 'loadOnboarding'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\portal\profile\page.tsx
+  31:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  32:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\portal\register\verified\page.tsx
+   3:10  warning  'useState' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+   4:29  warning  'CardHeader' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+   4:41  warning  'CardTitle' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+  15:11  warning  'router' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\portal\requests\page.tsx
+  29:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\portal\rfqs\[id]\page.tsx
+   47:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   48:64  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   92:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  151:63  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\reset-password\page.tsx
+  47:11  warning  'router' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\sourcing\contracts\page.tsx
+    5:10   warning  'Button' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+    6:10   warning  'Plus' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+    6:61   warning  'CheckCircle2' is defined but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
+    6:75   warning  'AlertTriangle' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+    6:90   warning  'Clock' is defined but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+   37:58   warning  Unexpected any. Specify a different type                                         @typescript-eslint/no-explicit-any
+  137:120  warning  Unexpected any. Specify a different type                                         @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\sourcing\orders\[id]\page.tsx
+   26:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   71:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  230:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\sourcing\parts\page.tsx
+  27:66  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  28:68  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\sourcing\requisitions\page.tsx
+   3:10  warning  'Button' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   6:10  warning  'Plus' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+   7:8   warning  'Link' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+  20:40  warning  Unexpected any. Specify a different type                                  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\app\sourcing\requisitions\requisition-actions.tsx
+  42:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\auth.ts
+  18:8  warning  'bcrypt' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\admin\mitigation-action.tsx
+  14:10  warning  'Badge' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+  15:46  warning  'CheckCircle2' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\admin\spend-analysis-view.tsx
+   7:37  warning  'TrendingUp' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+   7:49  warning  'TrendingDown' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+  24:68  warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  24:86  warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  40:18  warning  'error' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\admin\two-factor-setup.tsx
+   9:5   warning  'DialogFooter' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+  51:18  warning  'error' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+  74:18  warning  'error' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+  94:18  warning  'error' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\assessments\FormRenderer.tsx
+   29:3   warning  'Eye' is defined but never used. Allowed unused vars must match /^_/u                  @typescript-eslint/no-unused-vars
+   31:41  warning  'Section' is defined but never used. Allowed unused vars must match /^_/u              @typescript-eslint/no-unused-vars
+   31:50  warning  'Block' is defined but never used. Allowed unused vars must match /^_/u                @typescript-eslint/no-unused-vars
+   73:57  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+   74:33  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+   77:63  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+   80:16  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+   97:3   warning  'onValidate' is defined but never used. Allowed unused args must match /^_/u           @typescript-eslint/no-unused-vars
+  103:31  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  110:9   warning  'handleBlur' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  117:61  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  137:25  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\assessments\SchemaBasedFormStep.tsx
+   14:3   warning  'ChevronDown' is defined but never used. Allowed unused vars must match /^_/u                                             @typescript-eslint/no-unused-vars
+   15:3   warning  'ChevronUp' is defined but never used. Allowed unused vars must match /^_/u                                               @typescript-eslint/no-unused-vars
+   19:3   warning  'X' is defined but never used. Allowed unused vars must match /^_/u                                                       @typescript-eslint/no-unused-vars
+   21:3   warning  'ArrowLeft' is defined but never used. Allowed unused vars must match /^_/u                                               @typescript-eslint/no-unused-vars
+   35:3   warning  'MapPin' is defined but never used. Allowed unused vars must match /^_/u                                                  @typescript-eslint/no-unused-vars
+   39:10  warning  'Input' is defined but never used. Allowed unused vars must match /^_/u                                                   @typescript-eslint/no-unused-vars
+   40:10  warning  'Label' is defined but never used. Allowed unused vars must match /^_/u                                                   @typescript-eslint/no-unused-vars
+   45:3   warning  'Select' is defined but never used. Allowed unused vars must match /^_/u                                                  @typescript-eslint/no-unused-vars
+   46:3   warning  'SelectContent' is defined but never used. Allowed unused vars must match /^_/u                                           @typescript-eslint/no-unused-vars
+   47:3   warning  'SelectItem' is defined but never used. Allowed unused vars must match /^_/u                                              @typescript-eslint/no-unused-vars
+   48:3   warning  'SelectTrigger' is defined but never used. Allowed unused vars must match /^_/u                                           @typescript-eslint/no-unused-vars
+   49:3   warning  'SelectValue' is defined but never used. Allowed unused vars must match /^_/u                                             @typescript-eslint/no-unused-vars
+   51:10  warning  'Textarea' is defined but never used. Allowed unused vars must match /^_/u                                                @typescript-eslint/no-unused-vars
+   53:3   warning  'DropdownMenu' is defined but never used. Allowed unused vars must match /^_/u                                            @typescript-eslint/no-unused-vars
+   54:3   warning  'DropdownMenuTrigger' is defined but never used. Allowed unused vars must match /^_/u                                     @typescript-eslint/no-unused-vars
+   55:3   warning  'DropdownMenuContent' is defined but never used. Allowed unused vars must match /^_/u                                     @typescript-eslint/no-unused-vars
+   56:3   warning  'DropdownMenuItem' is defined but never used. Allowed unused vars must match /^_/u                                        @typescript-eslint/no-unused-vars
+   57:3   warning  'DropdownMenuSeparator' is defined but never used. Allowed unused vars must match /^_/u                                   @typescript-eslint/no-unused-vars
+   61:53  warning  'Section' is defined but never used. Allowed unused vars must match /^_/u                                                 @typescript-eslint/no-unused-vars
+   61:62  warning  'Block' is defined but never used. Allowed unused vars must match /^_/u                                                   @typescript-eslint/no-unused-vars
+   96:7   warning  'BLOCK_MESSAGES' is assigned a value but never used. Allowed unused vars must match /^_/u                                 @typescript-eslint/no-unused-vars
+  124:9   warning  'router' is assigned a value but never used. Allowed unused vars must match /^_/u                                         @typescript-eslint/no-unused-vars
+  174:6   warning  React Hook React.useEffect has a missing dependency: 'handleSaveDraft'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  199:14  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u                                              @typescript-eslint/no-unused-vars
+  227:34  warning  Unexpected any. Specify a different type                                                                                  @typescript-eslint/no-explicit-any
+  277:14  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u                                              @typescript-eslint/no-unused-vars
+  297:14  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u                                              @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\assessments\add-suppliers-modal.tsx
+  338:12  warning  'hasDefaultSuppliersLoaded' is assigned a value but never used. Allowed unused vars must match /^_/u                               @typescript-eslint/no-unused-vars
+  342:12  warning  'existingSuppliersLoading' is assigned a value but never used. Allowed unused vars must match /^_/u                                @typescript-eslint/no-unused-vars
+  343:12  warning  'existingSuppliersSaving' is assigned a value but never used. Allowed unused vars must match /^_/u                                 @typescript-eslint/no-unused-vars
+  388:8   warning  React Hook React.useEffect has a missing dependency: 'existingSuppliers.length'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  398:79  warning  Unexpected any. Specify a different type                                                                                           @typescript-eslint/no-explicit-any
+  425:11  warning  'saveExistingSuppliers' is assigned a value but never used. Allowed unused vars must match /^_/u                                   @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\assessments\assessment-detail.tsx
+  38:10  warning  'SetupStep' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+  39:10  warning  'FormStep' is defined but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+  40:10  warning  'ParticipantsStep' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\assessments\form-fields\ContactTableField.tsx
+    7:48  warning  'Users' is defined but never used. Allowed unused vars must match /^_/u                          @typescript-eslint/no-unused-vars
+   12:60  warning  'DialogTrigger' is defined but never used. Allowed unused vars must match /^_/u                  @typescript-eslint/no-unused-vars
+   39:3   warning  'blockKey' is defined but never used. Allowed unused args must match /^_/u                       @typescript-eslint/no-unused-vars
+   40:3   warning  'sectionKey' is defined but never used. Allowed unused args must match /^_/u                     @typescript-eslint/no-unused-vars
+   41:3   warning  'validationErrors' is assigned a value but never used. Allowed unused args must match /^_/u      @typescript-eslint/no-unused-vars
+   72:26  warning  Unexpected any. Specify a different type                                                         @typescript-eslint/no-explicit-any
+  137:9   warning  'getDepartmentDisplay' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  145:9   warning  'isDepartmentMet' is assigned a value but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\assessments\form-fields\DocumentReviewConfirmField.tsx
+  4:10  warning  'cn' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\assessments\form-fields\DocumentUploadField.tsx
+  17:5  warning  'FileText' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\assessments\form-fields\FieldRenderer.tsx
+  29:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  67:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  98:88  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\assessments\form-fields\LocationLookupField.tsx
+  4:10  warning  'cn' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+  7:10  warning  'Button' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  8:18  warning  'Edit2' is defined but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\assessments\form-fields\LongTextRichField.tsx
+   6:10  warning  'Textarea' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  15:3   warning  'Type' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+  19:3   warning  'Pencil' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\assessments\form-fields\NumberField.tsx
+  4:10  warning  'cn' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\assessments\form-fields\ProductionSitesField.tsx
+  11:10  warning  'FileUploadField' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  12:15  warning  'TableColumn' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+  12:28  warning  'TableRowData' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+  44:3   warning  'blockKey' is defined but never used. Allowed unused args must match /^_/u         @typescript-eslint/no-unused-vars
+  45:3   warning  'sectionKey' is defined but never used. Allowed unused args must match /^_/u       @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\assessments\form-fields\TableRowsField.tsx
+    7:16  warning  'MoreVertical' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   12:42  warning  'Field' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+  113:3   warning  'sectionKey' is defined but never used. Allowed unused args must match /^_/u    @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\assessments\form-fields\YesNoConfirmField.tsx
+  4:10  warning  'cn' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\assessments\form-fields\index.tsx
+  29:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  58:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  89:88  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\assessments\form-tab-content.tsx
+  106:11  warning  'handleSaveMessage' is assigned a value but never used. Allowed unused vars must match /^_/u                              @typescript-eslint/no-unused-vars
+  116:18  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u                                              @typescript-eslint/no-unused-vars
+  264:50  warning  Unexpected any. Specify a different type                                                                                  @typescript-eslint/no-explicit-any
+  305:8   warning  React Hook React.useEffect has a missing dependency: 'localizedSchema'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\assessments\overview-panel-new.tsx
+    6:10   warning  'ChevronDown' is defined but never used. Allowed unused vars must match /^_/u               @typescript-eslint/no-unused-vars
+    6:41   warning  'UserCheck' is defined but never used. Allowed unused vars must match /^_/u                 @typescript-eslint/no-unused-vars
+    6:62   warning  'Building2' is defined but never used. Allowed unused vars must match /^_/u                 @typescript-eslint/no-unused-vars
+    6:73   warning  'Mail' is defined but never used. Allowed unused vars must match /^_/u                      @typescript-eslint/no-unused-vars
+    6:109  warning  'Clock' is defined but never used. Allowed unused vars must match /^_/u                     @typescript-eslint/no-unused-vars
+    6:155  warning  'Send' is defined but never used. Allowed unused vars must match /^_/u                      @typescript-eslint/no-unused-vars
+   19:10   warning  'ScrollArea' is defined but never used. Allowed unused vars must match /^_/u                @typescript-eslint/no-unused-vars
+   41:5    warning  'truncate' is defined but never used. Allowed unused vars must match /^_/u                  @typescript-eslint/no-unused-vars
+   56:34   warning  'index' is defined but never used. Allowed unused args must match /^_/u                     @typescript-eslint/no-unused-vars
+   56:41   warning  'assessmentRequestId' is defined but never used. Allowed unused args must match /^_/u       @typescript-eslint/no-unused-vars
+  664:12   warning  'moreInfoOpen' is assigned a value but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+  664:26   warning  'setMoreInfoOpen' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  721:11   warning  'moreInfoContent' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\assessments\participants-step.tsx
+  80:12  warning  'isSavingSuppliers' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\assessments\responses-panel-new.tsx
+    4:24  warning  'Send' is defined but never used. Allowed unused vars must match /^_/u                                                                                  @typescript-eslint/no-unused-vars
+    4:37  warning  'CheckCircle2' is defined but never used. Allowed unused vars must match /^_/u                                                                          @typescript-eslint/no-unused-vars
+    4:61  warning  'ChevronDown' is defined but never used. Allowed unused vars must match /^_/u                                                                           @typescript-eslint/no-unused-vars
+    4:74  warning  'AlertCircle' is defined but never used. Allowed unused vars must match /^_/u                                                                           @typescript-eslint/no-unused-vars
+   16:34  warning  'AvatarImage' is defined but never used. Allowed unused vars must match /^_/u                                                                           @typescript-eslint/no-unused-vars
+   26:5   warning  'initials' is defined but never used. Allowed unused vars must match /^_/u                                                                              @typescript-eslint/no-unused-vars
+   27:5   warning  'formatDate' is defined but never used. Allowed unused vars must match /^_/u                                                                            @typescript-eslint/no-unused-vars
+   41:12  warning  'sidebarOpen' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                  @typescript-eslint/no-unused-vars
+   41:25  warning  'setSidebarOpen' is assigned a value but never used. Allowed unused vars must match /^_/u                                                               @typescript-eslint/no-unused-vars
+   45:11  warning  'handleSelectSupplier' is assigned a value but never used. Allowed unused vars must match /^_/u                                                         @typescript-eslint/no-unused-vars
+   70:8   warning  React Hook React.useEffect has missing dependencies: 'loadSupplierResponse' and 'selectedSupplier'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+   75:11  warning  'currentStatus' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                @typescript-eslint/no-unused-vars
+  251:36  warning  'detail' is defined but never used. Allowed unused args must match /^_/u                                                                                @typescript-eslint/no-unused-vars
+  252:11  warning  'currentStatus' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                @typescript-eslint/no-unused-vars
+  253:11  warning  'reviewStatus' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                 @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\assessments\shared-constants.tsx
+  5:15  warning  'AssessmentDetail' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\contracts\contract-charts.tsx
+  74:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\contracts\contract-upload.tsx
+  9:10  warning  'FileText' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\copilot\chat-markdown.tsx
+   54:30  warning  'node' is defined but never used. Allowed unused args must match /^_/u        @typescript-eslint/no-unused-vars
+   54:77  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+   64:38  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+   96:42  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+  169:48  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+  210:48  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\dashboard\ai-insights.tsx
+   5:10  warning  'Button' is defined but never used. Allowed unused vars must match /^_/u                  @typescript-eslint/no-unused-vars
+   6:20  warning  'Loader' is defined but never used. Allowed unused vars must match /^_/u                  @typescript-eslint/no-unused-vars
+  10:46  warning  Unexpected any. Specify a different type                                                  @typescript-eslint/no-explicit-any
+  11:12  warning  'loading' is assigned a value but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+  13:11  warning  'handleAnalyze' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\dashboard\analytics-board.tsx
+  26:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\dashboard\contract-alerts.tsx
+  11:5   warning  'Bell' is defined but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+  13:5   warning  'ArrowUpRight' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  19:48  warning  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\dashboard\dashboard-header.tsx
+  39:8  warning  React Hook useEffect has a missing dependency: 'language'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\dashboard\recent-procurements.tsx
+  2:34  warning  'AvatarImage' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  5:58  warning  Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\dashboard\savings-widget.tsx
+  5:22  warning  'TrendingDown' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  5:36  warning  'DollarSign' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\dashboard\suggested-requisitions.tsx
+   8:5   warning  'Package' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+  12:5   warning  'ShoppingCart' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  18:52  warning  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\inventory\inventory-actions.tsx
+  6:5  warning  'Plus' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\parts\part-charts.tsx
+  14:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\sourcing\global-record-receipt.tsx
+  21:59  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\sourcing\manual-invite-dialog.tsx
+  13:31  warning  'CheckCircle2' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+  54:18  warning  'error' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\sourcing\order-charts.tsx
+  21:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\sourcing\order-status-stepper.tsx
+  73:70  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\sourcing\record-receipt-dialog.tsx
+  14:10  warning  'Input' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\sourcing\three-way-match.tsx
+  21:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\suppliers\SuppliersModule.tsx
+   3:13   warning  'React' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+   4:10   warning  'ChevronDown' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+   4:23   warning  'Inbox' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+   4:30   warning  'ArrowUp' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+   4:39   warning  'ArrowDown' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+   4:50   warning  'ChevronsUpDown' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   4:66   warning  'Check' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+   4:73   warning  'Plus' is defined but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+   4:79   warning  'Search' is defined but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+   4:87   warning  'X' is defined but never used. Allowed unused vars must match /^_/u               @typescript-eslint/no-unused-vars
+   4:90   warning  'RotateCcw' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+   4:101  warning  'Flag' is defined but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+   4:107  warning  'Users' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+   4:114  warning  'Building' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+   4:124  warning  'Globe' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+   4:131  warning  'FileText' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+   4:141  warning  'Shield' is defined but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+   4:149  warning  'TrendingUp' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+   4:161  warning  'DollarSign' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+   5:10   warning  'Button' is defined but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+   6:10   warning  'Input' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+   7:10   warning  'Checkbox' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+   8:10   warning  'Badge' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+   9:10   warning  'cn' is defined but never used. Allowed unused vars must match /^_/u              @typescript-eslint/no-unused-vars
+  10:10   warning  'formatCurrency' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  11:10   warning  'flagEmoji' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+  11:21   warning  'countryName' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\suppliers\add-supplier-modal.tsx
+  117:51  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\suppliers\record-performance-modal.tsx
+   5:5  warning  'Card' is defined but never used. Allowed unused vars must match /^_/u             @typescript-eslint/no-unused-vars
+   6:5  warning  'CardContent' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+   7:5  warning  'CardDescription' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   8:5  warning  'CardFooter' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+   9:5  warning  'CardHeader' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+  10:5  warning  'CardTitle' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\suppliers\searchable-country-select.tsx
+  4:23  warning  'Search' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  4:31  warning  'X' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+  5:10  warning  'Button' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\suppliers\supplier-lifecycle-stepper.tsx
+  4:41  warning  'Mail' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\suppliers\supplier-overview.tsx
+   54:31  warning  Unexpected any. Specify a different type                                                                                                                                                        @typescript-eslint/no-explicit-any
+   73:68  warning  Unexpected any. Specify a different type                                                                                                                                                        @typescript-eslint/no-explicit-any
+   73:81  warning  Unexpected any. Specify a different type                                                                                                                                                        @typescript-eslint/no-explicit-any
+   74:11  warning  The 'profile' logical expression could make the dependencies of useMemo Hook (at line 112) change on every render. To fix this, wrap the initialization of 'profile' in its own useMemo() Hook  react-hooks/exhaustive-deps
+   74:11  warning  The 'profile' logical expression could make the dependencies of useMemo Hook (at line 119) change on every render. To fix this, wrap the initialization of 'profile' in its own useMemo() Hook  react-hooks/exhaustive-deps
+   77:56  warning  Unexpected any. Specify a different type                                                                                                                                                        @typescript-eslint/no-explicit-any
+   78:62  warning  Unexpected any. Specify a different type                                                                                                                                                        @typescript-eslint/no-explicit-any
+   81:60  warning  Unexpected any. Specify a different type                                                                                                                                                        @typescript-eslint/no-explicit-any
+   82:60  warning  Unexpected any. Specify a different type                                                                                                                                                        @typescript-eslint/no-explicit-any
+  110:23  warning  Unexpected any. Specify a different type                                                                                                                                                        @typescript-eslint/no-explicit-any
+  110:31  warning  Unexpected any. Specify a different type                                                                                                                                                        @typescript-eslint/no-explicit-any
+  111:22  warning  Unexpected any. Specify a different type                                                                                                                                                        @typescript-eslint/no-explicit-any
+  118:28  warning  Unexpected any. Specify a different type                                                                                                                                                        @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\suppliers\supplier-properties.tsx
+   22:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   28:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   28:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   32:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   32:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   32:55  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   34:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   45:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  104:62  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  112:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  121:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  130:61  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  137:66  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  142:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  335:83  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  388:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  389:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  390:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  400:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  492:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  494:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  499:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  513:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\suppliers\suppliers-model.ts
+   3:13   warning  'React' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+   4:10   warning  'useState' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+   4:20   warning  'useMemo' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+   4:29   warning  'useCallback' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+   5:10   warning  'ChevronDown' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+   5:23   warning  'Inbox' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+   5:30   warning  'ArrowUp' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+   5:39   warning  'ArrowDown' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+   5:50   warning  'ChevronsUpDown' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   5:66   warning  'Check' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+   5:73   warning  'Plus' is defined but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+   5:79   warning  'Search' is defined but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+   5:87   warning  'X' is defined but never used. Allowed unused vars must match /^_/u               @typescript-eslint/no-unused-vars
+   5:90   warning  'RotateCcw' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+   5:101  warning  'Flag' is defined but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+   5:107  warning  'Users' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+   5:114  warning  'Building' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+   5:124  warning  'Globe' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+   5:131  warning  'FileText' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+   5:141  warning  'Shield' is defined but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+   5:149  warning  'TrendingUp' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+   5:161  warning  'DollarSign' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+   6:10   warning  'Button' is defined but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+   7:10   warning  'Input' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+   8:10   warning  'Checkbox' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+   9:10   warning  'Badge' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+  10:10   warning  'cn' is defined but never used. Allowed unused vars must match /^_/u              @typescript-eslint/no-unused-vars
+  11:10   warning  'formatCurrency' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  12:10   warning  'flagEmoji' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+  12:21   warning  'countryName' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\suppliers\suppliers-table-new.tsx
+     3:13  warning  'React' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+     4:10  warning  'Plus' is defined but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+     4:16  warning  'Inbox' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+     4:23  warning  'ArrowUp' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+     4:32  warning  'ArrowDown' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+     4:43  warning  'ChevronsUpDown' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+     4:59  warning  'Check' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+     4:66  warning  'ChevronDown' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+     4:79  warning  'RotateCcw' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+     5:10  warning  'Button' is defined but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+     6:10  warning  'Checkbox' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+     7:10  warning  'Badge' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+     8:10  warning  'cn' is defined but never used. Allowed unused vars must match /^_/u              @typescript-eslint/no-unused-vars
+     9:10  warning  'formatCurrency' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+    10:10  warning  'flagEmoji' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+    10:21  warning  'countryName' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+   423:12  warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  1219:38  warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  1221:20  warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  1254:36  warning  'b' is defined but never used. Allowed unused args must match /^_/u               @typescript-eslint/no-unused-vars
+  1255:42  warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  1257:24  warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\suppliers\suppliers-table.tsx
+   2:59  warning  'Check' is defined but never used. Allowed unused vars must match /^_/u             @typescript-eslint/no-unused-vars
+  10:5   warning  'SUPPLIER_COLUMNS' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\suppliers\tacto\suppliers-grid.tsx
+  14:5  warning  'Download' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\suppliers\tacto\suppliers-model.ts
+   3:13   warning  'React' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+   4:10   warning  'useState' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+   4:20   warning  'useMemo' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+   4:29   warning  'useCallback' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+   5:10   warning  'ChevronDown' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+   5:23   warning  'Inbox' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+   5:30   warning  'ArrowUp' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+   5:39   warning  'ArrowDown' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+   5:50   warning  'ChevronsUpDown' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   5:66   warning  'Check' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+   5:73   warning  'Plus' is defined but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+   5:79   warning  'Search' is defined but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+   5:87   warning  'X' is defined but never used. Allowed unused vars must match /^_/u               @typescript-eslint/no-unused-vars
+   5:90   warning  'RotateCcw' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+   5:101  warning  'Flag' is defined but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+   5:107  warning  'Users' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+   5:114  warning  'Building' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+   5:124  warning  'Globe' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+   5:131  warning  'FileText' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+   5:141  warning  'Shield' is defined but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+   5:149  warning  'TrendingUp' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+   5:161  warning  'DollarSign' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+   6:10   warning  'Button' is defined but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+   7:10   warning  'Input' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+   8:10   warning  'Checkbox' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+   9:10   warning  'Badge' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+  10:10   warning  'cn' is defined but never used. Allowed unused vars must match /^_/u              @typescript-eslint/no-unused-vars
+  11:10   warning  'formatCurrency' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  12:10   warning  'flagEmoji' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+  12:21   warning  'countryName' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\suppliers\tacto\suppliers-utils.ts
+  34:11  error  Parsing error: '>' expected
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\components\theme-toggle.tsx
+   6:18  warning  'AnimatePresence' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  31:62  warning  Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\db\demo-workspace.ts
+  2:10  warning  'eq' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\lib\assessment-templates\validate.ts
+  1:67  warning  'Section' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+  2:10  warning  'IBAN_PATTERN' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  2:24  warning  'validateIBAN' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\lib\assessment-templates\validation-rules.ts
+   7:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  38:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  49:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\lib\i18n\index.ts
+    3:10  warning  'createContext' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+    3:25  warning  'useContext' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+    3:37  warning  'useState' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+    3:47  warning  'useEffect' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+  706:16  warning  Unexpected any. Specify a different type                                         @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\lib\queue\email-queue.ts
+   98:15  warning  'p' is assigned a value but never used. Allowed unused vars must match /^_/u                 @typescript-eslint/no-unused-vars
+  100:15  warning  'ar' is assigned a value but never used. Allowed unused vars must match /^_/u                @typescript-eslint/no-unused-vars
+  102:15  warning  'sup' is assigned a value but never used. Allowed unused vars must match /^_/u               @typescript-eslint/no-unused-vars
+  134:13  warning  'expiresAt' is assigned a value but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+  138:15  warning  'magicLinkUrl' is assigned a value but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+  141:15  warning  'buyerCompanyName' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  203:90  warning  'toName' is assigned a value but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+  228:15  warning  'p' is assigned a value but never used. Allowed unused vars must match /^_/u                 @typescript-eslint/no-unused-vars
+  373:5   warning  'email' is defined but never used. Allowed unused args must match /^_/u                      @typescript-eslint/no-unused-vars
+  374:5   warning  'details' is defined but never used. Allowed unused args must match /^_/u                    @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\lib\services\email-templates.ts
+   41:10  warning  'getTemplate' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+  338:11  warning  'preheader' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\lib\services\magic-tokens.ts
+    3:81  warning  'users' is defined but never used. Allowed unused vars must match /^_/u                  @typescript-eslint/no-unused-vars
+    3:88  warning  'suppliers' is defined but never used. Allowed unused vars must match /^_/u              @typescript-eslint/no-unused-vars
+   72:15  warning  'magicLinkUrl' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  223:5   warning  'purpose' is defined but never used. Allowed unused args must match /^_/u                @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\src\lib\telemetry.ts
+  10:68  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  17:84  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  24:64  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  24:80  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  41:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  72:87  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\tests\unit\app-shell.test.ts
+  5:87  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\agate-spur\workshop\ai-workshop-april-28-2026\tmp\slides\ai-workshop-interactive\build_deck.mjs
+  1095:10  warning  'xmlEscape' is defined but never used. Allowed unused vars must match /^_/u              @typescript-eslint/no-unused-vars
+  1128:16  warning  'patchInteractiveLinks' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\app\actions\auth.ts
+  147:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\app\actions\enterprise-readiness.ts
+  41:10  warning  'notifySupplierStatusChange' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\app\actions\goods-receipts.ts
+  105:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  124:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  199:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  208:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\app\actions\password-reset.ts
+  7:37  warning  'getVerificationTokenExpiresAt' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\app\actions\supplier-registration.ts
+  3:10  warning  'createRegistrationOnboardingPack' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  3:44  warning  'notifyAdminsAboutRegistration' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\app\admin\support\page.tsx
+  22:52  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\app\admin\support\support-admin-client.tsx
+  10:66  warning  'Clock' is defined but never used. Allowed unused vars must match /^_/u             @typescript-eslint/no-unused-vars
+  10:73  warning  'AlertTriangle' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+  99:23  warning  'updated' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\app\api\reports\esg\[supplierId]\route.ts
+   5:19  warning  'and' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  18:38  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\app\api\suppliers\[id]\score\route.ts
+  14:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\app\api\suppliers\verify-email\route.ts
+  60:19  warning  'onboardingPack' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\app\forgot-password\page.tsx
+  18:11  warning  'router' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\app\login\page.tsx
+   85:11  warning  'handleForgotPassword' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+  294:53  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\app\onboarding\page.tsx
+   32:8   warning  React Hook useEffect has a missing dependency: 'loadOnboarding'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  159:44  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                    react/no-unescaped-entities
+  159:83  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                    react/no-unescaped-entities
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\app\portal\page.tsx
+  120:144  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\app\portal\profile\page.tsx
+  27:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  28:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\app\portal\register\verified\page.tsx
+   4:29  warning  'CardHeader' is defined but never used. Allowed unused vars must match /^_/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+   4:41  warning  'CardTitle' is defined but never used. Allowed unused vars must match /^_/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+  13:11  warning  'router' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+  20:13  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\app\portal\register\verified\page.tsx:20:13
+  18 |         const error = searchParams.get('error');
+  19 |         if (error) {
+> 20 |             setStatus('error');
+     |             ^^^^^^^^^ Avoid calling setState() directly within an effect
+  21 |             setMessage(error);
+  22 |         } else {
+  23 |             setStatus('success');  react-hooks/set-state-in-effect
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\app\portal\requests\page.tsx
+  25:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\app\portal\rfqs\[id]\page.tsx
+   43:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   44:64  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   88:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  147:63  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\app\reset-password\page.tsx
+  44:11  warning  'router' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
+  50:13  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\app\reset-password\page.tsx:50:13
+  48 |     useEffect(() => {
+  49 |         if (!token) {
+> 50 |             setTokenError(true);
+     |             ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  51 |         }
+  52 |     }, [token]);
+  53 |  react-hooks/set-state-in-effect
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\app\sourcing\contracts\page.tsx
+    5:10   warning  'Button' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+    6:10   warning  'Plus' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+    6:61   warning  'CheckCircle2' is defined but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
+    6:75   warning  'AlertTriangle' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+    6:90   warning  'Clock' is defined but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+   34:58   warning  Unexpected any. Specify a different type                                         @typescript-eslint/no-explicit-any
+  134:120  warning  Unexpected any. Specify a different type                                         @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\app\sourcing\orders\[id]\page.tsx
+   25:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   68:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  227:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\app\sourcing\parts\page.tsx
+  24:66  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  25:68  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\app\sourcing\requisitions\page.tsx
+   3:10  warning  'Button' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   6:10  warning  'Plus' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+   7:8   warning  'Link' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+  19:40  warning  Unexpected any. Specify a different type                                  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\app\sourcing\requisitions\requisition-actions.tsx
+  40:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\auth.ts
+  18:8  warning  'bcrypt' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\components\admin\mitigation-action.tsx
+  14:10  warning  'Badge' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+  15:46  warning  'CheckCircle2' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\components\admin\spend-analysis-view.tsx
+   7:37  warning  'TrendingUp' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+   7:49  warning  'TrendingDown' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+  24:68  warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  24:86  warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  40:18  warning  'error' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\components\admin\two-factor-setup.tsx
+   9:5   warning  'DialogFooter' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+  51:18  warning  'error' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+  74:18  warning  'error' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+  94:18  warning  'error' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\components\contracts\contract-charts.tsx
+  74:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\components\contracts\contract-upload.tsx
+  9:10  warning  'FileText' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\components\copilot\chat-markdown.tsx
+   54:30  warning  'node' is defined but never used. Allowed unused args must match /^_/u        @typescript-eslint/no-unused-vars
+   54:77  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+   64:38  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+   96:42  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+  169:48  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+  210:48  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\components\dashboard\ai-insights.tsx
+   5:10  warning  'Button' is defined but never used. Allowed unused vars must match /^_/u                  @typescript-eslint/no-unused-vars
+   6:20  warning  'Loader' is defined but never used. Allowed unused vars must match /^_/u                  @typescript-eslint/no-unused-vars
+  10:46  warning  Unexpected any. Specify a different type                                                  @typescript-eslint/no-explicit-any
+  11:12  warning  'loading' is assigned a value but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+  13:11  warning  'handleAnalyze' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\components\dashboard\analytics-board.tsx
+  26:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\components\dashboard\contract-alerts.tsx
+  11:5   warning  'Bell' is defined but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+  13:5   warning  'ArrowUpRight' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  19:48  warning  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\components\dashboard\recent-procurements.tsx
+  2:34  warning  'AvatarImage' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  5:58  warning  Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\components\dashboard\savings-widget.tsx
+  5:22  warning  'TrendingDown' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  5:36  warning  'DollarSign' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\components\dashboard\suggested-requisitions.tsx
+   8:5   warning  'Package' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+  12:5   warning  'ShoppingCart' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  18:52  warning  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\components\inventory\inventory-actions.tsx
+  6:5  warning  'Plus' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\components\parts\part-charts.tsx
+  14:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\components\sourcing\global-record-receipt.tsx
+  21:59  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\components\sourcing\manual-invite-dialog.tsx
+  13:31  warning  'CheckCircle2' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+  54:18  warning  'error' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\components\sourcing\order-charts.tsx
+  21:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\components\sourcing\order-status-stepper.tsx
+  73:70  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\components\sourcing\record-receipt-dialog.tsx
+  14:10  warning  'Input' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\components\sourcing\three-way-match.tsx
+  21:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\components\suppliers\record-performance-modal.tsx
+   5:5  warning  'Card' is defined but never used. Allowed unused vars must match /^_/u             @typescript-eslint/no-unused-vars
+   6:5  warning  'CardContent' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+   7:5  warning  'CardDescription' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   8:5  warning  'CardFooter' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+   9:5  warning  'CardHeader' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+  10:5  warning  'CardTitle' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\components\suppliers\supplier-lifecycle-stepper.tsx
+  4:41  warning  'Mail' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\components\theme-toggle.tsx
+   6:18  warning  'AnimatePresence' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  31:62  warning  Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\db\demo-workspace.ts
+  2:10  warning  'eq' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\src\lib\telemetry.ts
+  10:68  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  17:84  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  24:64  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  24:80  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  41:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  72:87  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\.kilo\worktrees\tidal-halibut\workshop\ai-workshop-april-28-2026\tmp\slides\ai-workshop-interactive\build_deck.mjs
+  1095:10  warning  'xmlEscape' is defined but never used. Allowed unused vars must match /^_/u              @typescript-eslint/no-unused-vars
+  1128:16  warning  'patchInteractiveLinks' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\analyze-reorder.js
+  1:7   warning  'ts' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  1:12  error    A `require()` style import is forbidden                                        @typescript-eslint/no-require-imports
+  2:12  error    A `require()` style import is forbidden                                        @typescript-eslint/no-require-imports
+
+C:\Axiom\Axiom\check-duplicates.js
+  2:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Axiom\Axiom\find-duplicates.js
+   1:12  error    A `require()` style import is forbidden                                                        @typescript-eslint/no-require-imports
+  18:7   warning  'currentObjectStart' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\scripts\make-test-assessment.ts
+  84:9  warning  'baseUrl' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\app\actions\assessments.ts
+  856:17  warning  'supplierName' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\app\actions\auth.ts
+  147:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\app\actions\contacts-detail.ts
+    4:31  warning  'users' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   44:18  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+   87:54  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+   88:57  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  257:19  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\app\actions\enterprise-readiness.ts
+  41:10  warning  'notifySupplierStatusChange' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\app\actions\external-assessments.ts
+  413:5  warning  'reason' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\app\actions\goods-receipts.ts
+  105:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  124:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  199:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  208:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\app\actions\password-reset.ts
+  7:37  warning  'getVerificationTokenExpiresAt' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\app\actions\supplier-registration.ts
+  3:10  warning  'createRegistrationOnboardingPack' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  3:44  warning  'notifyAdminsAboutRegistration' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\app\admin\import\page.tsx
+  66:8  warning  React Hook useEffect has a missing dependency: 'loadSapConnectorStatus'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Axiom\Axiom\src\app\admin\support\page.tsx
+  22:52  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\app\admin\support\support-admin-client.tsx
+  10:66  warning  'Clock' is defined but never used. Allowed unused vars must match /^_/u             @typescript-eslint/no-unused-vars
+  10:73  warning  'AlertTriangle' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+  99:23  warning  'updated' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\app\api\assessments\[id]\response\route.ts
+  3:79  warning  'contacts' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  3:89  warning  'users' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\app\api\assessments\[id]\suppliers\[supplierId]\contacts\route.ts
+  6:3  warning  'suppliers' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\app\api\contacts\import\commit\route.ts
+  56:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\app\api\external\assessments\[assessmentId]\requests\[requestId]\reject\route.ts
+   4:38  warning  'assessmentRequests' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   5:14  warning  'and' is defined but never used. Allowed unused vars must match /^_/u                 @typescript-eslint/no-unused-vars
+  13:27  warning  'requestId' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\app\api\external\assessments\[assessmentId]\requests\[requestId]\share\route.ts
+   4:103  warning  'users' is defined but never used. Allowed unused vars must match /^_/u                  @typescript-eslint/no-unused-vars
+   7:10   warning  'createMagicToken' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+  20:27   warning  'requestId' is assigned a value but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+  72:17   warning  'supplierName' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\app\api\external\assessments\[assessmentId]\requests\[requestId]\submit\route.ts
+  15:27  warning  'requestId' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\app\api\external\login\route.ts
+    4:51  warning  'assessmentRequests' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+    4:71  warning  'contacts' is defined but never used. Allowed unused vars must match /^_/u                @typescript-eslint/no-unused-vars
+    5:14  warning  'and' is defined but never used. Allowed unused vars must match /^_/u                     @typescript-eslint/no-unused-vars
+   76:15  warning  'baseUrl' is assigned a value but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+  132:11  warning  'sessionExpiry' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\app\api\external\requests\[requestId]\share\route.ts
+  10:19  warning  'isNull' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\app\api\reports\esg\[supplierId]\route.ts
+   5:19  warning  'and' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  18:38  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\app\api\suppliers\[id]\score\route.ts
+  14:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\app\api\suppliers\[supplierId]\contacts\route.ts
+  16:69  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  17:71  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\app\api\suppliers\verify-email\route.ts
+  60:19  warning  'onboardingPack' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\app\copilot\page.tsx
+  80:8  warning  React Hook useEffect has a missing dependency: 'tc.copilotGreetingFiles'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Axiom\Axiom\src\app\external\__debug__\[id]\page.tsx
+  44:6  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\app\external\assessments\[assessmentId]\requests\[requestId]\ExternalAssessmentLandingClient.tsx
+   7:10  warning  'Button' is defined but never used. Allowed unused vars must match /^_/u                @typescript-eslint/no-unused-vars
+   8:10  warning  'Card' is defined but never used. Allowed unused vars must match /^_/u                  @typescript-eslint/no-unused-vars
+   8:16  warning  'CardContent' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+  27:20  warning  'setResponse' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\app\external\assessments\[assessmentId]\requests\[requestId]\form\ExternalAssessmentFormClient.tsx
+   60:10  warning  'getFieldValidationErrors' is defined but never used. Allowed unused vars must match /^_/u                                                                                                          @typescript-eslint/no-unused-vars
+   84:20  error    React Hook "useRouter" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                        react-hooks/rules-of-hooks
+   85:35  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+   86:33  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+   87:39  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+   88:33  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+   89:41  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+   90:41  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+   91:47  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+   92:41  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+   93:45  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+   94:51  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+   95:47  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+   96:43  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+   97:49  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+   98:37  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+   99:63  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+  100:67  error    React Hook "React.useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                   react-hooks/rules-of-hooks
+  104:29  error    React Hook "React.useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?     react-hooks/rules-of-hooks
+  109:23  error    React Hook "React.useRef" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?      react-hooks/rules-of-hooks
+  112:11  warning  The 'sections' logical expression could make the dependencies of useEffect Hook (at line 156) change on every render. To fix this, wrap the initialization of 'sections' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  115:5   error    React Hook "React.useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?   react-hooks/rules-of-hooks
+  138:5   error    React Hook "React.useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?   react-hooks/rules-of-hooks
+  177:18  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u                                                                                                                        @typescript-eslint/no-unused-vars
+  219:18  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u                                                                                                                        @typescript-eslint/no-unused-vars
+  242:18  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u                                                                                                                        @typescript-eslint/no-unused-vars
+  272:18  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u                                                                                                                        @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\app\external\assessments\[assessmentId]\requests\[requestId]\page.tsx
+  2:10  warning  'auth' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+  3:10  warning  'redirect' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\app\external\assessments\[assessmentId]\requests\[requestId]\share\ShareRequestClient.tsx
+  5:21  warning  'Check' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+  9:10  warning  'Textarea' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\app\external\assessments\[assessmentId]\requests\[requestId]\share\page.tsx
+  9:14  warning  'and' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\app\external\assessments\[assessmentId]\requests\[requestId]\success\SubmissionSuccessClient.tsx
+  40:86  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\app\forgot-password\page.tsx
+  22:11  warning  'router' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\app\login\page.tsx
+   95:11  warning  'handleForgotPassword' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+  304:53  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Axiom\Axiom\src\app\onboarding\page.tsx
+  36:8  warning  React Hook useEffect has a missing dependency: 'loadOnboarding'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Axiom\Axiom\src\app\portal\profile\page.tsx
+  31:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  32:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\app\portal\register\verified\page.tsx
+   3:10  warning  'useState' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+   4:29  warning  'CardHeader' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+   4:41  warning  'CardTitle' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+  15:11  warning  'router' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\app\portal\requests\page.tsx
+  29:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\app\portal\rfqs\[id]\page.tsx
+   47:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   48:64  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   92:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  151:63  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\app\reset-password\page.tsx
+  47:11  warning  'router' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\app\sourcing\contracts\page.tsx
+    5:10   warning  'Button' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+    6:10   warning  'Plus' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+    6:61   warning  'CheckCircle2' is defined but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
+    6:75   warning  'AlertTriangle' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+    6:90   warning  'Clock' is defined but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+   37:58   warning  Unexpected any. Specify a different type                                         @typescript-eslint/no-explicit-any
+  137:120  warning  Unexpected any. Specify a different type                                         @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\app\sourcing\orders\[id]\page.tsx
+   26:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   71:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  230:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\app\sourcing\parts\page.tsx
+  27:66  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  28:68  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\app\sourcing\requisitions\page.tsx
+   3:10  warning  'Button' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   6:10  warning  'Plus' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+   7:8   warning  'Link' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+  20:40  warning  Unexpected any. Specify a different type                                  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\app\sourcing\requisitions\requisition-actions.tsx
+  42:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\auth.ts
+  18:8  warning  'bcrypt' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\admin\mitigation-action.tsx
+  14:10  warning  'Badge' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+  15:46  warning  'CheckCircle2' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\admin\spend-analysis-view.tsx
+   7:37  warning  'TrendingUp' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+   7:49  warning  'TrendingDown' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+  24:68  warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  24:86  warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  40:18  warning  'error' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\admin\two-factor-setup.tsx
+   9:5   warning  'DialogFooter' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+  51:18  warning  'error' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+  74:18  warning  'error' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+  94:18  warning  'error' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\assessments\FormRenderer.tsx
+   29:3   warning  'Eye' is defined but never used. Allowed unused vars must match /^_/u                  @typescript-eslint/no-unused-vars
+   31:41  warning  'Section' is defined but never used. Allowed unused vars must match /^_/u              @typescript-eslint/no-unused-vars
+   31:50  warning  'Block' is defined but never used. Allowed unused vars must match /^_/u                @typescript-eslint/no-unused-vars
+   73:57  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+   74:33  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+   77:63  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+   80:16  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+   97:3   warning  'onValidate' is defined but never used. Allowed unused args must match /^_/u           @typescript-eslint/no-unused-vars
+  103:31  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  110:9   warning  'handleBlur' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  117:61  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+  137:25  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\components\assessments\SchemaBasedFormStep.tsx
+   14:3   warning  'ChevronDown' is defined but never used. Allowed unused vars must match /^_/u                                             @typescript-eslint/no-unused-vars
+   15:3   warning  'ChevronUp' is defined but never used. Allowed unused vars must match /^_/u                                               @typescript-eslint/no-unused-vars
+   19:3   warning  'X' is defined but never used. Allowed unused vars must match /^_/u                                                       @typescript-eslint/no-unused-vars
+   21:3   warning  'ArrowLeft' is defined but never used. Allowed unused vars must match /^_/u                                               @typescript-eslint/no-unused-vars
+   35:3   warning  'MapPin' is defined but never used. Allowed unused vars must match /^_/u                                                  @typescript-eslint/no-unused-vars
+   39:10  warning  'Input' is defined but never used. Allowed unused vars must match /^_/u                                                   @typescript-eslint/no-unused-vars
+   40:10  warning  'Label' is defined but never used. Allowed unused vars must match /^_/u                                                   @typescript-eslint/no-unused-vars
+   45:3   warning  'Select' is defined but never used. Allowed unused vars must match /^_/u                                                  @typescript-eslint/no-unused-vars
+   46:3   warning  'SelectContent' is defined but never used. Allowed unused vars must match /^_/u                                           @typescript-eslint/no-unused-vars
+   47:3   warning  'SelectItem' is defined but never used. Allowed unused vars must match /^_/u                                              @typescript-eslint/no-unused-vars
+   48:3   warning  'SelectTrigger' is defined but never used. Allowed unused vars must match /^_/u                                           @typescript-eslint/no-unused-vars
+   49:3   warning  'SelectValue' is defined but never used. Allowed unused vars must match /^_/u                                             @typescript-eslint/no-unused-vars
+   51:10  warning  'Textarea' is defined but never used. Allowed unused vars must match /^_/u                                                @typescript-eslint/no-unused-vars
+   53:3   warning  'DropdownMenu' is defined but never used. Allowed unused vars must match /^_/u                                            @typescript-eslint/no-unused-vars
+   54:3   warning  'DropdownMenuTrigger' is defined but never used. Allowed unused vars must match /^_/u                                     @typescript-eslint/no-unused-vars
+   55:3   warning  'DropdownMenuContent' is defined but never used. Allowed unused vars must match /^_/u                                     @typescript-eslint/no-unused-vars
+   56:3   warning  'DropdownMenuItem' is defined but never used. Allowed unused vars must match /^_/u                                        @typescript-eslint/no-unused-vars
+   57:3   warning  'DropdownMenuSeparator' is defined but never used. Allowed unused vars must match /^_/u                                   @typescript-eslint/no-unused-vars
+   61:53  warning  'Section' is defined but never used. Allowed unused vars must match /^_/u                                                 @typescript-eslint/no-unused-vars
+   61:62  warning  'Block' is defined but never used. Allowed unused vars must match /^_/u                                                   @typescript-eslint/no-unused-vars
+   96:7   warning  'BLOCK_MESSAGES' is assigned a value but never used. Allowed unused vars must match /^_/u                                 @typescript-eslint/no-unused-vars
+  124:9   warning  'router' is assigned a value but never used. Allowed unused vars must match /^_/u                                         @typescript-eslint/no-unused-vars
+  174:6   warning  React Hook React.useEffect has a missing dependency: 'handleSaveDraft'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  199:14  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u                                              @typescript-eslint/no-unused-vars
+  227:34  warning  Unexpected any. Specify a different type                                                                                  @typescript-eslint/no-explicit-any
+  277:14  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u                                              @typescript-eslint/no-unused-vars
+  297:14  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u                                              @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\assessments\add-suppliers-modal.tsx
+  338:12  warning  'hasDefaultSuppliersLoaded' is assigned a value but never used. Allowed unused vars must match /^_/u                               @typescript-eslint/no-unused-vars
+  342:12  warning  'existingSuppliersLoading' is assigned a value but never used. Allowed unused vars must match /^_/u                                @typescript-eslint/no-unused-vars
+  343:12  warning  'existingSuppliersSaving' is assigned a value but never used. Allowed unused vars must match /^_/u                                 @typescript-eslint/no-unused-vars
+  388:8   warning  React Hook React.useEffect has a missing dependency: 'existingSuppliers.length'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  398:79  warning  Unexpected any. Specify a different type                                                                                           @typescript-eslint/no-explicit-any
+  425:11  warning  'saveExistingSuppliers' is assigned a value but never used. Allowed unused vars must match /^_/u                                   @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\assessments\assessment-detail.tsx
+  38:10  warning  'SetupStep' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+  39:10  warning  'FormStep' is defined but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+  40:10  warning  'ParticipantsStep' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\assessments\form-fields\ContactTableField.tsx
+    7:48  warning  'Users' is defined but never used. Allowed unused vars must match /^_/u                          @typescript-eslint/no-unused-vars
+   12:60  warning  'DialogTrigger' is defined but never used. Allowed unused vars must match /^_/u                  @typescript-eslint/no-unused-vars
+   39:3   warning  'blockKey' is defined but never used. Allowed unused args must match /^_/u                       @typescript-eslint/no-unused-vars
+   40:3   warning  'sectionKey' is defined but never used. Allowed unused args must match /^_/u                     @typescript-eslint/no-unused-vars
+   41:3   warning  'validationErrors' is assigned a value but never used. Allowed unused args must match /^_/u      @typescript-eslint/no-unused-vars
+   72:26  warning  Unexpected any. Specify a different type                                                         @typescript-eslint/no-explicit-any
+  137:9   warning  'getDepartmentDisplay' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  145:9   warning  'isDepartmentMet' is assigned a value but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\assessments\form-fields\DocumentReviewConfirmField.tsx
+  4:10  warning  'cn' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\assessments\form-fields\DocumentUploadField.tsx
+  17:5  warning  'FileText' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\assessments\form-fields\FieldRenderer.tsx
+  29:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  67:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  98:88  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\components\assessments\form-fields\LocationLookupField.tsx
+  4:10  warning  'cn' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+  7:10  warning  'Button' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  8:18  warning  'Edit2' is defined but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\assessments\form-fields\LongTextRichField.tsx
+   6:10  warning  'Textarea' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  15:3   warning  'Type' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+  19:3   warning  'Pencil' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\assessments\form-fields\NumberField.tsx
+  4:10  warning  'cn' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\assessments\form-fields\ProductionSitesField.tsx
+  11:10  warning  'FileUploadField' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  12:15  warning  'TableColumn' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+  12:28  warning  'TableRowData' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+  44:3   warning  'blockKey' is defined but never used. Allowed unused args must match /^_/u         @typescript-eslint/no-unused-vars
+  45:3   warning  'sectionKey' is defined but never used. Allowed unused args must match /^_/u       @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\assessments\form-fields\TableRowsField.tsx
+    7:16  warning  'MoreVertical' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   12:42  warning  'Field' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+  113:3   warning  'sectionKey' is defined but never used. Allowed unused args must match /^_/u    @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\assessments\form-fields\YesNoConfirmField.tsx
+  4:10  warning  'cn' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\assessments\form-fields\index.tsx
+  29:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  58:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  89:88  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\components\assessments\form-tab-content.tsx
+  106:11  warning  'handleSaveMessage' is assigned a value but never used. Allowed unused vars must match /^_/u                              @typescript-eslint/no-unused-vars
+  116:18  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u                                              @typescript-eslint/no-unused-vars
+  264:50  warning  Unexpected any. Specify a different type                                                                                  @typescript-eslint/no-explicit-any
+  305:8   warning  React Hook React.useEffect has a missing dependency: 'localizedSchema'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Axiom\Axiom\src\components\assessments\overview-panel-new.tsx
+    6:10   warning  'ChevronDown' is defined but never used. Allowed unused vars must match /^_/u               @typescript-eslint/no-unused-vars
+    6:41   warning  'UserCheck' is defined but never used. Allowed unused vars must match /^_/u                 @typescript-eslint/no-unused-vars
+    6:62   warning  'Building2' is defined but never used. Allowed unused vars must match /^_/u                 @typescript-eslint/no-unused-vars
+    6:73   warning  'Mail' is defined but never used. Allowed unused vars must match /^_/u                      @typescript-eslint/no-unused-vars
+    6:109  warning  'Clock' is defined but never used. Allowed unused vars must match /^_/u                     @typescript-eslint/no-unused-vars
+    6:155  warning  'Send' is defined but never used. Allowed unused vars must match /^_/u                      @typescript-eslint/no-unused-vars
+   19:10   warning  'ScrollArea' is defined but never used. Allowed unused vars must match /^_/u                @typescript-eslint/no-unused-vars
+   41:5    warning  'truncate' is defined but never used. Allowed unused vars must match /^_/u                  @typescript-eslint/no-unused-vars
+   56:34   warning  'index' is defined but never used. Allowed unused args must match /^_/u                     @typescript-eslint/no-unused-vars
+   56:41   warning  'assessmentRequestId' is defined but never used. Allowed unused args must match /^_/u       @typescript-eslint/no-unused-vars
+  664:12   warning  'moreInfoOpen' is assigned a value but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+  664:26   warning  'setMoreInfoOpen' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  721:11   warning  'moreInfoContent' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\assessments\participants-step.tsx
+  80:12  warning  'isSavingSuppliers' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\assessments\responses-panel-new.tsx
+    4:24  warning  'Send' is defined but never used. Allowed unused vars must match /^_/u                                                                                  @typescript-eslint/no-unused-vars
+    4:37  warning  'CheckCircle2' is defined but never used. Allowed unused vars must match /^_/u                                                                          @typescript-eslint/no-unused-vars
+    4:61  warning  'ChevronDown' is defined but never used. Allowed unused vars must match /^_/u                                                                           @typescript-eslint/no-unused-vars
+    4:74  warning  'AlertCircle' is defined but never used. Allowed unused vars must match /^_/u                                                                           @typescript-eslint/no-unused-vars
+   16:34  warning  'AvatarImage' is defined but never used. Allowed unused vars must match /^_/u                                                                           @typescript-eslint/no-unused-vars
+   26:5   warning  'initials' is defined but never used. Allowed unused vars must match /^_/u                                                                              @typescript-eslint/no-unused-vars
+   27:5   warning  'formatDate' is defined but never used. Allowed unused vars must match /^_/u                                                                            @typescript-eslint/no-unused-vars
+   41:12  warning  'sidebarOpen' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                  @typescript-eslint/no-unused-vars
+   41:25  warning  'setSidebarOpen' is assigned a value but never used. Allowed unused vars must match /^_/u                                                               @typescript-eslint/no-unused-vars
+   45:11  warning  'handleSelectSupplier' is assigned a value but never used. Allowed unused vars must match /^_/u                                                         @typescript-eslint/no-unused-vars
+   70:8   warning  React Hook React.useEffect has missing dependencies: 'loadSupplierResponse' and 'selectedSupplier'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+   75:11  warning  'currentStatus' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                @typescript-eslint/no-unused-vars
+  251:36  warning  'detail' is defined but never used. Allowed unused args must match /^_/u                                                                                @typescript-eslint/no-unused-vars
+  252:11  warning  'currentStatus' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                @typescript-eslint/no-unused-vars
+  253:11  warning  'reviewStatus' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                 @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\assessments\shared-constants.tsx
+  5:15  warning  'AssessmentDetail' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\contacts\contacts-import-wizard.tsx
+   15:5    warning  'AlertTriangle' is defined but never used. Allowed unused vars must match /^_/u               @typescript-eslint/no-unused-vars
+   34:5    warning  'TEMPLATE_HEADERS' is defined but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+   82:26   warning  'setSupplierName' is assigned a value but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+   83:28   warning  'setSupplierNumber' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  120:46   warning  Unexpected any. Specify a different type                                                      @typescript-eslint/no-explicit-any
+  179:79   warning  Unexpected any. Specify a different type                                                      @typescript-eslint/no-explicit-any
+  315:68   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                               react/no-unescaped-entities
+  315:85   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                               react/no-unescaped-entities
+  361:106  warning  Unexpected any. Specify a different type                                                      @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\components\contacts\contacts-table.tsx
+   35:5  warning  'Dialog' is defined but never used. Allowed unused vars must match /^_/u                      @typescript-eslint/no-unused-vars
+   36:5  warning  'DialogContent' is defined but never used. Allowed unused vars must match /^_/u               @typescript-eslint/no-unused-vars
+   37:5  warning  'DialogDescription' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+   38:5  warning  'DialogFooter' is defined but never used. Allowed unused vars must match /^_/u                @typescript-eslint/no-unused-vars
+   39:5  warning  'DialogHeader' is defined but never used. Allowed unused vars must match /^_/u                @typescript-eslint/no-unused-vars
+   40:5  warning  'DialogTitle' is defined but never used. Allowed unused vars must match /^_/u                 @typescript-eslint/no-unused-vars
+   55:5  warning  'CONTACT_STATUSES' is defined but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+   56:5  warning  'DEFAULT_DEPARTMENT_OPTIONS' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   57:5  warning  'DEFAULT_LANGUAGE_OPTIONS' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+   63:5  warning  'updateContact' is defined but never used. Allowed unused vars must match /^_/u               @typescript-eslint/no-unused-vars
+  418:5  warning  'scopeAll' is defined but never used. Allowed unused args must match /^_/u                    @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\contracts\contract-charts.tsx
+  74:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\components\contracts\contract-upload.tsx
+  9:10  warning  'FileText' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\copilot\chat-markdown.tsx
+   54:30  warning  'node' is defined but never used. Allowed unused args must match /^_/u        @typescript-eslint/no-unused-vars
+   54:77  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+   64:38  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+   96:42  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+  169:48  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+  210:48  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\components\dashboard\ai-insights.tsx
+   5:10  warning  'Button' is defined but never used. Allowed unused vars must match /^_/u                  @typescript-eslint/no-unused-vars
+   6:20  warning  'Loader' is defined but never used. Allowed unused vars must match /^_/u                  @typescript-eslint/no-unused-vars
+  10:46  warning  Unexpected any. Specify a different type                                                  @typescript-eslint/no-explicit-any
+  11:12  warning  'loading' is assigned a value but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+  13:11  warning  'handleAnalyze' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\dashboard\analytics-board.tsx
+  26:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\components\dashboard\contract-alerts.tsx
+  11:5   warning  'Bell' is defined but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+  13:5   warning  'ArrowUpRight' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  19:48  warning  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\components\dashboard\dashboard-header.tsx
+  39:8  warning  React Hook useEffect has a missing dependency: 'language'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Axiom\Axiom\src\components\dashboard\recent-procurements.tsx
+  2:34  warning  'AvatarImage' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  5:58  warning  Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\components\dashboard\savings-widget.tsx
+  5:22  warning  'TrendingDown' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  5:36  warning  'DollarSign' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\dashboard\suggested-requisitions.tsx
+   8:5   warning  'Package' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+  12:5   warning  'ShoppingCart' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  18:52  warning  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\components\inventory\inventory-actions.tsx
+  6:5  warning  'Plus' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\parts\part-charts.tsx
+  14:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\components\sourcing\global-record-receipt.tsx
+  21:59  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\components\sourcing\manual-invite-dialog.tsx
+  13:31  warning  'CheckCircle2' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+  54:18  warning  'error' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\sourcing\order-charts.tsx
+  21:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\components\sourcing\order-status-stepper.tsx
+  73:70  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\components\sourcing\record-receipt-dialog.tsx
+  14:10  warning  'Input' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\sourcing\three-way-match.tsx
+  21:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\components\suppliers\SuppliersModule.tsx
+  622:28  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+C:\Axiom\Axiom\src\components\suppliers\SuppliersModule.tsx:622:28
+  620 |     }, [filteredRows, sort]);
+  621 |
+> 622 |     const rowVirtualizer = useVirtualizer({
+      |                            ^^^^^^^^^^^^^^ TanStack Virtual's `useVirtualizer()` API returns functions that cannot be memoized safely
+  623 |         count: sortedRows.length,
+  624 |         getScrollElement: () => gridScrollRef.current,
+  625 |         estimateSize: () => 44,  react-hooks/incompatible-library
+
+C:\Axiom\Axiom\src\components\suppliers\detail\resolve-supplier-db.ts
+  4:18  warning  'sql' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\suppliers\record-performance-modal.tsx
+   5:5  warning  'Card' is defined but never used. Allowed unused vars must match /^_/u             @typescript-eslint/no-unused-vars
+   6:5  warning  'CardContent' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+   7:5  warning  'CardDescription' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   8:5  warning  'CardFooter' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+   9:5  warning  'CardHeader' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+  10:5  warning  'CardTitle' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\suppliers\searchable-country-select.tsx
+  4:23  warning  'Search' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  4:31  warning  'X' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+  5:10  warning  'Button' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\suppliers\supplier-lifecycle-stepper.tsx
+  4:41  warning  'Mail' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\suppliers\supplier-overview.tsx
+   54:31  warning  Unexpected any. Specify a different type                                                                                                                                                        @typescript-eslint/no-explicit-any
+   73:68  warning  Unexpected any. Specify a different type                                                                                                                                                        @typescript-eslint/no-explicit-any
+   73:81  warning  Unexpected any. Specify a different type                                                                                                                                                        @typescript-eslint/no-explicit-any
+   74:11  warning  The 'profile' logical expression could make the dependencies of useMemo Hook (at line 112) change on every render. To fix this, wrap the initialization of 'profile' in its own useMemo() Hook  react-hooks/exhaustive-deps
+   74:11  warning  The 'profile' logical expression could make the dependencies of useMemo Hook (at line 119) change on every render. To fix this, wrap the initialization of 'profile' in its own useMemo() Hook  react-hooks/exhaustive-deps
+   77:56  warning  Unexpected any. Specify a different type                                                                                                                                                        @typescript-eslint/no-explicit-any
+   78:62  warning  Unexpected any. Specify a different type                                                                                                                                                        @typescript-eslint/no-explicit-any
+   81:60  warning  Unexpected any. Specify a different type                                                                                                                                                        @typescript-eslint/no-explicit-any
+   82:60  warning  Unexpected any. Specify a different type                                                                                                                                                        @typescript-eslint/no-explicit-any
+  110:23  warning  Unexpected any. Specify a different type                                                                                                                                                        @typescript-eslint/no-explicit-any
+  110:31  warning  Unexpected any. Specify a different type                                                                                                                                                        @typescript-eslint/no-explicit-any
+  111:22  warning  Unexpected any. Specify a different type                                                                                                                                                        @typescript-eslint/no-explicit-any
+  118:28  warning  Unexpected any. Specify a different type                                                                                                                                                        @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\components\suppliers\supplier-properties.tsx
+   22:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   28:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   28:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   32:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   32:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   32:55  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   34:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   45:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  104:62  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  112:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  121:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  130:61  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  137:66  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  142:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  335:83  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  388:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  389:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  390:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  400:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  492:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  494:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  499:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  513:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\components\suppliers\suppliers-config.ts
+  400:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  408:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  416:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  424:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  433:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  434:67  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  435:64  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\components\suppliers\suppliers-table-new.tsx
+     3:13  warning  'React' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+     4:10  warning  'Plus' is defined but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+     4:16  warning  'Inbox' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+     4:23  warning  'ArrowUp' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+     4:32  warning  'ArrowDown' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+     4:43  warning  'ChevronsUpDown' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+     4:59  warning  'Check' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+     4:66  warning  'ChevronDown' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+     4:79  warning  'RotateCcw' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+     5:10  warning  'Button' is defined but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+     6:10  warning  'Checkbox' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+     7:10  warning  'Badge' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+     8:10  warning  'cn' is defined but never used. Allowed unused vars must match /^_/u              @typescript-eslint/no-unused-vars
+     9:10  warning  'formatCurrency' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+    10:10  warning  'flagEmoji' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+    10:21  warning  'countryName' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+   437:12  warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  1233:38  warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  1235:20  warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  1268:36  warning  'b' is defined but never used. Allowed unused args must match /^_/u               @typescript-eslint/no-unused-vars
+  1269:42  warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  1271:24  warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\components\suppliers\suppliers-table.tsx
+   2:59  warning  'Check' is defined but never used. Allowed unused vars must match /^_/u             @typescript-eslint/no-unused-vars
+  10:5   warning  'SUPPLIER_COLUMNS' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\suppliers\suppliers-workspace.tsx
+  37:5  warning  'DialogTrigger' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\suppliers\tacto\suppliers-grid.tsx
+  14:5  warning  'Download' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\suppliers\tacto\suppliers-model.ts
+   3:13   warning  'React' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+   4:10   warning  'useState' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+   4:20   warning  'useMemo' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+   4:29   warning  'useCallback' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+   5:10   warning  'ChevronDown' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+   5:23   warning  'Inbox' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+   5:30   warning  'ArrowUp' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+   5:39   warning  'ArrowDown' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+   5:50   warning  'ChevronsUpDown' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   5:66   warning  'Check' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+   5:73   warning  'Plus' is defined but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+   5:79   warning  'Search' is defined but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+   5:87   warning  'X' is defined but never used. Allowed unused vars must match /^_/u               @typescript-eslint/no-unused-vars
+   5:90   warning  'RotateCcw' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+   5:101  warning  'Flag' is defined but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+   5:107  warning  'Users' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+   5:114  warning  'Building' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+   5:124  warning  'Globe' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+   5:131  warning  'FileText' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+   5:141  warning  'Shield' is defined but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+   5:149  warning  'TrendingUp' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+   5:161  warning  'DollarSign' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+   6:10   warning  'Button' is defined but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+   7:10   warning  'Input' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+   8:10   warning  'Checkbox' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+   9:10   warning  'Badge' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+  10:10   warning  'cn' is defined but never used. Allowed unused vars must match /^_/u              @typescript-eslint/no-unused-vars
+  11:10   warning  'formatCurrency' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  12:10   warning  'flagEmoji' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+  12:21   warning  'countryName' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\components\suppliers\tacto\suppliers-utils.tsx
+    4:10   warning  'ChevronDown' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+    4:23   warning  'Inbox' is defined but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+    4:30   warning  'ArrowUp' is defined but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+    4:39   warning  'ArrowDown' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+    4:50   warning  'ChevronsUpDown' is defined but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
+    4:73   warning  'Plus' is defined but never used. Allowed unused vars must match /^_/u             @typescript-eslint/no-unused-vars
+    4:79   warning  'Search' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+    4:90   warning  'RotateCcw' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+    4:101  warning  'Flag' is defined but never used. Allowed unused vars must match /^_/u             @typescript-eslint/no-unused-vars
+    4:107  warning  'Users' is defined but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+    4:114  warning  'Building' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+    4:124  warning  'Globe' is defined but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+    4:131  warning  'FileText' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+    4:141  warning  'Shield' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+    4:149  warning  'TrendingUp' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+    4:161  warning  'DollarSign' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+    5:10   warning  'Button' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+    6:10   warning  'Input' is defined but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+    7:10   warning  'Checkbox' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+   28:9    warning  'column' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  177:60   warning  Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+  287:15   warning  Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+  287:28   warning  Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\components\theme-toggle.tsx
+   6:18  warning  'AnimatePresence' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  31:62  warning  Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\db\demo-workspace.ts
+  2:10  warning  'eq' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\lib\assessment-templates\validate.ts
+  1:67  warning  'Section' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+  2:10  warning  'IBAN_PATTERN' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  2:24  warning  'validateIBAN' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\lib\assessment-templates\validation-rules.ts
+   7:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  38:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  49:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\lib\contacts\import-parser.ts
+  33:62  warning  'fileName' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\lib\i18n\index.ts
+    3:10  warning  'createContext' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+    3:25  warning  'useContext' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+    3:37  warning  'useState' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+    3:47  warning  'useEffect' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+  706:16  warning  Unexpected any. Specify a different type                                         @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\src\lib\queue\email-queue.ts
+   98:15  warning  'p' is assigned a value but never used. Allowed unused vars must match /^_/u                 @typescript-eslint/no-unused-vars
+  100:15  warning  'ar' is assigned a value but never used. Allowed unused vars must match /^_/u                @typescript-eslint/no-unused-vars
+  102:15  warning  'sup' is assigned a value but never used. Allowed unused vars must match /^_/u               @typescript-eslint/no-unused-vars
+  134:13  warning  'expiresAt' is assigned a value but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+  138:15  warning  'magicLinkUrl' is assigned a value but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+  141:15  warning  'buyerCompanyName' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  203:90  warning  'toName' is assigned a value but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+  228:15  warning  'p' is assigned a value but never used. Allowed unused vars must match /^_/u                 @typescript-eslint/no-unused-vars
+  373:5   warning  'email' is defined but never used. Allowed unused args must match /^_/u                      @typescript-eslint/no-unused-vars
+  374:5   warning  'details' is defined but never used. Allowed unused args must match /^_/u                    @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\lib\services\email-templates.ts
+   41:10  warning  'getTemplate' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+  338:11  warning  'preheader' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\lib\services\magic-tokens.ts
+    3:81  warning  'users' is defined but never used. Allowed unused vars must match /^_/u                  @typescript-eslint/no-unused-vars
+    3:88  warning  'suppliers' is defined but never used. Allowed unused vars must match /^_/u              @typescript-eslint/no-unused-vars
+   72:15  warning  'magicLinkUrl' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  223:5   warning  'purpose' is defined but never used. Allowed unused args must match /^_/u                @typescript-eslint/no-unused-vars
+
+C:\Axiom\Axiom\src\lib\telemetry.ts
+  10:68  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  17:84  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  24:64  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  24:80  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  41:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  72:87  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Axiom\Axiom\tests\unit\app-shell.test.ts
+  5:87  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 1068 problems (59 errors, 1009 warnings)
+

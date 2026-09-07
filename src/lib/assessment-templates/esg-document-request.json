@@ -1,0 +1,77 @@
+{
+  "id": "esg_document_request",
+  "name": "ESG Dokumentenanfrage",
+  "category": "esg_document_request",
+  "version": "1.0",
+  "description": "Request for ESG-related documents from the supplier.",
+  "sections": [
+    {
+      "key": "buyer_message",
+      "title": "Message from the buyer",
+      "titleDe": "Nachricht des Käufers",
+      "order": 0,
+      "blocks": [
+        {
+          "key": "buyer_message_block",
+          "title": "Message from the buyer",
+          "titleDe": "Nachricht des Käufers",
+          "icon": "message-square",
+          "message": "Dear Supplier,\n\nPlease upload the requested ESG documents. This helps us assess your sustainability and compliance posture.\n\nKind regards,\n[Buyer Name]\n[Buyer Company]",
+          "messageDe": "Sehr geehrte(r) Lieferant(in),\n\nBitte laden Sie die angeforderten ESG-Dokumente hoch. Dies hilft uns, Ihre Nachhaltigkeits- und Compliance-Position zu bewerten.\n\nMit freundlichen Grüßen,\n[Name des Käufers]\n[Firma des Käufers]",
+          "fields": []
+        }
+      ]
+    },
+    {
+      "key": "supplier_identification",
+      "title": "1. Supplier Identification",
+      "titleDe": "1. Lieferantenidentifikation",
+      "order": 1,
+      "blocks": [
+        {
+          "key": "company_address",
+          "title": "Company address",
+          "titleDe": "Unternehmensanschrift",
+          "icon": "building",
+          "fields": [
+            { "key": "supplier_number", "label": "Supplier number", "labelDe": "Lieferantennummer", "type": "short_text", "required": false },
+            { "key": "company_name", "label": "Company name", "labelDe": "Firmenname", "type": "short_text", "required": true },
+            { "key": "address", "label": "Address", "labelDe": "Anschrift", "type": "short_text", "required": true }
+          ]
+        },
+        {
+          "key": "primary_contact",
+          "title": "Primary contact",
+          "titleDe": "Primärkontakt",
+          "icon": "user",
+          "fields": [
+            { "key": "contact_person_name", "label": "Contact name", "labelDe": "Kontaktname", "type": "short_text", "required": false },
+            { "key": "contact_email", "label": "Contact email", "labelDe": "Kontakt-E-Mail", "type": "short_text", "required": false }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "esg_documents",
+      "title": "2. ESG Documents",
+      "titleDe": "2. ESG-Dokumente",
+      "order": 2,
+      "blocks": [
+        {
+          "key": "documents",
+          "title": "Documents",
+          "titleDe": "Dokumente",
+          "icon": "file-text",
+          "fields": [
+            { "key": "sustainability_policy", "label": "Sustainability / ESG Policy", "labelDe": "Nachhaltigkeits- / ESG-Richtlinie", "type": "document_upload", "required": false },
+            { "key": "code_of_conduct_doc", "label": "Code of Conduct", "labelDe": "Verhaltenskodex", "type": "document_upload", "required": false },
+            { "key": "environmental_certificate", "label": "Environmental Management Certificate (e.g. ISO 14001)", "labelDe": "Umweltmanagement-Zertifikat (z. B. ISO 14001)", "type": "document_upload", "required": false },
+            { "key": "social_certificate", "label": "Social Compliance Certificate (e.g. SA8000, SMETA)", "labelDe": "Sozial-Compliance-Zertifikat (z. B. SA8000, SMETA)", "type": "document_upload", "required": false },
+            { "key": "carbon_footprint_statement", "label": "Carbon Footprint Statement", "labelDe": "CO2-Fußabdruck-Erklärung", "type": "document_upload", "required": false },
+            { "key": "comments", "label": "Additional comments", "labelDe": "Zusätzliche Kommentare", "type": "long_text_rich", "required": false }
+          ]
+        }
+      ]
+    }
+  ]
+}

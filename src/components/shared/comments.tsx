@@ -6,6 +6,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { postComment } from "@/app/actions/activity";
 import { MessageSquare, User } from "lucide-react";
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 
 interface Comment {
     id: string;
@@ -28,13 +30,19 @@ export function CommentsSection({
     entityType,
     entityId,
     initialComments,
-    title = "Team Collaboration",
-    placeholder = "Add a comment or note...",
-    buttonLabel = "Post Comment",
-    emptyState = "No comments yet. Start the conversation!",
+    title,
+    placeholder,
+    buttonLabel,
+    emptyState,
 }: CommentsSectionProps) {
-    const [comments, setComments] = useState(initialComments);
+    const { language } = useLanguage();
+    const tc = t(language, "common");
+    const resolvedTitle = title ?? tc.teamCollaboration;
+    const resolvedPlaceholder = placeholder ?? tc.addComment;
+    const resolvedButtonLabel = buttonLabel ?? tc.postComment;
+    const resolvedEmptyState = emptyState ?? tc.noComments;
     const [text, setText] = useState("");
+    const [comments, setComments] = useState<Comment[]>(initialComments);
     const [isPending, startTransition] = useTransition();
 
     useEffect(() => {
@@ -64,26 +72,26 @@ export function CommentsSection({
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <MessageSquare className="h-5 w-5" />
-                    {title}
+                    {resolvedTitle}
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
                 <form onSubmit={handleSubmit} className="space-y-2">
                     <Textarea
-                        placeholder={placeholder}
+                        placeholder={resolvedPlaceholder}
                         value={text}
                         onChange={(e) => setText(e.target.value)}
                         className="min-h-[100px]"
                     />
                     <Button type="submit" disabled={isPending || !text.trim()}>
-                        {isPending ? "Posting..." : buttonLabel}
+                        {isPending ? tc.posting : resolvedButtonLabel}
                     </Button>
                 </form>
 
                 <div className="space-y-4">
                     {comments.length === 0 && (
                         <p className="text-sm text-muted-foreground text-center py-4">
-                            {emptyState}
+                            {resolvedEmptyState}
                         </p>
                     )}
                     {comments.map((comment) => (
@@ -95,7 +103,7 @@ export function CommentsSection({
                                 <div className="flex items-center justify-between">
                                     <p className="text-sm font-semibold">{comment.userName}</p>
                                     <p className="text-xs text-muted-foreground">
-                                        {comment.createdAt ? new Date(comment.createdAt).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) : 'Just now'}
+                                         {comment.createdAt ? new Date(comment.createdAt).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) : tc.justNow}
                                     </p>
                                 </div>
                                 <p className="text-sm text-foreground whitespace-pre-wrap">{comment.text}</p>

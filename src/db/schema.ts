@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { pgTable, uuid, text, integer, decimal, timestamp, pgEnum, index, uniqueIndex, serial, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, integer, decimal, timestamp, pgEnum, index, uniqueIndex, unique, serial, boolean, jsonb } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 export const supplierStatusEnum = pgEnum('supplier_status', ['active', 'inactive', 'blacklisted']);
@@ -45,6 +45,224 @@ export const savingsTrackingStatusEnum = pgEnum('savings_tracking_status', ['for
 export const approvalPolicyTypeEnum = pgEnum('approval_policy_type', ['amount', 'category', 'supplier_risk', 'contract_coverage', 'combined']);
 export const importJobStatusEnum = pgEnum('import_job_status', ['pending', 'validating', 'validated', 'importing', 'completed', 'failed', 'rolled_back']);
 
+// ============================================================================
+// ASSESSMENT REQUESTS - Supplier Self Assessment (PMA & Code of Conduct)
+// ============================================================================
+
+export const assessmentRequestStatusEnum = pgEnum('assessment_request_status', ['draft', 'published', 'closed']);
+export const assessmentTemplateCategoryEnum = pgEnum('assessment_template_category', [
+    'code_of_conduct',
+    'esg_document_request',
+    'esg_supplier_self_assessment_labor_rights',
+    'esg_supplier_self_assessment_human_rights',
+    'esg_supplier_self_assessment_environmental_rights',
+    'esg_self_assessment_egb',
+    'reach_enquiry',
+    'rohs_enquiry',
+    'supplier_self_assessment_pma_code_of_conduct'
+]);
+export const documentTemplateCategoryEnum = pgEnum('document_template_category', [
+    'certification',
+    'agreement',
+    'policy',
+    'compliance',
+    'other'
+]);
+
+// Assessment Templates - Pre-defined form templates
+export const assessmentTemplates = pgTable('assessment_templates', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    name: text('name').notNull(),
+    description: text('description'),
+    category: assessmentTemplateCategoryEnum('category').notNull(),
+    config: text('config'), // JSON configuration for form sections
+    isActive: boolean('is_active').default(true),
+    createdById: uuid('created_by_id').references(() => users.id),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+}, (table: any) => ({
+    templateCategoryIdx: index('template_category_idx').on(table.category),
+    templateActiveIdx: index('template_active_idx').on(table.isActive),
+}));
+
+// Document Templates - Reusable document types (certifications, agreements, etc.)
+export const documentTemplates = pgTable('document_templates', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    name: text('name').notNull(),
+    description: text('description'),
+    category: documentTemplateCategoryEnum('category').notNull(),
+    fileUrl: text('file_url'), // Optional reference document
+    isActive: boolean('is_active').default(true),
+    createdById: uuid('created_by_id').references(() => users.id),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+}, (table: any) => ({
+    docTemplateCategoryIdx: index('doc_template_category_idx').on(table.category),
+    docTemplateActiveIdx: index('doc_template_active_idx').on(table.isActive),
+}));
+
+// Assessment Requests - Main request entity
+export const assessmentRequests = pgTable('assessment_requests', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    title: text('title').notNull(),
+    description: text('description'),
+    responsibleId: uuid('responsible_id').references(() => users.id).notNull(),
+    teamIds: text('team_ids').array(), // Array of team/user IDs
+    dueDate: timestamp('due_date'),
+    status: assessmentRequestStatusEnum('status').default('draft'),
+    templateId: uuid('template_id').references(() => assessmentTemplates.id),
+    messageBody: text('message_body'), // Rich text message to supplier
+    createdById: uuid('created_by_id').references(() => users.id).notNull(),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+}, (table: any) => ({
+    arStatusIdx: index('ar_status_idx').on(table.status),
+    arResponsibleIdx: index('ar_responsible_idx').on(table.responsibleId),
+    arTemplateIdx: index('ar_template_idx').on(table.templateId),
+    arCreatedByIdx: index('ar_created_by_idx').on(table.createdById),
+}));
+
+// Document Request Groups - Multiple document request sections per assessment
+export const assessmentDocumentRequestGroups = pgTable('assessment_document_request_groups', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    assessmentRequestId: uuid('assessment_request_id').references(() => assessmentRequests.id, { onDelete: 'cascade' }).notNull(),
+    label: text('label').notNull(), // e.g., "Certifications", "Code of Conduct"
+    allowAdditionalAttachments: boolean('allow_additional_attachments').default(true),
+    order: integer('order').default(0),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+}, (table: any) => ({
+    drgRequestIdx: index('drg_request_idx').on(table.assessmentRequestId),
+}));
+
+// Document Requests - Individual document requests within a group
+export const assessmentDocumentRequests = pgTable('assessment_document_requests', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    groupId: uuid('group_id').references(() => assessmentDocumentRequestGroups.id, { onDelete: 'cascade' }).notNull(),
+    documentTemplateId: text('document_template_id').notNull(),
+    name: text('name').notNull(),
+    isAnswerRequired: boolean('is_answer_required').default(false),
+    order: integer('order').default(0),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+}, (table: any) => ({
+    drGroupIdx: index('dr_group_idx').on(table.groupId),
+    drTemplateIdx: index('dr_template_idx').on(table.documentTemplateId),
+}));
+
+// Assessment Request Suppliers - Participants/suppliers for the request
+export const assessmentRequestSuppliers = pgTable('assessment_request_suppliers', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    assessmentRequestId: uuid('assessment_request_id').references(() => assessmentRequests.id, { onDelete: 'cascade' }).notNull(),
+    supplierId: uuid('supplier_id').references(() => suppliers.id).notNull(),
+    contactId: uuid('contact_id').references(() => contacts.id),
+    status: text('status').default('pending'), // pending, sent, in_progress, submitted, completed
+    sentAt: timestamp('sent_at'),
+    respondedAt: timestamp('responded_at'),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+}, (table: any) => ({
+    arsRequestIdx: index('ars_request_idx').on(table.assessmentRequestId),
+    arsSupplierIdx: index('ars_supplier_idx').on(table.supplierId),
+    arsStatusIdx: index('ars_status_idx').on(table.status),
+}));
+
+// Assessment Request Supplier Contacts - join table so one supplier participant
+// can carry multiple contacts.
+export const assessmentRequestSupplierContacts = pgTable('assessment_request_supplier_contacts', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    assessmentRequestSupplierId: uuid('assessment_request_supplier_id').references(() => assessmentRequestSuppliers.id, { onDelete: 'cascade' }).notNull(),
+    contactId: uuid('contact_id').references(() => contacts.id).notNull(),
+    createdAt: timestamp('created_at').defaultNow(),
+}, (table: any) => ({
+    arscArsIdx: index('arsc_ars_idx').on(table.assessmentRequestSupplierId),
+    arscContactIdx: index('arsc_contact_idx').on(table.contactId),
+    arscUnique: unique('arsc_unique').on(table.assessmentRequestSupplierId, table.contactId),
+}));
+
+// Assessment Responses - Supplier responses to assessment requests
+export const assessmentResponses = pgTable('assessment_responses', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    assessmentRequestId: uuid('assessment_request_id').references(() => assessmentRequests.id, { onDelete: 'cascade' }).notNull(),
+    supplierId: uuid('supplier_id').references(() => suppliers.id).notNull(),
+    contactId: uuid('contact_id').references(() => contacts.id),
+    documentRequestId: uuid('document_request_id').references(() => assessmentDocumentRequests.id),
+    responseText: text('response_text'),
+    documentUrl: text('document_url'),
+    answers: text('answers'), // JSON FormAnswer for schema-driven templates (keyed by field key)
+    submittedAt: timestamp('submitted_at'),
+    reviewedById: uuid('reviewed_by_id').references(() => users.id),
+    reviewedAt: timestamp('reviewed_at'),
+    reviewNotes: text('review_notes'),
+    status: text('status').default('submitted'), // submitted, under_review, approved, rejected
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+}, (table: any) => ({
+    respRequestIdx: index('resp_request_idx').on(table.assessmentRequestId),
+    respSupplierIdx: index('resp_supplier_idx').on(table.supplierId),
+    respDocReqIdx: index('resp_doc_req_idx').on(table.documentRequestId),
+    respStatusIdx: index('resp_status_idx').on(table.status),
+}));
+
+// ============================================================================
+// MAGIC TOKENS - For secure external access to assessments
+// ============================================================================
+
+export const magicTokenPurposeEnum = pgEnum('magic_token_purpose', ['invitation', 'forward', 'reminder', 're_issue']);
+
+export const magicTokens = pgTable('magic_tokens', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    token: text('token').notNull().unique(), // cryptographically random, not hashed (for lookup)
+    tokenHash: text('token_hash').notNull(), // hashed version for secure storage
+    assessmentRequestId: uuid('assessment_request_id').references(() => assessmentRequests.id, { onDelete: 'cascade' }).notNull(),
+    participantId: uuid('participant_id').references(() => assessmentRequestSuppliers.id, { onDelete: 'cascade' }).notNull(),
+    contactId: uuid('contact_id').references(() => contacts.id, { onDelete: 'cascade' }).notNull(),
+    email: text('email').notNull(),
+    purpose: magicTokenPurposeEnum('purpose').notNull().default('invitation'),
+    createdAt: timestamp('created_at').defaultNow(),
+    expiresAt: timestamp('expires_at').notNull(),
+    usedAt: timestamp('used_at'),
+    revokedAt: timestamp('revoked_at'),
+    replacedByTokenId: uuid('replaced_by_token_id').references(() => magicTokens.id),
+}, (table: any) => ({
+    mtTokenIdx: index('mt_token_idx').on(table.token),
+    mtTokenHashIdx: index('mt_token_hash_idx').on(table.tokenHash),
+    mtRequestIdx: index('mt_request_idx').on(table.assessmentRequestId),
+    mtParticipantIdx: index('mt_participant_idx').on(table.participantId),
+    mtContactIdx: index('mt_contact_idx').on(table.contactId),
+    mtExpiresIdx: index('mt_expires_idx').on(table.expiresAt),
+    mtUsedIdx: index('mt_used_idx').on(table.usedAt),
+}));
+
+// Email send log for auditability
+export const emailSendLog = pgTable('email_send_log', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    assessmentRequestId: uuid('assessment_request_id').references(() => assessmentRequests.id, { onDelete: 'cascade' }),
+    participantId: uuid('participant_id').references(() => assessmentRequestSuppliers.id, { onDelete: 'cascade' }),
+    contactId: uuid('contact_id').references(() => contacts.id, { onDelete: 'cascade' }),
+    email: text('email').notNull(),
+    templateType: text('template_type').notNull(), // invitation, forward, reminder, re_issue, confirmation
+    status: text('status').notNull(), // queued, sent, failed, bounced, complained, delivered
+    providerMessageId: text('provider_message_id'),
+    errorMessage: text('error_message'),
+    attempts: integer('attempts').default(0),
+    sentAt: timestamp('sent_at'),
+    deliveredAt: timestamp('delivered_at'),
+    bouncedAt: timestamp('bounced_at'),
+    complainedAt: timestamp('complained_at'),
+    createdAt: timestamp('created_at').defaultNow(),
+}, (table: any) => ({
+    eslRequestIdx: index('esl_request_idx').on(table.assessmentRequestId),
+    eslParticipantIdx: index('esl_participant_idx').on(table.participantId),
+    eslContactIdx: index('esl_contact_idx').on(table.contactId),
+    eslStatusIdx: index('esl_status_idx').on(table.status),
+    eslCreatedIdx: index('esl_created_idx').on(table.createdAt),
+}));
+
+// ============================================================================
+// AI AGENT INFRASTRUCTURE TABLES
+// ============================================================================
+
 export const users = pgTable('users', {
     id: uuid('id').defaultRandom().primaryKey(),
     name: text('name').notNull(),
@@ -60,6 +278,12 @@ export const users = pgTable('users', {
     countryScope: text('country_scope'),
     regionScope: text('region_scope'),
     supplierId: uuid('supplier_id').references(() => suppliers.id),
+    // Password Reset
+    resetToken: text('reset_token'),
+    resetTokenExpiresAt: timestamp('reset_token_expires_at'),
+    // Onboarding
+    onboardingCompleted: boolean('onboarding_completed').default(false),
+    onboardingCompletedAt: timestamp('onboarding_completed_at'),
     createdAt: timestamp('created_at').defaultNow(),
 }, (table: any) => ({
     roleIdx: index('user_role_idx').on(table.role),
@@ -105,6 +329,20 @@ export const suppliers = pgTable('suppliers', {
     countryCode: text('country_code'), // ISO 2-char code
     city: text('city'),
     segment: supplierSegmentEnum('segment'), // Kraljic matrix: strategic, bottleneck, leverage, routine, high_risk
+    // Suppliers module classification fields (Tacto-style configurable table)
+    supplierType: text('supplier_type'), // e.g. Manufacturer, Distributor, Service Provider
+    areaOfNeed: text('area_of_need').array(), // multi-select
+    commodityGroup: text('commodity_group').array(), // multi-select
+    responsibleBuyer: text('responsible_buyer').array(), // multi-select user ids/names
+    strategicClassification: text('strategic_classification'), // e.g. Strategic, Preferred, Transactional, Approved
+    // External supplier number (used in URLs like /suppliers/79793903)
+    supplierNumber: text('supplier_number'),
+    // Extended supplier master-data profile (bank, legal, sites, figures, etc.)
+    profile: jsonb('profile'),
+    // Email Verification
+    emailVerified: boolean('email_verified').default(false),
+    emailVerificationToken: text('email_verification_token'),
+    emailVerificationExpiresAt: timestamp('email_verification_expires_at'),
     createdAt: timestamp('created_at').defaultNow(),
 }, (table: any) => ({
     statusIdx: index('supplier_status_idx').on(table.status),
@@ -321,6 +559,9 @@ export const platformSettings = pgTable('platform_settings', {
     geminiApiKeyFallback1: text('gemini_api_key_fallback_1'),
     geminiApiKeyFallback2: text('gemini_api_key_fallback_2'),
     exchangeRates: text('exchange_rates'), // JSON: {base, date, rates: {USD: 1.2, ...}}
+    // One-time Excel upload for default suppliers in Add Suppliers grid
+    defaultSuppliersData: text('default_suppliers_data'), // JSON array of supplier contacts from Excel
+    defaultSuppliersUploadedAt: timestamp('default_suppliers_uploaded_at'),
     updatedAt: timestamp('updated_at').defaultNow(),
 });
 
@@ -728,6 +969,8 @@ export const invoicesRelations = relations(invoices, ({ one }: any) => ({
 
 export const contactStatusEnum = pgEnum('contact_status', ['active', 'inactive', 'on_hold']);
 
+export const contactSourceEnum = pgEnum('contact_source', ['manual', 'import']);
+
 export const contacts = pgTable('contacts', {
     id: uuid('id').defaultRandom().primaryKey(),
     name: text('name').notNull(),
@@ -735,18 +978,27 @@ export const contacts = pgTable('contacts', {
     phone: text('phone'),
     company: text('company'),
     jobTitle: text('job_title'),
+    language: text('language'),
+    department: text('department'),
+    position: text('position'),
+    responsibility: text('responsibility'),
+    responsibilities: text('responsibilities').array(),
     region: text('region'),
     country: text('country'),
     continent: text('continent'),
     currency: text('currency').default('INR'),
     status: contactStatusEnum('status').default('active'),
+    source: contactSourceEnum('source').default('manual'),
     notes: text('notes'),
     supplierId: uuid('supplier_id').references(() => suppliers.id),
     createdBy: uuid('created_by').references(() => users.id),
     createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
 }, (table: any) => ({
     contactEmailIdx: index('contact_email_idx').on(table.email),
     contactSupplierIdx: index('contact_supplier_idx').on(table.supplierId),
+    contactStatusIdx: index('contact_status_idx').on(table.status),
+    contactSupplierEmailIdx: index('contact_supplier_email_idx').on(table.supplierId, table.email),
 }));
 
 export const supportTicketStatusEnum = pgEnum('support_ticket_status', ['open', 'in_progress', 'resolved', 'closed']);
@@ -1208,3 +1460,149 @@ export const importJobsRelations = relations(importJobs, ({ one }: any) => ({
 }));
 
 export type ImportJob = typeof importJobs.$inferSelect;
+
+// ============================================================================
+// SUPPLIER EVALUATIONS - ESG risk analyses tied to a single supplier
+// ============================================================================
+
+export const supplierEvaluationStatusEnum = pgEnum('supplier_evaluation_status', [
+    'draft',
+    'in_progress',
+    'completed',
+    'cancelled',
+]);
+
+export const supplierEvaluationTemplateCategoryEnum = pgEnum('supplier_evaluation_template_category', [
+    'esg_risk_own_business_area',
+    'esg_risk_occasion_based',
+    'esg_risk_supplier_self_assessment',
+    'esg_risk_mitigation_factors',
+    'other',
+]);
+
+// Evaluation Templates - reusable templates that the supplier detail page
+// can create an Evaluation from. Seeded with the 4 ESG Risk Analysis
+// variants and freely extensible.
+export const supplierEvaluationTemplates = pgTable('supplier_evaluation_templates', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    name: text('name').notNull(),
+    description: text('description'),
+    category: supplierEvaluationTemplateCategoryEnum('category').default('other').notNull(),
+    isActive: boolean('is_active').default(true),
+    createdById: uuid('created_by_id').references(() => users.id),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+}, (table: any) => ({
+    evalTplActiveIdx: index('supplier_eval_tpl_active_idx').on(table.isActive),
+    evalTplCategoryIdx: index('supplier_eval_tpl_category_idx').on(table.category),
+}));
+
+// Evaluations - one Evaluation per supplier, created from a template.
+// Created from the Suppliers grid ⋮ menu, the supplier detail page, or
+// the bulk action. The template is locked once chosen.
+export const supplierEvaluations = pgTable('supplier_evaluations', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    supplierId: uuid('supplier_id').references(() => suppliers.id, { onDelete: 'cascade' }).notNull(),
+    templateId: uuid('template_id').references(() => supplierEvaluationTemplates.id).notNull(),
+    title: text('title').notNull(),
+    language: text('language').default('en'),
+    status: supplierEvaluationStatusEnum('status').default('draft'),
+    notes: text('notes'),
+    createdById: uuid('created_by_id').references(() => users.id),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+}, (table: any) => ({
+    seSupplierIdx: index('supplier_eval_supplier_idx').on(table.supplierId),
+    seTemplateIdx: index('supplier_eval_template_idx').on(table.templateId),
+    seStatusIdx: index('supplier_eval_status_idx').on(table.status),
+}));
+
+// ============================================================================
+// ASSESSMENT REQUESTS - Type exports and relations
+// ============================================================================
+
+export const supplierEvaluationTemplatesRelations = relations(supplierEvaluationTemplates, ({ one, many }: any) => ({
+    createdBy: one(users, { fields: [supplierEvaluationTemplates.createdById], references: [users.id] }),
+    evaluations: many(supplierEvaluations),
+}));
+
+export const supplierEvaluationsRelations = relations(supplierEvaluations, ({ one }: any) => ({
+    supplier: one(suppliers, { fields: [supplierEvaluations.supplierId], references: [suppliers.id] }),
+    template: one(supplierEvaluationTemplates, { fields: [supplierEvaluations.templateId], references: [supplierEvaluationTemplates.id] }),
+    createdBy: one(users, { fields: [supplierEvaluations.createdById], references: [users.id] }),
+}));
+
+export const assessmentTemplatesRelations = relations(assessmentTemplates, ({ one, many }: any) => ({
+    createdBy: one(users, { fields: [assessmentTemplates.createdById], references: [users.id] }),
+    requests: many(assessmentRequests),
+}));
+
+export const documentTemplatesRelations = relations(documentTemplates, ({ one, many }: any) => ({
+    createdBy: one(users, { fields: [documentTemplates.createdById], references: [users.id] }),
+    documentRequests: many(assessmentDocumentRequests),
+}));
+
+export const assessmentRequestsRelations = relations(assessmentRequests, ({ one, many }: any) => ({
+    responsible: one(users, { fields: [assessmentRequests.responsibleId], references: [users.id] }),
+    createdBy: one(users, { fields: [assessmentRequests.createdById], references: [users.id] }),
+    template: one(assessmentTemplates, { fields: [assessmentRequests.templateId], references: [assessmentTemplates.id] }),
+    documentRequestGroups: many(assessmentDocumentRequestGroups),
+    suppliers: many(assessmentRequestSuppliers),
+    responses: many(assessmentResponses),
+}));
+
+export const assessmentDocumentRequestGroupsRelations = relations(assessmentDocumentRequestGroups, ({ one, many }: any) => ({
+    assessmentRequest: one(assessmentRequests, { fields: [assessmentDocumentRequestGroups.assessmentRequestId], references: [assessmentRequests.id] }),
+    documentRequests: many(assessmentDocumentRequests),
+}));
+
+export const assessmentDocumentRequestsRelations = relations(assessmentDocumentRequests, ({ one, many }: any) => ({
+    group: one(assessmentDocumentRequestGroups, { fields: [assessmentDocumentRequests.groupId], references: [assessmentDocumentRequestGroups.id] }),
+    responses: many(assessmentResponses),
+}));
+
+export const assessmentRequestSuppliersRelations = relations(assessmentRequestSuppliers, ({ one, many }: any) => ({
+    assessmentRequest: one(assessmentRequests, { fields: [assessmentRequestSuppliers.assessmentRequestId], references: [assessmentRequests.id] }),
+    supplier: one(suppliers, { fields: [assessmentRequestSuppliers.supplierId], references: [suppliers.id] }),
+    contact: one(contacts, { fields: [assessmentRequestSuppliers.contactId], references: [contacts.id] }),
+    contacts: many(assessmentRequestSupplierContacts),
+}));
+
+export const assessmentRequestSupplierContactsRelations = relations(assessmentRequestSupplierContacts, ({ one }: any) => ({
+    ars: one(assessmentRequestSuppliers, { fields: [assessmentRequestSupplierContacts.assessmentRequestSupplierId], references: [assessmentRequestSuppliers.id] }),
+    contact: one(contacts, { fields: [assessmentRequestSupplierContacts.contactId], references: [contacts.id] }),
+}));
+
+export const assessmentResponsesRelations = relations(assessmentResponses, ({ one }: any) => ({
+    assessmentRequest: one(assessmentRequests, { fields: [assessmentResponses.assessmentRequestId], references: [assessmentRequests.id] }),
+    supplier: one(suppliers, { fields: [assessmentResponses.supplierId], references: [suppliers.id] }),
+    contact: one(contacts, { fields: [assessmentResponses.contactId], references: [contacts.id] }),
+    documentRequest: one(assessmentDocumentRequests, { fields: [assessmentResponses.documentRequestId], references: [assessmentDocumentRequests.id] }),
+    reviewedBy: one(users, { fields: [assessmentResponses.reviewedById], references: [users.id] }),
+}));
+
+export const magicTokensRelations = relations(magicTokens, ({ one }: any) => ({
+    assessmentRequest: one(assessmentRequests, { fields: [magicTokens.assessmentRequestId], references: [assessmentRequests.id] }),
+    participant: one(assessmentRequestSuppliers, { fields: [magicTokens.participantId], references: [assessmentRequestSuppliers.id] }),
+    contact: one(contacts, { fields: [magicTokens.contactId], references: [contacts.id] }),
+    replacedByToken: one(magicTokens, { fields: [magicTokens.replacedByTokenId], references: [magicTokens.id] }),
+}));
+
+export const emailSendLogRelations = relations(emailSendLog, ({ one }: any) => ({
+    assessmentRequest: one(assessmentRequests, { fields: [emailSendLog.assessmentRequestId], references: [assessmentRequests.id] }),
+    participant: one(assessmentRequestSuppliers, { fields: [emailSendLog.participantId], references: [assessmentRequestSuppliers.id] }),
+    contact: one(contacts, { fields: [emailSendLog.contactId], references: [contacts.id] }),
+}));
+
+export type AssessmentTemplate = typeof assessmentTemplates.$inferSelect;
+export type DocumentTemplate = typeof documentTemplates.$inferSelect;
+export type AssessmentRequest = typeof assessmentRequests.$inferSelect;
+export type AssessmentDocumentRequestGroup = typeof assessmentDocumentRequestGroups.$inferSelect;
+export type AssessmentDocumentRequest = typeof assessmentDocumentRequests.$inferSelect;
+export type AssessmentRequestSupplier = typeof assessmentRequestSuppliers.$inferSelect;
+export type AssessmentResponse = typeof assessmentResponses.$inferSelect;
+export type MagicToken = typeof magicTokens.$inferSelect;
+export type EmailSendLog = typeof emailSendLog.$inferSelect;
+
+export type SupplierEvaluationTemplate = typeof supplierEvaluationTemplates.$inferSelect;
+export type SupplierEvaluation = typeof supplierEvaluations.$inferSelect;

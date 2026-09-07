@@ -10,6 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { EnterpriseReadinessPanel } from '@/components/admin/enterprise-readiness-panel';
 import { toast } from 'sonner';
+import { useLanguage } from '@/components/i18n/language-provider';
+import { t } from '@/lib/i18n';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     Line, PieChart, Pie, Cell, Area,
@@ -166,6 +168,8 @@ function ChartTooltip({ active, payload, label, currency }: any) {
    MAIN PAGE
    ═══════════════════════════════════════════════════════════════ */
 export default function AnalyticsPage() {
+    const { language } = useLanguage();
+    const tc = t(language, "misc");
     const [data, setData] = useState<Awaited<ReturnType<typeof getIntelligenceData>> | null>(null);
     const [filterOptions, setFilterOptions] = useState<{ regions: string[]; suppliers: { id: string; name: string }[]; categories: string[]; countries: string[] }>({ regions: [], suppliers: [], categories: [], countries: [] });
     const [loading, setLoading] = useState(true);
@@ -299,7 +303,7 @@ export default function AnalyticsPage() {
             <div className="flex h-[80vh] items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
                     <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-                    <p className="text-muted-foreground animate-pulse">Initializing Intelligence Hub...</p>
+                        <p className="text-muted-foreground animate-pulse">{tc.initializingIntelligence}</p>
                 </div>
             </div>
         );
@@ -313,9 +317,9 @@ export default function AnalyticsPage() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-                        <Activity className="h-6 w-6 text-primary" /> Intelligence Hub
+                        <Activity className="h-6 w-6 text-primary" /> {tc.intelligenceHub}
                     </h1>
-                    <p className="text-xs text-muted-foreground mt-0.5">Enterprise procurement analytics with recorded-value reporting and multi-dimensional filtering</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{tc.intelligenceHubSubtitle}</p>
                 </div>
                 <div className="flex flex-wrap gap-2 items-center">
                     {/* Trend Toggle */}
@@ -327,11 +331,11 @@ export default function AnalyticsPage() {
                     </div>
                     <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => setFiltersOpen(!filtersOpen)}>
                         <Filter className="h-3.5 w-3.5" />
-                        Filters
+                        {tc.filters}
                         {activeFilterCount > 0 && <Badge className="ml-1 h-4 w-4 p-0 flex items-center justify-center text-[10px]">{activeFilterCount}</Badge>}
                     </Button>
                     <Button size="sm" className="gap-1.5 text-xs" onClick={exportToCSV}>
-                        <Download className="h-3.5 w-3.5" /> Export
+                        <Download className="h-3.5 w-3.5" /> {tc.export}
                     </Button>
                 </div>
             </div>
@@ -344,36 +348,36 @@ export default function AnalyticsPage() {
                     <CardContent className="p-4">
                         <div className="flex flex-wrap gap-3 items-end">
                             <div className="space-y-1">
-                                <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">From</Label>
+                                <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">{tc.fromDate}</Label>
                                 <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="h-8 w-36 text-xs" />
                             </div>
                             <div className="space-y-1">
-                                <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">To</Label>
+                                <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">{tc.toDate}</Label>
                                 <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="h-8 w-36 text-xs" />
                             </div>
-                            <MultiSelect label="Region" icon={<Globe className="h-3 w-3" />}
+                            <MultiSelect label={tc.thRegion} icon={<Globe className="h-3 w-3" />}
                                 options={filterOptions.regions.map(r => ({ value: r, label: r }))}
                                 selected={selectedRegions} onChange={setSelectedRegions} />
-                            <MultiSelect label="Supplier" icon={<Factory className="h-3 w-3" />}
+                            <MultiSelect label={tc.supplier} icon={<Factory className="h-3 w-3" />}
                                 options={filterOptions.suppliers.map(s => ({ value: s.id, label: s.name }))}
                                 selected={selectedSuppliers} onChange={setSelectedSuppliers} />
-                            <MultiSelect label="Category" icon={<Boxes className="h-3 w-3" />}
+                            <MultiSelect label={tc.category} icon={<Boxes className="h-3 w-3" />}
                                 options={filterOptions.categories.map(c => ({ value: c, label: c }))}
                                 selected={selectedCategories} onChange={setSelectedCategories} />
-                            <MultiSelect label="Invoice Status" icon={<Receipt className="h-3 w-3" />}
+                            <MultiSelect label={tc.thStatus} icon={<Receipt className="h-3 w-3" />}
                                 options={['pending', 'matched', 'disputed', 'paid'].map(s => ({ value: s, label: s.charAt(0).toUpperCase() + s.slice(1) }))}
                                 selected={selectedInvoiceStatuses} onChange={setSelectedInvoiceStatuses} />
-                            <MultiSelect label="Order Status" icon={<FileText className="h-3 w-3" />}
+                            <MultiSelect label={tc.orderStatus} icon={<FileText className="h-3 w-3" />}
                                 options={['draft', 'pending_approval', 'approved', 'rejected', 'sent', 'fulfilled', 'cancelled'].map(s => ({ value: s, label: s.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) }))}
                                 selected={selectedOrderStatuses} onChange={setSelectedOrderStatuses} />
-                            <Button size="sm" className="gap-1.5 text-xs h-8" onClick={applyFilters}>
-                                <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} /> Apply
-                            </Button>
-                            {activeFilterCount > 0 && (
-                                <Button variant="ghost" size="sm" className="gap-1.5 text-xs h-8 text-red-500 hover:text-red-600" onClick={resetFilters}>
-                                    <X className="h-3 w-3" /> Reset
+                                <Button size="sm" className="gap-1.5 text-xs h-8" onClick={applyFilters}>
+                                    <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} /> {tc.apply}
                                 </Button>
-                            )}
+                                {activeFilterCount > 0 && (
+                                    <Button variant="ghost" size="sm" className="gap-1.5 text-xs h-8 text-red-500 hover:text-red-600" onClick={resetFilters}>
+                                        <X className="h-3 w-3" /> {tc.reset}
+                                    </Button>
+                                )}
                         </div>
                     </CardContent>
                 </Card>
@@ -381,14 +385,14 @@ export default function AnalyticsPage() {
 
             {/* ─── KPI Row ─── */}
             <div className="grid gap-3 grid-cols-2 md:grid-cols-4 xl:grid-cols-8">
-                <KpiCard title="Total Spend" value={fmtCompact(kpis?.totalSpend || 0, currency)} icon={<DollarSign className="h-4 w-4" style={{ color: '#3b82f6' }} />} color="#3b82f6" subtitle={`${kpis?.orderCount || 0} orders`} href="/sourcing/orders" />
-                <KpiCard title="Savings" value={fmtCompact(kpis?.totalSavings || 0, currency)} icon={<TrendingUp className="h-4 w-4" style={{ color: '#10b981' }} />} color="#10b981" trend={{ value: kpis?.savingsRate || 0, label: 'rate' }} href="/savings" />
-                <KpiCard title="Savings Rate" value={`${kpis?.savingsRate || 0}%`} icon={<ArrowUpRight className="h-4 w-4" style={{ color: '#8b5cf6' }} />} color="#8b5cf6" subtitle="of initial quotes" href="/savings" />
-                <KpiCard title="Avg Order" value={fmtCompact(kpis?.avgOrderValue || 0, currency)} icon={<Layers className="h-4 w-4" style={{ color: '#f59e0b' }} />} color="#f59e0b" href="/sourcing/orders" />
-                <KpiCard title="Suppliers" value={String(kpis?.supplierCount || 0)} icon={<Factory className="h-4 w-4" style={{ color: '#06b6d4' }} />} color="#06b6d4" subtitle="active in period" href="/suppliers" />
-                <KpiCard title="Orders" value={String(kpis?.orderCount || 0)} icon={<FileText className="h-4 w-4" style={{ color: '#ec4899' }} />} color="#ec4899" href="/sourcing/orders" />
-                <KpiCard title="Invoices" value={String(kpis?.invoiceCount || 0)} icon={<Receipt className="h-4 w-4" style={{ color: '#f97316' }} />} color="#f97316" subtitle={fmtCompact(kpis?.invoiceTotal || 0, currency)} href="/sourcing/invoices" />
-                <KpiCard title="Categories" value={String(data?.spendByCategory?.length || 0)} icon={<PieChartIcon className="h-4 w-4" style={{ color: '#84cc16' }} />} color="#84cc16" subtitle="tracked" href="/sourcing/parts" />
+                <KpiCard title={tc.totalSpend} value={fmtCompact(kpis?.totalSpend || 0, currency)} icon={<DollarSign className="h-4 w-4" style={{ color: '#3b82f6' }} />} color="#3b82f6" subtitle={`${kpis?.orderCount || 0} ${tc.txOrders}`} href="/sourcing/orders" />
+                <KpiCard title={tc.savingsTitle} value={fmtCompact(kpis?.totalSavings || 0, currency)} icon={<TrendingUp className="h-4 w-4" style={{ color: '#10b981' }} />} color="#10b981" trend={{ value: kpis?.savingsRate || 0, label: 'rate' }} href="/savings" />
+                <KpiCard title={tc.savingsRate} value={`${kpis?.savingsRate || 0}%`} icon={<ArrowUpRight className="h-4 w-4" style={{ color: '#8b5cf6' }} />} color="#8b5cf6" subtitle={tc.ofTotalProcurementValue} href="/savings" />
+                <KpiCard title={tc.avgOrder} value={fmtCompact(kpis?.avgOrderValue || 0, currency)} icon={<Layers className="h-4 w-4" style={{ color: '#f59e0b' }} />} color="#f59e0b" href="/sourcing/orders" />
+                <KpiCard title={tc.supplier} value={String(kpis?.supplierCount || 0)} icon={<Factory className="h-4 w-4" style={{ color: '#06b6d4' }} />} color="#06b6d4" subtitle={tc.activeInPeriod} href="/suppliers" />
+                <KpiCard title={tc.txOrders} value={String(kpis?.orderCount || 0)} icon={<FileText className="h-4 w-4" style={{ color: '#ec4899' }} />} color="#ec4899" href="/sourcing/orders" />
+                <KpiCard title={tc.invoiceStatus} value={String(kpis?.invoiceCount || 0)} icon={<Receipt className="h-4 w-4" style={{ color: '#f97316' }} />} color="#f97316" subtitle={fmtCompact(kpis?.invoiceTotal || 0, currency)} href="/sourcing/invoices" />
+                <KpiCard title={tc.category} value={String(data?.spendByCategory?.length || 0)} icon={<PieChartIcon className="h-4 w-4" style={{ color: '#84cc16' }} />} color="#84cc16" subtitle={tc.tracked} href="/sourcing/parts" />
             </div>
 
             {/* ═══ CHART GRID ═══ */}
@@ -397,9 +401,9 @@ export default function AnalyticsPage() {
                 {/* ── 1. Spend Trend (full width) ─── */}
                 <Card className="lg:col-span-2 xl:col-span-2">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm flex items-center gap-2"><TrendingUp className="h-4 w-4 text-blue-600" /> Spend &amp; Savings Trend</CardTitle>
+                        <CardTitle className="text-sm flex items-center gap-2"><TrendingUp className="h-4 w-4 text-blue-600" /> {tc.spendSavingsTrend}</CardTitle>
                         <CardDescription className="text-xs">
-                            {trendView === 'monthly' ? 'Monthly' : trendView === 'quarterly' ? 'Quarterly' : 'Yearly'} spend trajectory with savings overlay
+                            {trendView === 'monthly' ? tc.monthly : trendView === 'quarterly' ? tc.quarterly : tc.yearly} spend trajectory with savings overlay
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="h-[280px]">
@@ -422,8 +426,8 @@ export default function AnalyticsPage() {
                 {/* ── 2. Category Pie Chart ─── */}
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm flex items-center gap-2"><PieChartIcon className="h-4 w-4 text-amber-600" /> Category Distribution</CardTitle>
-                        <CardDescription className="text-xs">Spend concentration across categories</CardDescription>
+                        <CardTitle className="text-sm flex items-center gap-2"><PieChartIcon className="h-4 w-4 text-amber-600" /> {tc.categoryDistribution}</CardTitle>
+                        <CardDescription className="text-xs">{tc.spendConcentration}</CardDescription>
                     </CardHeader>
                     <CardContent className="h-[280px]">
                         <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={280}>
@@ -441,8 +445,8 @@ export default function AnalyticsPage() {
                 <Card className="lg:col-span-1 xl:col-span-1">
                     <CardHeader className="pb-2">
                         <div className="flex items-center justify-between">
-                            <CardTitle className="text-sm flex items-center gap-2"><Factory className="h-4 w-4 text-emerald-600" /> Top Suppliers</CardTitle>
-                            <Badge variant="outline" className="text-[10px]">by spend</Badge>
+                            <CardTitle className="text-sm flex items-center gap-2"><Factory className="h-4 w-4 text-emerald-600" /> {tc.topSuppliers}</CardTitle>
+                            <Badge variant="outline" className="text-[10px]">{tc.bySpend}</Badge>
                         </div>
                     </CardHeader>
                     <CardContent className="h-[320px]">
@@ -463,8 +467,8 @@ export default function AnalyticsPage() {
                 {/* ── 4. Invoice Status Pie ─── */}
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm flex items-center gap-2"><Receipt className="h-4 w-4 text-orange-600" /> Invoice Status</CardTitle>
-                        <CardDescription className="text-xs">Distribution by status</CardDescription>
+                        <CardTitle className="text-sm flex items-center gap-2"><Receipt className="h-4 w-4 text-orange-600" /> {tc.invoiceStatus}</CardTitle>
+                        <CardDescription className="text-xs">{tc.distributionByStatus}</CardDescription>
                     </CardHeader>
                     <CardContent className="h-[280px]">
                         <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={280}>
@@ -482,8 +486,8 @@ export default function AnalyticsPage() {
                 {/* ── 5. Order Status Donut ─── */}
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm flex items-center gap-2"><FileText className="h-4 w-4 text-cyan-600" /> Order Status</CardTitle>
-                        <CardDescription className="text-xs">Procurement order distribution</CardDescription>
+                        <CardTitle className="text-sm flex items-center gap-2"><FileText className="h-4 w-4 text-cyan-600" /> {tc.orderStatus}</CardTitle>
+                        <CardDescription className="text-xs">{tc.procurementOrderDistribution}</CardDescription>
                     </CardHeader>
                     <CardContent className="h-[280px]">
                         <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={280}>
@@ -500,8 +504,8 @@ export default function AnalyticsPage() {
                 {/* ── 6. Spend by Region Bar ─── */}
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm flex items-center gap-2"><Globe className="h-4 w-4 text-indigo-600" /> Spend by Region</CardTitle>
-                        <CardDescription className="text-xs">Geographic spend distribution</CardDescription>
+                        <CardTitle className="text-sm flex items-center gap-2"><Globe className="h-4 w-4 text-indigo-600" /> {tc.spendByRegion}</CardTitle>
+                        <CardDescription className="text-xs">{tc.geographicSpend}</CardDescription>
                     </CardHeader>
                     <CardContent className="h-[280px]">
                         <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={280}>
@@ -521,8 +525,8 @@ export default function AnalyticsPage() {
                 {/* ── 7. Price Variance (Quote vs Actual) ─── */}
                 <Card className="lg:col-span-2 xl:col-span-2">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm flex items-center gap-2"><BarChart3 className="h-4 w-4 text-violet-600" /> Price Variance Analysis</CardTitle>
-                        <CardDescription className="text-xs">Average initial quote vs actual price over time — gap represents negotiation savings</CardDescription>
+                        <CardTitle className="text-sm flex items-center gap-2"><BarChart3 className="h-4 w-4 text-violet-600" /> {tc.priceVarianceAnalysis}</CardTitle>
+                        <CardDescription className="text-xs">{tc.priceVarianceDesc}</CardDescription>
                     </CardHeader>
                     <CardContent className="h-[260px]">
                         <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={260}>
@@ -543,8 +547,8 @@ export default function AnalyticsPage() {
                 {/* ── 8. Savings by Type Pie ─── */}
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm flex items-center gap-2"><DollarSign className="h-4 w-4 text-emerald-600" /> Savings Breakdown</CardTitle>
-                        <CardDescription className="text-xs">By negotiation strategy type</CardDescription>
+                        <CardTitle className="text-sm flex items-center gap-2"><DollarSign className="h-4 w-4 text-emerald-600" /> {tc.savingsBreakdown}</CardTitle>
+                        <CardDescription className="text-xs">{tc.byNegotiationType}</CardDescription>
                     </CardHeader>
                     <CardContent className="h-[260px]">
                         <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={260}>
@@ -563,8 +567,8 @@ export default function AnalyticsPage() {
                     <CardHeader className="pb-2">
                         <div className="flex items-center justify-between">
                             <div>
-                                <CardTitle className="text-sm flex items-center gap-2"><RadarIcon className="h-4 w-4 text-cyan-700" /> Supplier Risk vs Performance</CardTitle>
-                                <CardDescription className="text-xs">Bubble size = spend volume. Top 50 suppliers by spend.</CardDescription>
+                            <CardTitle className="text-sm flex items-center gap-2"><RadarIcon className="h-4 w-4 text-cyan-700" /> {tc.supplierRiskPerformance}</CardTitle>
+                            <CardDescription className="text-xs">{tc.riskPerfDesc}</CardDescription>
                             </div>
                             <Badge variant="outline" className="text-[10px]">scatter</Badge>
                         </div>
@@ -600,8 +604,8 @@ export default function AnalyticsPage() {
                 {/* ── 10. Supplier Radar Comparison ─── */}
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm flex items-center gap-2"><RadarIcon className="h-4 w-4 text-purple-600" /> Top 5 Supplier Comparison</CardTitle>
-                        <CardDescription className="text-xs">Multi-dimensional score overlay</CardDescription>
+                        <CardTitle className="text-sm flex items-center gap-2"><RadarIcon className="h-4 w-4 text-purple-600" /> {tc.top5SupplierComparison}</CardTitle>
+                        <CardDescription className="text-xs">{tc.multiDimScore}</CardDescription>
                     </CardHeader>
                     <CardContent className="h-[300px]">
                         <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={300}>
@@ -622,8 +626,8 @@ export default function AnalyticsPage() {
                 {/* ── 11. Spend by Country ─── */}
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm flex items-center gap-2"><Globe className="h-4 w-4 text-teal-600" /> Spend by Country</CardTitle>
-                        <CardDescription className="text-xs">Top procurement destinations</CardDescription>
+                        <CardTitle className="text-sm flex items-center gap-2"><Globe className="h-4 w-4 text-teal-600" /> {tc.spendByCountry}</CardTitle>
+                        <CardDescription className="text-xs">{tc.topProcurementDestinations}</CardDescription>
                     </CardHeader>
                     <CardContent className="h-[300px]">
                         <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={300}>
@@ -643,8 +647,8 @@ export default function AnalyticsPage() {
                 {/* ── 12. Invoice by Region ─── */}
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm flex items-center gap-2"><Receipt className="h-4 w-4 text-rose-600" /> Invoice Volume by Region</CardTitle>
-                        <CardDescription className="text-xs">Regional invoice concentration</CardDescription>
+                        <CardTitle className="text-sm flex items-center gap-2"><Receipt className="h-4 w-4 text-rose-600" /> {tc.invoiceVolumeByRegion}</CardTitle>
+                        <CardDescription className="text-xs">{tc.regionalInvoiceConcentration}</CardDescription>
                     </CardHeader>
                     <CardContent className="h-[300px]">
                         <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={280}>
@@ -666,10 +670,10 @@ export default function AnalyticsPage() {
                     <CardHeader className="pb-2">
                         <div className="flex items-center justify-between">
                             <div>
-                                <CardTitle className="text-sm flex items-center gap-2"><Boxes className="h-4 w-4 text-violet-600" /> Top Articles by Spend</CardTitle>
-                                <CardDescription className="text-xs">Highest value parts with volume and price metrics</CardDescription>
+                            <CardTitle className="text-sm flex items-center gap-2"><Boxes className="h-4 w-4 text-violet-600" /> {tc.topArticlesBySpend}</CardTitle>
+                            <CardDescription className="text-xs">{tc.topPartsDesc}</CardDescription>
                             </div>
-                            <Badge variant="outline" className="text-[10px]">Top 15</Badge>
+                                <Badge variant="outline" className="text-[10px]">{tc.top15}</Badge>
                         </div>
                     </CardHeader>
                     <CardContent className="h-[300px]">
@@ -691,8 +695,8 @@ export default function AnalyticsPage() {
                 {/* ── 14. Contract Value Distribution ─── */}
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm flex items-center gap-2"><Layers className="h-4 w-4 text-sky-600" /> Contract Portfolio</CardTitle>
-                        <CardDescription className="text-xs">Value distribution by contract type</CardDescription>
+                        <CardTitle className="text-sm flex items-center gap-2"><Layers className="h-4 w-4 text-sky-600" /> {tc.contractPortfolio}</CardTitle>
+                        <CardDescription className="text-xs">{tc.valueDistributionByType}</CardDescription>
                     </CardHeader>
                     <CardContent className="h-[280px]">
                         <ResponsiveContainer width="100%" height="100%">
@@ -709,10 +713,10 @@ export default function AnalyticsPage() {
             </div>
 
             {/* ─── Footer ─── */}
-            <p className="text-center text-[10px] text-muted-foreground pb-2">
-                Intelligence Hub — {data?.spendByCategory?.length || 0} categories · {data?.spendBySupplier?.length || 0} suppliers · {data?.spendTrend?.length || 0} periods tracked
-                {activeFilterCount > 0 && ` · ${activeFilterCount} filter${activeFilterCount > 1 ? 's' : ''} active`}
-            </p>
+                <p className="text-center text-[10px] text-muted-foreground pb-2">
+                    {tc.intelligenceFooter.replace("{cats}", String(data?.spendByCategory?.length || 0)).replace("{sups}", String(data?.spendBySupplier?.length || 0)).replace("{periods}", String(data?.spendTrend?.length || 0))}
+                    {activeFilterCount > 0 && ` · ${tc.filtersActive.replace("{n}", String(activeFilterCount))}`}
+                </p>
         </div>
     );
 }

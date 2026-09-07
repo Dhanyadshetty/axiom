@@ -21,6 +21,8 @@ import { UploadInvoiceDialog } from "./upload-invoice-dialog";
 import { toast } from "sonner";
 import { getSuppliers } from "@/app/actions/suppliers";
 import { downloadCsvFile } from "@/lib/client/download";
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 import {
     PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
     ResponsiveContainer, LineChart, Line,
@@ -72,6 +74,8 @@ export default function InvoicesPage() {
     const [showUpload, setShowUpload] = useState(false);
     const [suppliersList, setSuppliersList] = useState<{ id: string; name: string }[]>([]);
     const { activeCurrencyCode, displayMode, finance, ready } = useCurrency();
+    const { language } = useLanguage();
+    const ts = t(language, "sourcing");
     const [filters, setFilters] = useState({
         invoiceNumber: '', status: 'all', country: '', continent: 'all',
         region: '', dateFrom: '', dateTo: '', currency: 'all',
@@ -109,7 +113,7 @@ export default function InvoicesPage() {
     ].filter(Boolean).length;
 
     const exportToCSV = () => {
-        if (invoicesList.length === 0) { toast.error("No data to export"); return; }
+        if (invoicesList.length === 0) { toast.error(ts.noDataToExport); return; }
         const headers = ['Invoice #', 'Supplier', 'Status', 'Date', 'Amount', 'Currency', 'Country', 'Region', 'Continent', 'Order Ref'];
         const rows = invoicesList.map(inv => [
             inv.invoiceNumber, inv.supplierName || 'N/A', inv.status,
@@ -119,11 +123,11 @@ export default function InvoicesPage() {
             inv.region || 'N/A', inv.continent || 'N/A', (inv.orderId || '').slice(0, 8),
         ]);
         downloadCsvFile(`axiom_invoices_${new Date().toISOString().split('T')[0]}.csv`, [headers, ...rows]);
-        toast.success("Invoices exported to CSV");
+        toast.success(ts.invoicesExported);
     };
 
     const exportToPDF = () => {
-        if (invoicesList.length === 0) { toast.error("No data to export"); return; }
+        if (invoicesList.length === 0) { toast.error(ts.noDataToExport); return; }
         // Sanitize function to prevent XSS when inserting into HTML
         const escapeHtml = (str: string) =>
             String(str ?? '')
@@ -140,7 +144,7 @@ export default function InvoicesPage() {
         const html = `<!DOCTYPE html><html><head><title>Axiom — Invoice Report</title><style>body{font-family:Arial,sans-serif;padding:24px}h1{font-size:22px;margin-bottom:4px}p{color:#666;font-size:12px;margin-bottom:16px}table{width:100%;border-collapse:collapse;font-size:11px}th{background:#f3f4f6;padding:8px 12px;text-align:left;border:1px solid #e5e7eb;font-weight:700;text-transform:uppercase;font-size:10px}td{padding:8px 12px;border:1px solid #e5e7eb}tr:nth-child(even){background:#f9fafb}</style></head><body><h1>Axiom — Invoice Ledger</h1><p>Generated: ${new Date().toLocaleString()} | Records: ${invoicesList.length} | Amounts in original invoice currencies</p><table><thead><tr><th>Invoice #</th><th>Supplier</th><th>Status</th><th>Date</th><th>Amount</th><th>Country</th><th>Region</th><th>Continent</th></tr></thead><tbody>${rows}</tbody></table></body></html>`;
         const w = window.open('', '_blank');
         if (w) { w.document.write(html); w.document.close(); w.print(); }
-        toast.success("PDF print dialog opened");
+        toast.success(ts.pdfDialogOpened);
     };
 
     // Group totals by currency to show multi-currency summary
@@ -154,10 +158,10 @@ export default function InvoicesPage() {
     const targetLensCurrency = displayMode === 'reporting' ? finance.reportingCurrency : activeCurrencyCode;
     const preferBookRates = displayMode === 'reporting';
     const lensLabel = !ready
-        ? 'Loading currency lens'
+        ? ts.loadingCurrencyLens
         : displayMode === 'reporting'
-            ? `${finance.reportingCurrency} Book View`
-            : `${activeCurrencyCode} Local View`;
+            ? `${finance.reportingCurrency} ${ts.bookView}`
+            : `${activeCurrencyCode} ${ts.localView}`;
     const convertedExposureTotal = invoicesList.reduce((sum, inv) => (
         sum + convertCurrencyAmount(
             Number(inv.amount) || 0,
@@ -181,22 +185,22 @@ export default function InvoicesPage() {
                 <div>
                     <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
                         <FileText className="h-8 w-8 text-primary" />
-                        Invoice Management
+                        {ts.invoiceManagement}
                     </h1>
-                    <p className="text-muted-foreground mt-1 font-medium">Filter, track and export invoices across all regions.</p>
+                    <p className="text-muted-foreground mt-1 font-medium">{ts.invoiceManagementSubtitle}</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                     <Link href="/sourcing/exceptions">
-                        <Button variant="outline" className="gap-2"><AlertTriangle className="h-4 w-4" /> Exceptions</Button>
+                        <Button variant="outline" className="gap-2"><AlertTriangle className="h-4 w-4" /> {ts.exceptions}</Button>
                     </Link>
-                    <Button onClick={() => setShowUpload(true)} className="gap-2"><Upload className="h-4 w-4" /> Upload Invoice</Button>
-                    <Button variant="outline" onClick={fetchInvoices} className="gap-2"><RefreshCcw className="h-4 w-4" /> Refresh</Button>
+                    <Button onClick={() => setShowUpload(true)} className="gap-2"><Upload className="h-4 w-4" /> {ts.uploadInvoice}</Button>
+                    <Button variant="outline" onClick={fetchInvoices} className="gap-2"><RefreshCcw className="h-4 w-4" /> {ts.refresh}</Button>
                     <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="gap-2 relative">
-                        <Filter className="h-4 w-4" /> Filters
+                        <Filter className="h-4 w-4" /> {ts.filters}
                         {activeFilterCount > 0 && <Badge className="ml-1 h-5 w-5 p-0 text-[10px] flex items-center justify-center">{activeFilterCount}</Badge>}
                     </Button>
-                    <Button variant="outline" onClick={exportToCSV} className="gap-2"><Download className="h-4 w-4" /> CSV</Button>
-                    <Button variant="outline" onClick={exportToPDF} className="gap-2"><FileText className="h-4 w-4" /> PDF</Button>
+                    <Button variant="outline" onClick={exportToCSV} className="gap-2"><Download className="h-4 w-4" /> {ts.csv}</Button>
+                    <Button variant="outline" onClick={exportToPDF} className="gap-2"><FileText className="h-4 w-4" /> {ts.pdf}</Button>
                 </div>
             </div>
 
@@ -204,34 +208,34 @@ export default function InvoicesPage() {
                 <CardHeader className="pb-3">
                     <CardTitle className="flex items-center gap-2 text-sm font-bold">
                         <Landmark className="h-4 w-4 text-primary" />
-                        Currency and review lens
+                        {ts.currencyReviewLens}
                     </CardTitle>
                     <CardDescription>
-                        Source invoice amounts stay untouched. The active lens changes display and rollups without rewriting supplier documents or country-specific tax evidence.
+                        {ts.currencyReviewLensDesc}
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-4 md:grid-cols-3">
                     <div className="rounded-2xl border bg-white p-4">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Active lens</p>
+                        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">{ts.activeLens}</p>
                         <p className="mt-2 text-lg font-black text-foreground">{lensLabel}</p>
                         <p className="mt-2 text-sm text-muted-foreground">
                             {displayMode === 'reporting'
-                                ? "Stable reporting-book rates for finance rollups."
-                                : "User-local FX view for regional operators and procurement teams."}
+                                ? ts.reportingLensDesc
+                                : ts.localLensDesc}
                         </p>
                     </div>
                     <div className="rounded-2xl border bg-white p-4">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Converted exposure</p>
+                        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">{ts.convertedExposure}</p>
                         <p className="mt-2 text-lg font-black text-foreground">{formatAmount(convertedExposureTotal, targetLensCurrency)}</p>
                         <p className="mt-2 text-sm text-muted-foreground">
-                            {coveredInvoices}/{invoicesList.length || 0} visible invoices have active FX coverage in this lens.
+                            {coveredInvoices}/{invoicesList.length || 0} {ts.fxCoverageNote}
                         </p>
                     </div>
                     <div className="rounded-2xl border bg-white p-4">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Tax and release posture</p>
-                        <p className="mt-2 text-lg font-black text-foreground">Source-country review</p>
+                        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">{ts.taxReleasePosture}</p>
+                        <p className="mt-2 text-lg font-black text-foreground">{ts.sourceCountryReview}</p>
                         <p className="mt-2 text-sm text-muted-foreground">
-                            VAT, GST, and regional evidence stay tied to the original invoice and supplier country. Review the source document before release when tax handling is jurisdiction-sensitive.
+                            {ts.taxReleaseNote}
                         </p>
                     </div>
                 </CardContent>
@@ -242,9 +246,9 @@ export default function InvoicesPage() {
                 <Card className="border-primary/20 bg-primary/5">
                     <CardHeader className="pb-3 pt-4 px-6">
                         <div className="flex items-center justify-between">
-                            <CardTitle className="text-sm font-bold flex items-center gap-2"><Filter className="h-4 w-4" /> Advanced Filters</CardTitle>
+                            <CardTitle className="text-sm font-bold flex items-center gap-2"><Filter className="h-4 w-4" /> {ts.advancedFilters}</CardTitle>
                             <div className="flex gap-2">
-                                {activeFilterCount > 0 && <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1 text-xs h-7"><X className="h-3 w-3" /> Clear all</Button>}
+                                {activeFilterCount > 0 && <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1 text-xs h-7"><X className="h-3 w-3" /> {ts.clearAll}</Button>}
                                 <Button variant="ghost" size="sm" onClick={() => setShowFilters(false)} className="h-7 w-7 p-0"><X className="h-4 w-4" /></Button>
                             </div>
                         </div>
@@ -252,53 +256,53 @@ export default function InvoicesPage() {
                     <CardContent className="px-6 pb-5">
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div className="space-y-1">
-                                <Label className="text-xs font-semibold uppercase text-muted-foreground">Invoice #</Label>
-                                <Input placeholder="Search invoice..." value={filters.invoiceNumber} onChange={e => setFilters(f => ({ ...f, invoiceNumber: e.target.value }))} className="h-9 text-sm" />
+                                <Label className="text-xs font-semibold uppercase text-muted-foreground">{ts.invoiceNumberShort}</Label>
+                                <Input placeholder={ts.searchInvoicePlaceholder} value={filters.invoiceNumber} onChange={e => setFilters(f => ({ ...f, invoiceNumber: e.target.value }))} className="h-9 text-sm" />
                             </div>
                             <div className="space-y-1">
-                                <Label className="text-xs font-semibold uppercase text-muted-foreground">Status</Label>
+                                <Label className="text-xs font-semibold uppercase text-muted-foreground">{ts.status}</Label>
                                 <select value={filters.status} onChange={e => setFilters(f => ({ ...f, status: e.target.value }))} className="h-9 w-full rounded-md border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                                    <option value="all">All Statuses</option>
-                                    <option value="pending">Pending</option>
-                                    <option value="matched">Matched</option>
-                                    <option value="disputed">Disputed</option>
-                                    <option value="paid">Paid</option>
+                                    <option value="all">{ts.allStatuses}</option>
+                                    <option value="pending">{ts.statusPending}</option>
+                                    <option value="matched">{ts.statusMatched}</option>
+                                    <option value="disputed">{ts.statusDisputed}</option>
+                                    <option value="paid">{ts.statusPaid}</option>
                                 </select>
                             </div>
                             <div className="space-y-1">
-                                <Label className="text-xs font-semibold uppercase text-muted-foreground">Continent</Label>
+                                <Label className="text-xs font-semibold uppercase text-muted-foreground">{ts.continent}</Label>
                                 <select value={filters.continent} onChange={e => setFilters(f => ({ ...f, continent: e.target.value }))} className="h-9 w-full rounded-md border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                                    <option value="all">All Continents</option>
-                                    <option value="Europe">Europe</option>
-                                    <option value="Asia">Asia</option>
-                                    <option value="Americas">Americas</option>
-                                    <option value="Africa">Africa</option>
-                                    <option value="Oceania">Oceania</option>
+                                    <option value="all">{ts.allContinents}</option>
+                                    <option value="Europe">{ts.continentEurope}</option>
+                                    <option value="Asia">{ts.continentAsia}</option>
+                                    <option value="Americas">{ts.continentAmericas}</option>
+                                    <option value="Africa">{ts.continentAfrica}</option>
+                                    <option value="Oceania">{ts.continentOceania}</option>
                                 </select>
                             </div>
                             <div className="space-y-1">
-                                <Label className="text-xs font-semibold uppercase text-muted-foreground">Country</Label>
-                                <Input placeholder="e.g. Germany, India..." value={filters.country} onChange={e => setFilters(f => ({ ...f, country: e.target.value }))} className="h-9 text-sm" />
+                                <Label className="text-xs font-semibold uppercase text-muted-foreground">{ts.country}</Label>
+                                <Input placeholder={ts.countryPlaceholder} value={filters.country} onChange={e => setFilters(f => ({ ...f, country: e.target.value }))} className="h-9 text-sm" />
                             </div>
                             <div className="space-y-1">
-                                <Label className="text-xs font-semibold uppercase text-muted-foreground">Region / Zone</Label>
-                                <Input placeholder="e.g. EMEA, APAC..." value={filters.region} onChange={e => setFilters(f => ({ ...f, region: e.target.value }))} className="h-9 text-sm" />
+                                <Label className="text-xs font-semibold uppercase text-muted-foreground">{ts.regionZone}</Label>
+                                <Input placeholder={ts.regionPlaceholder} value={filters.region} onChange={e => setFilters(f => ({ ...f, region: e.target.value }))} className="h-9 text-sm" />
                             </div>
                             <div className="space-y-1">
-                                <Label className="text-xs font-semibold uppercase text-muted-foreground">Currency</Label>
+                                <Label className="text-xs font-semibold uppercase text-muted-foreground">{ts.currency}</Label>
                                 <select value={filters.currency} onChange={e => setFilters(f => ({ ...f, currency: e.target.value }))} className="h-9 w-full rounded-md border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                                    <option value="all">All Currencies</option>
+                                    <option value="all">{ts.allCurrencies}</option>
                                     <option value="INR">INR (₹)</option>
                                     <option value="EUR">EUR (€)</option>
                                     <option value="USD">USD ($)</option>
                                 </select>
                             </div>
                             <div className="space-y-1">
-                                <Label className="text-xs font-semibold uppercase text-muted-foreground flex items-center gap-1"><Calendar className="h-3 w-3" /> From Date</Label>
+                                <Label className="text-xs font-semibold uppercase text-muted-foreground flex items-center gap-1"><Calendar className="h-3 w-3" /> {ts.fromDate}</Label>
                                 <Input type="date" value={filters.dateFrom} onChange={e => setFilters(f => ({ ...f, dateFrom: e.target.value }))} className="h-9 text-sm" />
                             </div>
                             <div className="space-y-1">
-                                <Label className="text-xs font-semibold uppercase text-muted-foreground flex items-center gap-1"><Calendar className="h-3 w-3" /> To Date</Label>
+                                <Label className="text-xs font-semibold uppercase text-muted-foreground flex items-center gap-1"><Calendar className="h-3 w-3" /> {ts.toDate}</Label>
                                 <Input type="date" value={filters.dateTo} onChange={e => setFilters(f => ({ ...f, dateTo: e.target.value }))} className="h-9 text-sm" />
                             </div>
                         </div>
@@ -310,47 +314,47 @@ export default function InvoicesPage() {
             <div className="grid gap-4 md:grid-cols-5">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Invoices</CardTitle>
+                        <CardTitle className="text-sm font-medium">{ts.totalInvoices}</CardTitle>
                         <FileText className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{invoicesList.length}</div>
-                        <p className="text-xs text-muted-foreground mt-1">Visible records</p>
+                        <p className="text-xs text-muted-foreground mt-1">{ts.visibleRecords}</p>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Pending Review</CardTitle>
+                        <CardTitle className="text-sm font-medium">{ts.pendingReview}</CardTitle>
                         <Clock className="h-4 w-4 text-amber-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{invoicesList.filter(i => i.status === 'pending').length}</div>
-                        <p className="text-xs text-muted-foreground mt-1">Awaiting action</p>
+                        <p className="text-xs text-muted-foreground mt-1">{ts.awaitingAction}</p>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Matched & Verified</CardTitle>
+                        <CardTitle className="text-sm font-medium">{ts.matchedVerified}</CardTitle>
                         <CheckCircle2 className="h-4 w-4 text-emerald-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{invoicesList.filter(i => i.status === 'matched' || i.status === 'paid').length}</div>
-                        <p className="text-xs text-muted-foreground mt-1">3-way verified</p>
+                        <p className="text-xs text-muted-foreground mt-1">{ts.threeWayVerified}</p>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Manual Review Queue</CardTitle>
+                        <CardTitle className="text-sm font-medium">{ts.manualReviewQueue}</CardTitle>
                         <ShieldAlert className="h-4 w-4 text-amber-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{reviewQueueCount}</div>
-                        <p className="text-xs text-muted-foreground mt-1">Escalated or low-confidence invoices</p>
+                        <p className="text-xs text-muted-foreground mt-1">{ts.escalatedInvoices}</p>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Payable</CardTitle>
+                        <CardTitle className="text-sm font-medium">{ts.totalPayable}</CardTitle>
                         <Coins className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
@@ -365,7 +369,7 @@ export default function InvoicesPage() {
                                 ))}
                             </div>
                         )}
-                        <p className="text-xs text-muted-foreground mt-1">In original invoice currencies</p>
+                        <p className="text-xs text-muted-foreground mt-1">{ts.inOriginalCurrencies}</p>
                     </CardContent>
                 </Card>
             </div>
@@ -405,7 +409,7 @@ export default function InvoicesPage() {
                         <Card>
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                                    <BarChart3 className="h-4 w-4 text-primary" /> Status Distribution
+                                    <BarChart3 className="h-4 w-4 text-primary" /> {ts.statusDistribution}
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
@@ -424,7 +428,7 @@ export default function InvoicesPage() {
                         <Card>
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                                    <Globe className="h-4 w-4 text-primary" /> Amount by Region
+                                    <Globe className="h-4 w-4 text-primary" /> {ts.amountByRegion}
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
@@ -433,7 +437,7 @@ export default function InvoicesPage() {
                                         <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
                                         <XAxis type="number" tick={{ fontSize: 10 }} allowDecimals={false} />
                                         <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={70} />
-                                        <Tooltip formatter={(value: number | string | undefined) => `${Number(value || 0)} invoices`} />
+                                        <Tooltip formatter={(value: number | string | undefined) => `${Number(value || 0)} ${ts.invoicesCountSuffix}`} />
                                         <Bar dataKey="count" fill="#3b82f6" radius={[0, 4, 4, 0]} />
                                     </BarChart>
                                 </ResponsiveContainer>
@@ -444,7 +448,7 @@ export default function InvoicesPage() {
                         <Card>
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                                    <Calendar className="h-4 w-4 text-primary" /> Invoice Volume Trend
+                                    <Calendar className="h-4 w-4 text-primary" /> {ts.invoiceVolumeTrend}
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
@@ -454,7 +458,7 @@ export default function InvoicesPage() {
                                         <XAxis dataKey="month" tick={{ fontSize: 10 }} />
                                         <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
                                         <Tooltip />
-                                        <Line type="monotone" dataKey="count" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 3 }} name="Invoices" />
+                                        <Line type="monotone" dataKey="count" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 3 }} name={ts.invoices} />
                                     </LineChart>
                                 </ResponsiveContainer>
                             </CardContent>

@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { getSuggestedBookRateCurrencies, parseFinanceSettings, type FinanceSettings } from "@/lib/finance";
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 import {
     AlertTriangle,
     Cpu,
@@ -46,6 +48,8 @@ type SettingsState = {
 };
 
 export default function AdminSettingsPage() {
+    const { language } = useLanguage();
+    const ta = t(language, "admin");
     const [isPending, startTransition] = useTransition();
     const [settings, setSettings] = useState<SettingsState | null>(null);
     const [isLocked, setIsLocked] = useState(true);
@@ -86,8 +90,8 @@ export default function AdminSettingsPage() {
             <div className="p-4 lg:p-8 flex items-center justify-center h-screen">
                 <div className="text-center space-y-2">
                     <Shield className="h-10 w-10 text-red-500 mx-auto" />
-                    <p className="font-bold text-red-600 uppercase text-sm">Admin Access Required</p>
-                    <p className="text-muted-foreground text-xs">Only administrators can access system settings.</p>
+                    <p className="font-bold text-red-600 uppercase text-sm">{ta.adminAccessRequired}</p>
+                    <p className="text-muted-foreground text-xs">{ta.onlyAdminsSettings}</p>
                 </div>
             </div>
         );
@@ -121,8 +125,8 @@ export default function AdminSettingsPage() {
         <div className="flex min-h-full flex-col bg-muted/40 p-4 lg:p-8">
             <div className="flex items-center justify-between mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-foreground">Admin Settings</h1>
-                    <p className="text-muted-foreground mt-1">Secure configuration, recovery controls, and demo-environment maintenance.</p>
+                    <h1 className="text-3xl font-bold tracking-tight text-foreground">{ta.adminSettings}</h1>
+                    <p className="text-muted-foreground mt-1">{ta.secureConfiguration}</p>
                 </div>
             </div>
 
@@ -134,14 +138,14 @@ export default function AdminSettingsPage() {
                         <div>
                             <div className="flex items-center gap-2">
                                 <Shield className="h-5 w-5 text-amber-600" />
-                                <CardTitle>Configuration Guardrail</CardTitle>
+                                <CardTitle>{ta.configurationGuardrail}</CardTitle>
                             </div>
-                            <CardDescription>Prevent accidental changes during demos and executive reviews.</CardDescription>
+                            <CardDescription>{ta.preventAccidentalChanges}</CardDescription>
                         </div>
                         <div className="flex items-center gap-2 bg-muted/50 p-2 rounded-lg border">
                             <Label htmlFor="isSettingsLocked" className="text-xs font-bold uppercase tracking-wider flex items-center gap-2">
                                 {isLocked ? <Lock size={14} className="text-red-500" /> : <Unlock size={14} className="text-green-500" />}
-                                Settings Lock
+                                {ta.settingsLock}
                             </Label>
                             <input
                                 type="checkbox"
@@ -155,7 +159,7 @@ export default function AdminSettingsPage() {
                     </CardHeader>
                     <CardContent>
                         <p className="text-sm text-muted-foreground">
-                            When the lock is enabled, operational settings stay frozen so the demo surface does not drift during handoffs or live presentations.
+                            {ta.lockEnabledNote}
                         </p>
                     </CardContent>
                 </Card>
@@ -164,21 +168,21 @@ export default function AdminSettingsPage() {
                     <CardHeader>
                         <div className="flex items-center gap-2">
                             <ShieldCheck className="h-5 w-5 text-red-500" />
-                            <CardTitle>Security & Access</CardTitle>
+                            <CardTitle>{ta.securityAccess}</CardTitle>
                         </div>
-                        <CardDescription>Authentication policy and permission refresh controls.</CardDescription>
+                        <CardDescription>{ta.authenticationPolicy}</CardDescription>
                     </CardHeader>
                     <CardContent className="grid gap-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="rounded-xl border bg-background/80 p-4">
-                                <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Session Policy</p>
-                                <p className="mt-2 text-sm font-semibold text-foreground">30-minute server session window</p>
-                                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                                    Session duration is enforced server-side. This page shows the active policy but does not expose low-level auth configuration for editing in the browser.
-                                </p>
+                            <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">{ta.sessionPolicy}</p>
+                            <p className="mt-2 text-sm font-semibold text-foreground">{ta.serverSessionWindow}</p>
+                            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                                {ta.sessionDurationEnforced}
+                            </p>
                             </div>
                             <div className="rounded-xl border bg-background/80 p-4">
-                                <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Two-Factor Authentication</p>
+                                <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">{ta.twoFactorAuthentication}</p>
                                 <div className="mt-3">
                                     <TwoFactorSetup
                                         isEnabled={!!settings.isTwoFactorEnabled}
@@ -192,10 +196,10 @@ export default function AdminSettingsPage() {
 
                         <div className="grid gap-2">
                             <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                                Flush Authorization Cache
+                                {ta.flushAuthCache}
                             </Label>
                             <p className="text-[11px] text-muted-foreground leading-relaxed bg-muted/40 rounded-md p-3 border">
-                                Revalidates server-rendered permission checks after role changes, 2FA updates, or access-policy fixes so the UI reflects the latest security posture immediately.
+                                {ta.flushAuthCacheNote}
                             </p>
                             <Button
                                 type="button"
@@ -204,21 +208,21 @@ export default function AdminSettingsPage() {
                                 onClick={async () => {
                                     const result = await flushAuthCache();
                                     if (result.success) {
-                                        toast.success("Authorization cache flushed. Fresh role rules are now active.");
+                                        toast.success(ta.authorizationCacheFlushed);
                                     } else {
                                         toast.error(result.error);
                                     }
                                 }}
                             >
-                                Flush Auth Cache
+                                {ta.flushAuthCache}
                             </Button>
                         </div>
 
                         <div className="rounded-xl border bg-background/80 p-4">
-                            <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Deployment Boundary</p>
-                            <p className="mt-2 text-sm font-semibold text-foreground">Identity, session controls, and review logs are enforced in-app.</p>
+                            <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">{ta.deploymentBoundary}</p>
+                            <p className="mt-2 text-sm font-semibold text-foreground">{ta.identitySessionControls}</p>
                             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                                Production-cloud encryption, certificate scope, and infrastructure attestations remain deployment controls outside this admin panel, so this screen only reports the app-side controls we can prove here.
+                                {ta.deploymentBoundaryBody}
                             </p>
                         </div>
                     </CardContent>
@@ -228,14 +232,14 @@ export default function AdminSettingsPage() {
                     <CardHeader>
                         <div className="flex items-center gap-2">
                             <Landmark className="h-5 w-5 text-blue-600" />
-                            <CardTitle>Finance Console</CardTitle>
+                            <CardTitle>{ta.financeConsole}</CardTitle>
                         </div>
-                        <CardDescription>Normalize procurement reporting with fixed book rates while preserving live FX feeds for local lenses.</CardDescription>
+                        <CardDescription>{ta.financeConsoleDesc}</CardDescription>
                     </CardHeader>
                     <CardContent className="grid gap-6">
                         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="defaultCurrency">Functional Currency</Label>
+                                <Label htmlFor="defaultCurrency">{ta.functionalCurrency}</Label>
                                 <select
                                     id="defaultCurrency"
                                     name="defaultCurrency"
@@ -248,7 +252,7 @@ export default function AdminSettingsPage() {
                                 </select>
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="reportingCurrency">Reporting Currency</Label>
+                                <Label htmlFor="reportingCurrency">{ta.reportingCurrency}</Label>
                                 <select
                                     id="reportingCurrency"
                                     name="reportingCurrency"
@@ -261,19 +265,19 @@ export default function AdminSettingsPage() {
                                 </select>
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="bookRatePeriod">Book Rate Cadence</Label>
+                                <Label htmlFor="bookRatePeriod">{ta.bookRateCadence}</Label>
                                 <select
                                     id="bookRatePeriod"
                                     name="bookRatePeriod"
                                     defaultValue={finance.bookRatePeriod}
                                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                                 >
-                                    <option value="monthly">Monthly</option>
-                                    <option value="quarterly">Quarterly</option>
+                                    <option value="monthly">{ta.bookRatePeriodMonthly}</option>
+                                    <option value="quarterly">{ta.bookRatePeriodQuarterly}</option>
                                 </select>
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="bookRateEffectiveDate">Effective From</Label>
+                                <Label htmlFor="bookRateEffectiveDate">{ta.effectiveFrom}</Label>
                                 <input
                                     id="bookRateEffectiveDate"
                                     name="bookRateEffectiveDate"
@@ -402,17 +406,17 @@ export default function AdminSettingsPage() {
                     <CardHeader>
                         <div className="flex items-center gap-2">
                             <Cpu className="h-5 w-5 text-amber-600" />
-                            <CardTitle>AI Credential Status</CardTitle>
+                            <CardTitle>{ta.aiCredentialStatus}</CardTitle>
                         </div>
-                        <CardDescription>Credential presence is visible, but raw keys never render in the browser.</CardDescription>
+                        <CardDescription>{ta.aiCredentialVisible}</CardDescription>
                     </CardHeader>
                     <CardContent className="grid gap-4">
                         <div className="flex flex-wrap items-center gap-2">
                             <Badge variant="outline" className={aiCredentialState.hasCredentials ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-red-200 bg-red-50 text-red-700"}>
-                                {aiCredentialState.hasCredentials ? "AI Ready" : "AI Credentials Missing"}
+                                {aiCredentialState.hasCredentials ? ta.aiReady : ta.aiCredentialsMissing}
                             </Badge>
                             <Badge variant="outline" className="border-stone-200 bg-stone-50 text-stone-700">
-                                {aiCredentialState.totalKeyCount} credential source{aiCredentialState.totalKeyCount === 1 ? "" : "s"} detected
+                                {aiCredentialState.totalKeyCount} {aiCredentialState.totalKeyCount === 1 ? ta.credentialSourcesDetected : ta.credentialSourcesDetectedPlural}
                             </Badge>
                             <Badge variant="outline" className="border-stone-200 bg-white text-stone-600">
                                 {aiCredentialState.source}
@@ -420,18 +424,18 @@ export default function AdminSettingsPage() {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="rounded-xl border bg-background/80 p-4">
-                                <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Secure Storage</p>
+                                <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">{ta.secureStorage}</p>
                                 <p className="mt-2 text-2xl font-black text-foreground">{aiCredentialState.databaseKeyCount}</p>
-                                <p className="mt-1 text-xs text-muted-foreground">Credential records stored server-side.</p>
+                                <p className="mt-1 text-xs text-muted-foreground">{ta.credentialRecordsStored}</p>
                             </div>
                             <div className="rounded-xl border bg-background/80 p-4">
-                                <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Environment Sources</p>
+                                <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">{ta.environmentSources}</p>
                                 <p className="mt-2 text-2xl font-black text-foreground">{aiCredentialState.environmentKeyCount}</p>
-                                <p className="mt-1 text-xs text-muted-foreground">Server environment variables available to the runtime.</p>
+                                <p className="mt-1 text-xs text-muted-foreground">{ta.serverEnvVars}</p>
                             </div>
                         </div>
                         <p className="text-[11px] text-muted-foreground">
-                            Sensitive values are intentionally hidden. Provisioning and rotation should happen through secure server configuration, not through browser-visible admin forms.
+                            {ta.sensitiveValuesHidden}
                         </p>
                     </CardContent>
                 </Card>
@@ -440,16 +444,16 @@ export default function AdminSettingsPage() {
                     <CardHeader>
                         <div className="flex items-center gap-2 text-red-600">
                             <AlertTriangle className="h-5 w-5" />
-                            <CardTitle className="font-black uppercase tracking-tighter">System Maintenance</CardTitle>
+                            <CardTitle className="font-black uppercase tracking-tighter">{ta.systemMaintenance}</CardTitle>
                         </div>
-                        <CardDescription>Reset demo data without losing admin access.</CardDescription>
+                        <CardDescription>{ta.resetDemoData}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
-                                <h4 className="text-sm font-bold text-red-700 uppercase tracking-tight">Workspace Cleanup</h4>
+                                <h4 className="text-sm font-bold text-red-700 uppercase tracking-tight">{ta.workspaceCleanup}</h4>
                                 <p className="text-xs text-muted-foreground leading-relaxed">
-                                    Use this only when you need to strip demo data, stale AI outputs, and operational records from the environment before a fresh presentation run.
+                                    {ta.stripDemoData}
                                 </p>
                             </div>
                             <div className="grid gap-3">
@@ -462,15 +466,15 @@ export default function AdminSettingsPage() {
                 </Card>
 
                 <div className="flex justify-end gap-3 mt-4">
-                    <Button type="button" variant="ghost" onClick={loadSettings}>Reset</Button>
+                    <Button type="button" variant="ghost" onClick={loadSettings}>{ta.reset}</Button>
                     <Button type="submit" disabled={isPending} className="min-w-[160px] bg-amber-600 hover:bg-amber-700 text-white shadow-lg shadow-amber-100 disabled:opacity-50">
                         {isPending ? (
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Applying...
+                                {ta.applying}
                             </>
                         ) : (
-                            "Apply Changes"
+                            ta.applyChanges
                         )}
                     </Button>
                 </div>

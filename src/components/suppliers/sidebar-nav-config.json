@@ -1,0 +1,87 @@
+{
+  "1. General Overviews": [
+    {
+      "id": "classification",
+      "label": "1.1 Classification",
+      "count": 2
+    },
+    {
+      "id": "certificates",
+      "label": "1.2 Certificates & Documents",
+      "count": 2
+    }
+  ],
+  "2. Onboarding": [
+    {
+      "id": "potential-suppliers",
+      "label": "2.1 Potential Suppliers",
+      "count": 3
+    },
+    {
+      "id": "in-qualification",
+      "label": "2.2 In qualification",
+      "count": 2
+    },
+    {
+      "id": "onboarded-suppliers",
+      "label": "2.3 Onboarded Suppliers",
+      "count": 2
+    },
+    {
+      "id": "rejected-suppliers",
+      "label": "2.4 Rejected Suppliers",
+      "count": 1
+    }
+  ],
+  "3. Article-Conformity": [
+    {
+      "id": "reach",
+      "label": "3.1 REACH",
+      "count": 2
+    },
+    {
+      "id": "rohs",
+      "label": "3.2 RoHS",
+      "count": 0
+    }
+  ],
+  "4. ESG Management": [
+    {
+      "id": "risk-development",
+      "label": "4.1 Risk Development",
+      "count": 0
+    },
+    {
+      "id": "suspicious-suppliers",
+      "label": "4.2 Suspicious Suppliers",
+      "count": 0
+    },
+    {
+      "id": "public-incidents",
+      "label": "4.3 Public Incidents",
+      "count": 0
+    }
+  ],
+  "5. ESG Risk Analysis": [
+    {
+      "id": "overview",
+      "label": "5.1 Overview",
+      "count": 0
+    },
+    {
+      "id": "mitigation-factors",
+      "label": "5.2 Mitigation Factors & Appropriateness",
+      "count": 0
+    },
+    {
+      "id": "supplier-self-assessment",
+      "label": "5.3 Supplier Self-Assessment",
+      "count": 0
+    },
+    {
+      "id": "own-business-area",
+      "label": "5.4 Own Business Area",
+      "count": 0
+    }
+  ]
+}

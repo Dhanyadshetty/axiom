@@ -1,0 +1,87 @@
+{
+  "id": "esg_supplier_self_assessment_labor_rights",
+  "name": "ESG Lieferantenselbstauskunft - Arbeitsrechte",
+  "category": "esg_supplier_self_assessment_labor_rights",
+  "version": "1.0",
+  "description": "ESG supplier self-assessment for labor rights.",
+  "sections": [
+    {
+      "key": "buyer_message",
+      "title": "Message from the buyer",
+      "titleDe": "Nachricht des Käufers",
+      "order": 0,
+      "blocks": [
+        {
+          "key": "buyer_message_block",
+          "title": "Message from the buyer",
+          "titleDe": "Nachricht des Käufers",
+          "icon": "message-square",
+          "message": "Dear Supplier,\n\nPlease complete this ESG self-assessment regarding labor rights in your operations and supply chain.\n\nKind regards,\n[Buyer Name]\n[Buyer Company]",
+          "messageDe": "Sehr geehrte(r) Lieferant(in),\n\nBitte füllen Sie diese ESG-Selbstauskunft zu Arbeitsrechten in Ihrem Betrieb und Ihrer Lieferkette aus.\n\nMit freundlichen Grüßen,\n[Name des Käufers]\n[Firma des Käufers]",
+          "fields": []
+        }
+      ]
+    },
+    {
+      "key": "supplier_identification",
+      "title": "1. Supplier Identification",
+      "titleDe": "1. Lieferantenidentifikation",
+      "order": 1,
+      "blocks": [
+        {
+          "key": "company_address",
+          "title": "Company address",
+          "titleDe": "Unternehmensanschrift",
+          "icon": "building",
+          "fields": [
+            { "key": "supplier_number", "label": "Supplier number", "labelDe": "Lieferantennummer", "type": "short_text", "required": false },
+            { "key": "company_name", "label": "Company name", "labelDe": "Firmenname", "type": "short_text", "required": true },
+            { "key": "address", "label": "Address", "labelDe": "Anschrift", "type": "short_text", "required": true },
+            { "key": "country", "label": "Country", "labelDe": "Land", "type": "short_text", "required": false }
+          ]
+        },
+        {
+          "key": "primary_contact",
+          "title": "Primary contact",
+          "titleDe": "Primärkontakt",
+          "icon": "user",
+          "fields": [
+            { "key": "contact_person_name", "label": "Contact name", "labelDe": "Kontaktname", "type": "short_text", "required": false },
+            { "key": "contact_email", "label": "Contact email", "labelDe": "Kontakt-E-Mail", "type": "short_text", "required": false }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "labor_rights",
+      "title": "2. Labor Rights",
+      "titleDe": "2. Arbeitsrechte",
+      "order": 2,
+      "blocks": [
+        {
+          "key": "freely_chosen_employment",
+          "title": "Freely chosen employment",
+          "titleDe": "Frei gewählte Beschäftigung",
+          "icon": "users",
+          "fields": [
+            { "key": "no_forced_labor", "label": "No forced, bonded or involuntary labor is used", "labelDe": "Es wird keine Zwangs-, Pflicht- oder unfreiwillige Arbeit eingesetzt", "type": "yes_no_confirm", "required": true },
+            { "key": "no_child_labor", "label": "No child labor is used (per ILO conventions)", "labelDe": "Es wird keine Kinderarbeit eingesetzt (gemäß ILO-Konventionen)", "type": "yes_no_confirm", "required": true },
+            { "key": "labor_rights_comments", "label": "Comments / evidence", "labelDe": "Kommentare / Nachweise", "type": "long_text_rich", "required": false }
+          ]
+        },
+        {
+          "key": "working_conditions",
+          "title": "Working conditions",
+          "titleDe": "Arbeitsbedingungen",
+          "icon": "clock",
+          "fields": [
+            { "key": "fair_wages", "label": "Wages meet or exceed legal minimums and are paid on time", "labelDe": "Löhne entsprechen oder übersteigen die gesetzlichen Mindestlöhne und werden pünktlich gezahlt", "type": "yes_no_confirm", "required": true },
+            { "key": "reasonable_hours", "label": "Working hours comply with applicable laws", "labelDe": "Arbeitszeiten entsprechen den geltenden Gesetzen", "type": "yes_no_confirm", "required": true },
+            { "key": "freedom_of_association", "label": "Workers are free to associate and collective bargaining is respected", "labelDe": "Mitarbeiter dürfen sich frei organisieren, Tarifverhandlungen werden respektiert", "type": "yes_no_confirm", "required": true },
+            { "key": "no_discrimination", "label": "No discrimination in employment practices", "labelDe": "Keine Diskriminierung in der Beschäftigungspraxis", "type": "yes_no_confirm", "required": true }
+          ]
+        }
+      ]
+    }
+  ]
+}

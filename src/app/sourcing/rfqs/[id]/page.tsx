@@ -26,6 +26,7 @@ import Link from "next/link";
 import type { Supplier, Part } from "@/db/schema";
 import { LaunchSourcingButton, ComparePricesButton, PrepareNegotiationButton } from "@/components/sourcing/rfq-action-buttons";
 import { formatDateLabel } from "@/lib/utils/date";
+import { getActiveLanguage, t } from "@/lib/i18n";
 
 export const dynamic = 'force-dynamic';
 
@@ -114,6 +115,8 @@ export default async function RFQDetailPage({ params }: { params: Promise<{ id: 
     const session = await auth();
     const isAdmin = session?.user?.role === 'admin';
     const canManageRfqs = Boolean(session?.user && session.user.role !== 'supplier');
+    const language = await getActiveLanguage();
+    const tc = t(language, "rfqDetail");
 
     const rfq = await getRFQById(id) as RFQWithRelations | null;
 
@@ -155,7 +158,7 @@ export default async function RFQDetailPage({ params }: { params: Promise<{ id: 
             <div className="mb-6">
                 <Link href="/sourcing/rfqs" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
                     <ArrowLeft className="h-4 w-4" />
-                    Back to Sourcing Requests
+                    {tc.backToSourcingRequests}
                 </Link>
             </div>
 
@@ -167,18 +170,18 @@ export default async function RFQDetailPage({ params }: { params: Promise<{ id: 
                             {rfq.status?.toUpperCase()}
                         </Badge>
                     </div>
-                    <p className="max-w-2xl break-words text-lg text-muted-foreground">{rfq.description || "No description provided."}</p>
+                    <p className="max-w-2xl break-words text-lg text-muted-foreground">{rfq.description || tc.noDescriptionProvided}</p>
                 </div>
 
                 <Card className="w-full border-accent/50 bg-background p-6 shadow-sm lg:w-[320px] lg:shrink-0">
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium text-muted-foreground">Created</span>
+                            <span className="text-sm font-medium text-muted-foreground">{tc.created}</span>
                             <span className="text-sm font-semibold">{createdDateLabel}</span>
                         </div>
                         <div className="flex items-center justify-between border-t pt-4">
-                            <span className="text-sm font-medium text-muted-foreground">Request Items</span>
-                            <span className="text-sm font-semibold">{rfq.items.length} Unique Parts</span>
+                            <span className="text-sm font-medium text-muted-foreground">{tc.requestItems}</span>
+                            <span className="text-sm font-semibold">{rfq.items.length} {tc.uniqueParts}</span>
                         </div>
                         {isAdmin && (
                             <div className="pt-4 border-t space-y-3">
@@ -188,12 +191,12 @@ export default async function RFQDetailPage({ params }: { params: Promise<{ id: 
                                         defaultValue={rfq.status!}
                                         className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                                     >
-                                        <option value="draft">Draft</option>
-                                        <option value="open">Open (Invite Suppliers)</option>
-                                        <option value="closed">Closed</option>
-                                        <option value="cancelled">Cancelled</option>
+                                        <option value="draft">{tc.statusDraft}</option>
+                                        <option value="open">{tc.statusOpen}</option>
+                                        <option value="closed">{tc.statusClosed}</option>
+                                        <option value="cancelled">{tc.statusCancelled}</option>
                                     </select>
-                                    <Button type="submit" size="sm" variant="secondary">Update</Button>
+                                    <Button type="submit" size="sm" variant="secondary">{tc.update}</Button>
                                 </form>
                                 {rfq.status === 'draft' && (
                                     <LaunchSourcingButton rfqId={rfq.id} />
@@ -211,7 +214,7 @@ export default async function RFQDetailPage({ params }: { params: Promise<{ id: 
                         <CardHeader className="pb-4 border-b border-muted">
                             <CardTitle className="text-xl font-black tracking-tight flex items-center gap-2">
                                 <FileText className="h-6 w-6 text-primary" />
-                                Line Item Spec
+                                {tc.lineItemSpec}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="pt-6">
@@ -223,7 +226,7 @@ export default async function RFQDetailPage({ params }: { params: Promise<{ id: 
                                             <p className="text-[10px] text-muted-foreground font-mono bg-background px-1.5 py-0.5 rounded border inline-block">{item.part.sku}</p>
                                         </div>
                                         <div className="shrink-0 text-right">
-                                            <p className="font-black text-primary">{item.quantity} Units</p>
+                                            <p className="font-black text-primary">{item.quantity} {tc.units}</p>
                                             <Badge variant="outline" className="text-[10px] font-bold h-4 px-1.5 uppercase opacity-60 mt-1">{item.part.category}</Badge>
                                         </div>
                                     </div>
@@ -240,7 +243,7 @@ export default async function RFQDetailPage({ params }: { params: Promise<{ id: 
                             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                                 <CardTitle className="text-2xl font-black tracking-tighter flex items-center gap-3">
                                     <Sparkles className="h-7 w-7 text-primary" />
-                                    Sourcing Intelligence
+                                    {tc.sourcingIntelligence}
                                 </CardTitle>
                                 <div className="flex flex-wrap items-center gap-3">
                                     {isAdmin && (
@@ -251,16 +254,16 @@ export default async function RFQDetailPage({ params }: { params: Promise<{ id: 
                                         />
                                     )}
                                     <Badge variant="outline" className="bg-emerald-600 text-white border-none font-bold uppercase text-[10px] py-1.5 px-4 shadow-lg shadow-emerald-200">
-                                        ENGINE ACTIVE
+                                        {tc.engineActive}
                                     </Badge>
                                 </div>
                             </div>
                             <CardDescription className="text-muted-foreground mt-2 font-medium">
-                                Multidimensional supplier evaluation using procurement telemetry and financial risk modeling.
+                                {tc.sourcingIntelligenceDesc}
                             </CardDescription>
                             {maskSupplierIdentity ? (
                                 <div className="mt-4 rounded-2xl border border-primary/10 bg-background/80 p-3 text-sm text-muted-foreground">
-                                    Blind-bid mode is active. Supplier identities stay masked during the live event to reduce bias and collusion risk.
+                                    {tc.blindBidNotice}
                                 </div>
                             ) : null}
                         </CardHeader>
@@ -290,51 +293,51 @@ export default async function RFQDetailPage({ params }: { params: Promise<{ id: 
                                                             {isTop && (
                                                                 <Badge className="bg-primary text-primary-foreground font-black text-[10px] uppercase h-6 px-3 flex items-center gap-1.5 shadow-md shadow-primary/20 border-none whitespace-nowrap">
                                                                     <Sparkles size={10} />
-                                                                    Recommended Strategy
+                                                                    {tc.recommendedStrategy}
                                                                 </Badge>
                                                             )}
                                                         </div>
                                                     </div>
                                                     <p className="text-base text-muted-foreground font-medium flex items-center gap-2">
-                                                        AI Intentionality Match:
+                                                        {tc.aiIntentionalityMatch}
                                                         <span className="text-primary font-black bg-primary/10 px-2 py-0.5 rounded-full">{matchScore}%</span>
                                                     </p>
                                                     {maskSupplierIdentity ? (
                                                         <p className="mt-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                                                            Identity masked until award
+                                                            {tc.identityMaskedUntilAward}
                                                         </p>
                                                     ) : null}
                                                 </div>
 
                                                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
                                                     <div className="space-y-2">
-                                                        <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest opacity-60">Performance</p>
+                                                        <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest opacity-60">{tc.performance}</p>
                                                         <div className="flex items-center gap-2 font-black text-2xl text-foreground">
                                                             <TrendingUp size={24} className="text-green-500" />
                                                             {performance}%
                                                         </div>
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest opacity-60">Risk Intelligence</p>
+                                                        <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest opacity-60">{tc.riskIntelligence}</p>
                                                         <div className="flex items-center gap-2 font-black text-2xl text-foreground">
                                                             <ShieldCheck size={24} className={risk > 30 ? 'text-red-500' : 'text-blue-500'} />
-                                                            {risk <= 20 ? 'Verified' : risk <= 50 ? 'Moderate' : 'Critical'}
+                                                            {risk <= 20 ? tc.riskVerified : risk <= 50 ? tc.riskModerate : tc.riskCritical}
                                                         </div>
                                                     </div>
                                                     {hasCommercialAnalysis && (
                                                         <>
                                                             <div className="space-y-2">
-                                                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest opacity-60">Financial Quote</p>
+                                                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest opacity-60">{tc.financialQuote}</p>
                                                                 <div className="flex items-center gap-2 font-black text-2xl text-primary">
                                                                     <Wallet size={24} />
                                                                     {formatCurrency(s.quoteAmount)}
                                                                 </div>
                                                             </div>
                                                             <div className="space-y-2">
-                                                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest opacity-60">Fulfillment</p>
+                                                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest opacity-60">{tc.fulfillment}</p>
                                                                 <div className="flex items-center gap-2 font-black text-2xl text-foreground">
                                                                     <Clock size={24} />
-                                                                    {analysis.deliveryWeeks !== null ? `${analysis.deliveryWeeks}w` : 'TBD'}
+                                                                    {analysis.deliveryWeeks !== null ? `${analysis.deliveryWeeks}${tc.weeks}` : tc.tbd}
                                                                 </div>
                                                             </div>
                                                         </>
@@ -345,7 +348,7 @@ export default async function RFQDetailPage({ params }: { params: Promise<{ id: 
                                                     <div className="bg-primary/5 p-5 rounded-2xl border border-primary/10 shadow-inner">
                                                         <p className="text-[10px] font-black text-primary mb-3 flex items-center gap-2 uppercase tracking-widest">
                                                             <Sparkles size={12} />
-                                                            AI Deep-Extract Summary
+                                                            {tc.aiDeepExtractSummary}
                                                         </p>
                                                         <div className="grid md:grid-cols-2 gap-4">
                                                             <ul className="text-sm space-y-2">
@@ -357,9 +360,9 @@ export default async function RFQDetailPage({ params }: { params: Promise<{ id: 
                                                                 ))}
                                                             </ul>
                                                             <div className="border-l border-primary/10 pl-4 flex flex-col justify-center">
-                                                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Commercial Terms</p>
+                                                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">{tc.commercialTerms}</p>
                                                                 <p className="text-xs font-bold text-primary italic leading-relaxed">
-                                                                    {analysis.terms ? `"${analysis.terms}"` : 'Terms pending supplier confirmation.'}
+                                                                    {analysis.terms ? `"${analysis.terms}"` : tc.termsPending}
                                                                 </p>
                                                             </div>
                                                         </div>
@@ -379,11 +382,11 @@ export default async function RFQDetailPage({ params }: { params: Promise<{ id: 
                                                         <div className="flex items-center gap-2">
                                                             {maskSupplierIdentity ? (
                                                                 <Button size="sm" variant="outline" className="h-10 flex-1 font-bold text-xs shadow-sm" disabled>
-                                                                    Identity Hidden During Live Bid
+                                                                    {tc.identityHiddenLiveBid}
                                                                 </Button>
                                                             ) : (
                                                                 <Link href={`/suppliers/${s.supplier.id}`} className="flex-1">
-                                                                    <Button size="sm" variant="outline" className="w-full h-10 font-bold text-xs shadow-sm">Supplier Profile</Button>
+                                                                    <Button size="sm" variant="outline" className="w-full h-10 font-bold text-xs shadow-sm">{tc.supplierProfile}</Button>
                                                                 </Link>
                                                             )}
                                                             <ComparePricesButton />
@@ -393,11 +396,11 @@ export default async function RFQDetailPage({ params }: { params: Promise<{ id: 
                                                 {!isAdmin && (
                                                     maskSupplierIdentity ? (
                                                         <Button size="lg" variant="outline" className="w-full font-bold shadow-md" disabled>
-                                                            Identity Hidden During Live Bid
+                                                            {tc.identityHiddenLiveBid}
                                                         </Button>
                                                     ) : (
                                                         <Link href={`/suppliers/${s.supplier.id}`}>
-                                                            <Button size="lg" variant="outline" className="w-full font-bold shadow-md">Full Intelligence Profile</Button>
+                                                            <Button size="lg" variant="outline" className="w-full font-bold shadow-md">{tc.fullIntelligenceProfile}</Button>
                                                         </Link>
                                                     )
                                                 )}
@@ -410,8 +413,8 @@ export default async function RFQDetailPage({ params }: { params: Promise<{ id: 
                             {sortedSuppliers.length === 0 && (
                                 <div className="flex flex-col items-center justify-center py-10 text-center">
                                     <AlertTriangle className="h-10 w-10 text-yellow-500 mb-2" />
-                                    <p className="font-semibold">No suppliers selected yet</p>
-                                    <p className="text-sm text-muted-foreground">Move the RFQ to &apos;Open&apos; to trigger AI invitation logic.</p>
+                                    <p className="font-semibold">{tc.noSuppliersSelected}</p>
+                                    <p className="text-sm text-muted-foreground">{tc.moveRfqToOpen}</p>
                                 </div>
                             )}
                         </CardContent>
@@ -419,12 +422,12 @@ export default async function RFQDetailPage({ params }: { params: Promise<{ id: 
 
                     <Card id="rfq-cost-insights" className="border-accent/30 shadow-sm">
                         <CardHeader>
-                            <CardTitle className="text-lg">Sourcing Intelligence Insights</CardTitle>
+                            <CardTitle className="text-lg">{tc.sourcingIntelligenceInsights}</CardTitle>
                         </CardHeader>
                         <CardContent className="grid md:grid-cols-2 gap-4">
                             <CostIntelligence
                                 quoteItems={quotedSuppliers.map(s => ({
-                                    sku: "multiple", // Simplified for this component
+                                    sku: "multiple",
                                     price: parseFloat(s.quoteAmount || '0'),
                                     supplier: getDisplaySupplierName(s.supplier.id, s.supplier.name)
                                 }))}
@@ -445,10 +448,10 @@ export default async function RFQDetailPage({ params }: { params: Promise<{ id: 
                                     <div>
                                         <CardTitle className="text-2xl font-black tracking-tight flex items-center gap-3">
                                             <Sparkles className="h-6 w-6 text-primary" />
-                                            Negotiation Workbench
+                                            {tc.negotiationWorkbench}
                                         </CardTitle>
                                         <CardDescription className="mt-2 max-w-2xl">
-                                            Benchmark-backed negotiation guidance that turns quote variance into action, savings, and award confidence.
+                                            {tc.negotiationWorkbenchDesc}
                                         </CardDescription>
                                     </div>
                                     {isAdmin && negotiationWorkbench.hasQuotes ? (
@@ -461,32 +464,32 @@ export default async function RFQDetailPage({ params }: { params: Promise<{ id: 
                                     <>
                                         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                                             <div className="rounded-3xl border bg-primary/5 p-5">
-                                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Priority</p>
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{tc.priority}</p>
                                                 <div className="mt-3 flex items-center justify-between">
                                                     <span className="text-2xl font-black text-foreground">{negotiationWorkbench.negotiationPriority.toUpperCase()}</span>
                                                     <Badge className={negotiationWorkbench.negotiationPriority === 'critical' ? 'bg-red-600' : negotiationWorkbench.negotiationPriority === 'high' ? 'bg-amber-500' : 'bg-slate-700'}>
-                                                        {negotiationWorkbench.quoteCount} quotes
+                                                        {negotiationWorkbench.quoteCount} {tc.quotes}
                                                     </Badge>
                                                 </div>
-                                                <p className="mt-2 text-xs text-muted-foreground">{negotiationWorkbench.benchmarkCoveragePercent}% of line items are backed by historical or benchmark data.</p>
+                                                <p className="mt-2 text-xs text-muted-foreground">{negotiationWorkbench.benchmarkCoveragePercent}% {tc.benchmarkCoverageNote}</p>
                                             </div>
 
                                             <div className="rounded-3xl border p-5">
-                                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Should-Cost Target</p>
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{tc.shouldCostTarget}</p>
                                                 <p className="mt-3 text-2xl font-black text-foreground">{formatCurrency(negotiationWorkbench.shouldCostTotal)}</p>
-                                                <p className="mt-2 text-xs text-muted-foreground">Modeled benchmark-backed target across all RFQ lines.</p>
+                                                <p className="mt-2 text-xs text-muted-foreground">{tc.shouldCostTargetDesc}</p>
                                             </div>
 
                                             <div className="rounded-3xl border p-5">
-                                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Best Quote</p>
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{tc.bestQuote}</p>
                                                 <p className="mt-3 text-2xl font-black text-foreground">{formatCurrency(negotiationWorkbench.bestQuoteAmount)}</p>
-                                                <p className="mt-2 text-xs text-muted-foreground">Competitive baseline {formatCurrency(negotiationWorkbench.competitiveBaseline)}.</p>
+                                                <p className="mt-2 text-xs text-muted-foreground">{tc.competitiveBaseline} {formatCurrency(negotiationWorkbench.competitiveBaseline)}.</p>
                                             </div>
 
                                             <div className="rounded-3xl border p-5">
-                                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Negotiation Headroom</p>
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{tc.negotiationHeadroom}</p>
                                                 <p className="mt-3 text-2xl font-black text-emerald-700">{formatCurrency(negotiationWorkbench.shouldCostGap || negotiationWorkbench.competitiveSavings)}</p>
-                                                <p className="mt-2 text-xs text-muted-foreground">Spread {negotiationWorkbench.spreadPercent}% across quoted suppliers.</p>
+                                                <p className="mt-2 text-xs text-muted-foreground">{tc.spread} {negotiationWorkbench.spreadPercent}% {tc.acrossQuotedSuppliers}</p>
                                             </div>
                                         </div>
 
@@ -494,19 +497,19 @@ export default async function RFQDetailPage({ params }: { params: Promise<{ id: 
                                             <div className="rounded-[2rem] border p-6 bg-background">
                                                 <div className="flex items-center justify-between gap-3">
                                                     <div>
-                                                        <p className="text-sm font-black tracking-tight">Recommended Award Path</p>
-                                                        <p className="text-xs text-muted-foreground mt-1">Best balance of price, delivery, and supplier quality.</p>
+                                                        <p className="text-sm font-black tracking-tight">{tc.recommendedAwardPath}</p>
+                                                        <p className="text-xs text-muted-foreground mt-1">{tc.recommendedAwardPathDesc}</p>
                                                     </div>
                                                     {negotiationWorkbench.recommendedSupplier ? (
                                                         <Badge variant="outline" className="text-[10px] uppercase">
-                                                            Rank #1
+                                                            {tc.rankOne}
                                                         </Badge>
                                                     ) : null}
                                                 </div>
                                                 {negotiationWorkbench.recommendedSupplier ? (
                                                     <div className="mt-5 space-y-4">
                                                         <div className="rounded-2xl bg-primary text-primary-foreground p-5">
-                                                            <p className="text-xs uppercase tracking-widest opacity-80">Recommended supplier</p>
+                                                            <p className="text-xs uppercase tracking-widest opacity-80">{tc.recommendedSupplier}</p>
                                                             <p className="mt-2 text-2xl font-black">
                                                                 {getDisplaySupplierName(
                                                                     negotiationWorkbench.recommendedSupplier.supplierId,
@@ -514,9 +517,9 @@ export default async function RFQDetailPage({ params }: { params: Promise<{ id: 
                                                                 )}
                                                             </p>
                                                             <div className="mt-3 flex flex-wrap gap-4 text-sm font-semibold">
-                                                                <span>Quote: {formatCurrency(negotiationWorkbench.recommendedSupplier.quoteAmount)}</span>
-                                                                <span>Score: {negotiationWorkbench.recommendedSupplier.totalScore}</span>
-                                                                <span>Risk: {negotiationWorkbench.recommendedSupplier.riskScore}</span>
+                                                                <span>{tc.quote} {formatCurrency(negotiationWorkbench.recommendedSupplier.quoteAmount)}</span>
+                                                                <span>{tc.score} {negotiationWorkbench.recommendedSupplier.totalScore}</span>
+                                                                <span>{tc.riskLabel} {negotiationWorkbench.recommendedSupplier.riskScore}</span>
                                                             </div>
                                                         </div>
                                                         <div className="space-y-3">
@@ -533,8 +536,8 @@ export default async function RFQDetailPage({ params }: { params: Promise<{ id: 
 
                                             <div className="rounded-[2rem] border p-6 bg-background">
                                                 <div>
-                                                    <p className="text-sm font-black tracking-tight">Supplier Scoreboard</p>
-                                                    <p className="text-xs text-muted-foreground mt-1">Use the ranked field to drive best-and-final negotiation rounds.</p>
+                                                    <p className="text-sm font-black tracking-tight">{tc.supplierScoreboard}</p>
+                                                    <p className="text-xs text-muted-foreground mt-1">{tc.supplierScoreboardDesc}</p>
                                                 </div>
                                                 <div className="mt-5 space-y-3">
                                                     {negotiationWorkbench.supplierRankings.map((supplier, index) => (
@@ -545,7 +548,7 @@ export default async function RFQDetailPage({ params }: { params: Promise<{ id: 
                                                                         {index + 1}. {getDisplaySupplierName(supplier.supplierId, supplier.supplierName)}
                                                                     </p>
                                                                     <p className="text-xs text-muted-foreground mt-1">
-                                                                        Quote {formatCurrency(supplier.quoteAmount)} | Delivery {supplier.deliveryWeeks !== null ? `${supplier.deliveryWeeks} weeks` : 'TBD'} | Risk {supplier.riskScore}
+                                                                        {tc.quote} {formatCurrency(supplier.quoteAmount)} | {tc.delivery} {supplier.deliveryWeeks !== null ? `${supplier.deliveryWeeks} ${tc.weeksArrival}` : tc.tbd} | {tc.riskLabel} {supplier.riskScore}
                                                                     </p>
                                                                 </div>
                                                                 <div className="text-right">
@@ -556,11 +559,11 @@ export default async function RFQDetailPage({ params }: { params: Promise<{ id: 
                                                             <div className="mt-3 flex flex-wrap gap-2">
                                                                 {supplier.deltaVsShouldCost !== null ? (
                                                                     <Badge variant="outline" className="text-[10px]">
-                                                                        Gap vs should-cost: {formatCurrency(supplier.deltaVsShouldCost)}
+                                                                        {tc.gapVsShouldCost} {formatCurrency(supplier.deltaVsShouldCost)}
                                                                     </Badge>
                                                                 ) : null}
                                                                 <Badge variant="outline" className="text-[10px]">
-                                                                    Delta vs lead: {formatCurrency(supplier.deltaVsBest)}
+                                                                    {tc.deltaVsLead} {formatCurrency(supplier.deltaVsBest)}
                                                                 </Badge>
                                                                 {supplier.terms ? (
                                                                     <Badge variant="outline" className="text-[10px]">
@@ -577,11 +580,11 @@ export default async function RFQDetailPage({ params }: { params: Promise<{ id: 
                                         <div className="rounded-[2rem] border p-6 bg-muted/20">
                                             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                                 <div>
-                                                    <p className="text-sm font-black tracking-tight">Should-Cost Backbone</p>
-                                                    <p className="text-xs text-muted-foreground mt-1">Every RFQ line now carries a benchmark trail into negotiation.</p>
+                                                    <p className="text-sm font-black tracking-tight">{tc.shouldCostBackbone}</p>
+                                                    <p className="text-xs text-muted-foreground mt-1">{tc.shouldCostBackboneDesc}</p>
                                                 </div>
                                                 <Badge variant="outline" className="text-[10px] uppercase">
-                                                    {negotiationWorkbench.itemBenchmarks.length} lines
+                                                    {negotiationWorkbench.itemBenchmarks.length} {tc.lines}
                                                 </Badge>
                                             </div>
                                             <div className="grid gap-3 md:grid-cols-2">
@@ -593,25 +596,25 @@ export default async function RFQDetailPage({ params }: { params: Promise<{ id: 
                                                                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">{item.sku} | {item.category}</p>
                                                             </div>
                                                             <Badge variant="outline" className="text-[10px] uppercase">
-                                                                Qty {item.quantity}
+                                                                {tc.qty} {item.quantity}
                                                             </Badge>
                                                         </div>
                                                         <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
                                                             <div>
-                                                                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Should-cost</p>
+                                                                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{tc.shouldCost}</p>
                                                                 <p className="font-black">{formatCurrency(item.shouldCostTotal)}</p>
                                                             </div>
                                                             <div>
-                                                                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Current ref</p>
+                                                                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{tc.currentRef}</p>
                                                                 <p className="font-black">{formatCurrency(item.currentUnitPrice * item.quantity)}</p>
                                                             </div>
                                                             <div>
-                                                                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Benchmark unit</p>
-                                                                <p className="font-semibold">{item.benchmarkUnitPrice !== null ? formatCurrency(item.benchmarkUnitPrice) : 'Pending'}</p>
+                                                                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{tc.benchmarkUnit}</p>
+                                                                <p className="font-semibold">{item.benchmarkUnitPrice !== null ? formatCurrency(item.benchmarkUnitPrice) : tc.pending}</p>
                                                             </div>
                                                             <div>
-                                                                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Historical unit</p>
-                                                                <p className="font-semibold">{item.historicalUnitPrice !== null ? formatCurrency(item.historicalUnitPrice) : 'Pending'}</p>
+                                                                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{tc.historicalUnit}</p>
+                                                                <p className="font-semibold">{item.historicalUnitPrice !== null ? formatCurrency(item.historicalUnitPrice) : tc.pending}</p>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -621,7 +624,7 @@ export default async function RFQDetailPage({ params }: { params: Promise<{ id: 
                                     </>
                                 ) : (
                                     <div className="rounded-3xl border border-dashed p-8 text-center text-muted-foreground">
-                                        Collect supplier quotes to unlock should-cost targets, negotiation actions, and supplier scorecards.
+                                        {tc.collectQuotesToUnlock}
                                     </div>
                                 )}
                             </CardContent>
@@ -633,10 +636,10 @@ export default async function RFQDetailPage({ params }: { params: Promise<{ id: 
                             <CardHeader className="border-b border-primary/10 px-6 pb-8 pt-8 md:px-8 xl:px-10">
                                 <CardTitle className="text-3xl font-black tracking-tighter flex items-center gap-3">
                                     <Sparkles className="h-8 w-8 text-primary animate-pulse" />
-                                    Strategic Award Intelligence
+                                    {tc.strategicAwardIntelligence}
                                 </CardTitle>
                                 <CardDescription className="text-lg font-medium text-muted-foreground">
-                                    Weighted decision matrix comparing performance, speed, and unit economics.
+                                    {tc.strategicAwardIntelligenceDesc}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="p-6 md:p-8 xl:p-10">
@@ -647,8 +650,8 @@ export default async function RFQDetailPage({ params }: { params: Promise<{ id: 
                                                 <Wallet className="h-8 w-8 text-green-700" />
                                             </div>
                                             <div>
-                                                <p className="text-lg font-black tracking-tight text-green-900">Unit Economic Leader</p>
-                                                <p className="text-sm text-green-600 font-medium">Lowest total cost per unit.</p>
+                                                <p className="text-lg font-black tracking-tight text-green-900">{tc.unitEconomicLeader}</p>
+                                                <p className="text-sm text-green-600 font-medium">{tc.unitEconomicLeaderDesc}</p>
                                             </div>
                                         </div>
                                         <div className="mt-8 pt-6 border-t border-green-50">
@@ -657,7 +660,7 @@ export default async function RFQDetailPage({ params }: { params: Promise<{ id: 
                                                     const bestQuotedSupplier = [...quotedSuppliers].sort((a, b) => parseFloat(a.quoteAmount || '0') - parseFloat(b.quoteAmount || '0'))[0];
                                                     return bestQuotedSupplier
                                                         ? getDisplaySupplierName(bestQuotedSupplier.supplier.id, bestQuotedSupplier.supplier.name)
-                                                        : 'No quote';
+                                                        : tc.noQuote;
                                                 })()}
                                             </p>
                                             <p className="text-sm font-black text-green-700 mt-1 uppercase tracking-widest">{formatCurrency([...quotedSuppliers].sort((a, b) => parseFloat(a.quoteAmount || '0') - parseFloat(b.quoteAmount || '0'))[0]?.quoteAmount || '0')}</p>
@@ -670,17 +673,17 @@ export default async function RFQDetailPage({ params }: { params: Promise<{ id: 
                                                 <Clock className="h-8 w-8 text-blue-700" />
                                             </div>
                                             <div>
-                                                <p className="text-lg font-black tracking-tight text-blue-900">Speed Velocity Pick</p>
-                                                <p className="text-sm text-blue-600 font-medium">Shortest logistical lead time.</p>
+                                                <p className="text-lg font-black tracking-tight text-blue-900">{tc.speedVelocityPick}</p>
+                                                <p className="text-sm text-blue-600 font-medium">{tc.speedVelocityPickDesc}</p>
                                             </div>
                                         </div>
                                         <div className="mt-8 pt-6 border-t border-blue-50">
                                             <p className="text-2xl font-black text-foreground">
                                                 {fastestQuotedSupplier
                                                     ? getDisplaySupplierName(fastestQuotedSupplier.supplier.supplier.id, fastestQuotedSupplier.supplier.supplier.name)
-                                                    : 'No lead-time data'}
+                                                    : tc.noLeadTimeData}
                                             </p>
-                                            <p className="text-sm font-black text-blue-700 mt-1 uppercase tracking-widest">{fastestQuotedSupplier?.analysis.deliveryWeeks || 'N/A'} Weeks Arrival</p>
+                                            <p className="text-sm font-black text-blue-700 mt-1 uppercase tracking-widest">{fastestQuotedSupplier?.analysis.deliveryWeeks || tc.tbd} {tc.weeksArrival}</p>
                                         </div>
                                     </div>
 
@@ -693,8 +696,8 @@ export default async function RFQDetailPage({ params }: { params: Promise<{ id: 
                                                 <CheckCircle2 className="h-8 w-8 text-white" />
                                             </div>
                                             <div>
-                                                <p className="text-xl font-black tracking-tight">System Optimal Choice</p>
-                                                <Badge className="bg-white/20 text-white border-none text-[10px] mt-2 font-bold uppercase py-0.5">Weighted Rank #1</Badge>
+                                                <p className="text-xl font-black tracking-tight">{tc.systemOptimalChoice}</p>
+                                                <Badge className="bg-white/20 text-white border-none text-[10px] mt-2 font-bold uppercase py-0.5">{tc.weightedRankOne}</Badge>
                                             </div>
                                         </div>
                                         <div className="mt-8 pt-6 border-t border-white/20 relative z-10">
@@ -706,9 +709,9 @@ export default async function RFQDetailPage({ params }: { params: Promise<{ id: 
                                                     )
                                                     : sortedSuppliers[0]
                                                         ? getDisplaySupplierName(sortedSuppliers[0].supplier.id, sortedSuppliers[0].supplier.name)
-                                                        : 'Pending'}
+                                                        : tc.pending}
                                             </p>
-                                            <p className="text-sm font-bold opacity-80 mt-1 italic italic">AI Recommended Outcome</p>
+                                            <p className="text-sm font-bold opacity-80 mt-1 italic italic">{tc.aiRecommendedOutcome}</p>
                                         </div>
                                     </div>
                                 </div>

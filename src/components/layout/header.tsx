@@ -1,103 +1,96 @@
-import { NotificationBell } from "./notification-bell";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { auth } from "@/auth";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
-import { SearchTrigger } from "./search-trigger";
-import { signOut } from "@/auth";
-import { cn } from "@/lib/utils";
-import { MobileNavigation } from "@/components/layout/mobile-navigation";
-import { CurrencyDisplayToggle } from "@/components/layout/currency-display-toggle";
-import { getAccessProfileLabel, resolveAccessProfile } from "@/lib/rbac";
+"use client";
 
-type SessionUser = {
-    role?: string | null;
-    accessProfile?: string | null;
-    department?: string | null;
-    countryScope?: string | null;
-    regionScope?: string | null;
-};
+import { useSession, signOut } from "next-auth/react";
+import { LogOut, ShieldCheck } from "lucide-react";
+import { LanguageToggle } from "@/components/layout/language-toggle";
+import { NotificationBell } from "@/components/layout/notification-bell";
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 
-export async function Header() {
-    const session = await auth();
-    const userName = session?.user?.name || "User";
-    const role = (session?.user as SessionUser | undefined)?.role;
-    const accessProfile = resolveAccessProfile(session?.user as SessionUser | undefined);
-    const workspaceTitle =
-        role === 'admin'
-            ? "Admin Console"
-            : role === 'supplier'
-                ? "Supplier Portal"
-                : "Operations Workspace";
-    const workspaceSubtitle =
-        role === 'admin'
-            ? "Platform intelligence, controls, approvals, and operating oversight"
-            : role === 'supplier'
-                ? "Vendor-facing RFQs, orders, documents, and requests"
-                : "Internal procurement execution workspace";
-    const profileHref = role === 'supplier' ? "/portal/profile" : "/profile";
+export function Header() {
+  const { data: session, status } = useSession();
+  const { language } = useLanguage();
 
-    const roleBadgeClass =
-        role === 'admin'
-            ? "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-800"
-            : role === 'supplier'
-            ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-800"
-            : "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/20 dark:text-blue-400 dark:border-blue-800";
-
+  if (status === "loading") {
     return (
-        <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border/60 bg-background/95 px-3 shadow-sm shadow-black/[0.03] backdrop-blur-md transition-all sm:px-4 lg:px-6">
-            <div className="flex min-w-0 items-center gap-3 lg:gap-6">
-                <MobileNavigation user={session?.user as SessionUser | undefined} />
-                <div className="flex flex-col leading-none">
-                    <h2 className="text-[13px] font-bold text-foreground tracking-tight">{workspaceTitle}</h2>
-                    <span className="hidden text-[10px] font-medium text-muted-foreground/55 md:block">{workspaceSubtitle}</span>
-                </div>
-                {role !== 'supplier' && (
-                    <>
-                        <div className="hidden h-5 w-px bg-border/60 lg:block" />
-                        <div className="hidden items-center lg:flex">
-                            <SearchTrigger />
-                        </div>
-                    </>
-                )}
-            </div>
-
-            <div className="flex items-center gap-2 md:gap-3">
-                {role !== 'supplier' && <CurrencyDisplayToggle />}
-                <ThemeToggle />
-                <NotificationBell />
-                <div className="h-5 w-[1px] bg-border/60 hidden sm:block" />
-                <div className="flex min-w-0 items-center gap-2">
-                    <Link
-                        href={profileHref}
-                        className="flex min-w-0 items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-foreground transition-all hover:bg-muted/80 border border-transparent hover:border-border/60"
-                    >
-                        <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center text-primary-foreground font-black text-[11px] shadow-sm shadow-primary/20">
-                            {userName.charAt(0).toUpperCase()}
-                        </div>
-                        <span className="hidden truncate xl:inline text-[13px] font-semibold">{userName}</span>
-                        {role && (
-                            <span className={cn(
-                                "hidden sm:inline text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border",
-                                roleBadgeClass
-                            )}>
-                                {role === "admin" ? getAccessProfileLabel(accessProfile) : role}
-                            </span>
-                        )}
-                    </Link>
-                    <form
-                        action={async () => {
-                            "use server";
-                            await signOut({ redirectTo: '/login' });
-                        }}
-                    >
-                        <Button variant="ghost" size="sm" type="submit" className="h-8 w-8 p-0 text-muted-foreground hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-colors">
-                            <LogOut className="h-3.5 w-3.5" />
-                        </Button>
-                    </form>
-                </div>
-            </div>
-        </header>
+      <header className="z-30 flex h-16 shrink-0 items-center justify-between gap-4 border-b border-border bg-background/80 px-4 backdrop-blur-sm lg:px-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+            <div className="h-5 w-5 animate-pulse rounded bg-primary-foreground/20" />
+          </div>
+          <div className="leading-tight">
+            <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+            <div className="h-2 w-16 animate-pulse rounded bg-muted mt-1" />
+          </div>
+        </div>
+        <div className="flex items-center gap-2 lg:gap-3">
+          <div className="h-9 w-9 animate-pulse rounded-xl bg-muted" />
+          <div className="h-9 w-9 animate-pulse rounded-xl bg-muted" />
+          <div className="h-9 w-24 animate-pulse rounded-full bg-muted" />
+          <div className="h-9 w-9 animate-pulse rounded-xl bg-muted" />
+        </div>
+      </header>
     );
+  }
+
+  const handleSignOut = async () => {
+    await signOut({ redirect: true, callbackUrl: "/login" });
+  };
+
+  const user = session?.user;
+  const role = user?.role;
+
+  const roleLabel =
+    role === "admin"
+      ? t(language, "dashboard").adminSession
+      : role === "supplier"
+        ? t(language, "portal").welcome
+        : t(language, "dashboard").internalSession;
+
+  const brand =
+    role === "admin"
+      ? t(language, "header").adminConsole
+      : role === "supplier"
+        ? t(language, "header").supplierPortal
+        : t(language, "header").operationsWorkspace;
+
+  return (
+    <header className="z-30 flex h-16 shrink-0 items-center justify-between gap-4 border-b border-border bg-background/80 px-4 backdrop-blur-sm lg:px-6">
+      <div className="flex items-center gap-3">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+          <ShieldCheck className="h-5 w-5" />
+        </div>
+        <div className="leading-tight">
+          <p className="text-sm font-black tracking-tight text-foreground">Axiom</p>
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+            {brand}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2 lg:gap-3">
+        <NotificationBell />
+        <LanguageToggle />
+
+        <div className="hidden items-center gap-2 rounded-full border border-border bg-muted/40 px-3 py-1.5 sm:flex">
+          <span className="text-xs font-semibold text-foreground">{user?.name || "User"}</span>
+          {roleLabel ? (
+            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">
+              {roleLabel}
+            </span>
+          ) : null}
+        </div>
+
+        <button
+          type="button"
+          onClick={handleSignOut}
+          title="Sign out"
+          aria-label="Sign out"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border text-muted-foreground transition-colors hover:bg-muted"
+        >
+          <LogOut className="h-4 w-4" />
+        </button>
+      </div>
+    </header>
+  );
 }

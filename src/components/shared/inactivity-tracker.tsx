@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
 export function InactivityTracker({ timeoutMinutes = 30 }: { timeoutMinutes?: number }) {
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
     const router = useRouter();
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
     const isPromptedRef = useRef(false);
@@ -36,6 +36,8 @@ export function InactivityTracker({ timeoutMinutes = 30 }: { timeoutMinutes?: nu
     }, [session, timeoutMinutes, handleLogout]);
 
     useEffect(() => {
+        if (status === "loading") return;
+
         const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'mousemove'];
 
         const handler = () => resetTimeout();
@@ -49,7 +51,7 @@ export function InactivityTracker({ timeoutMinutes = 30 }: { timeoutMinutes?: nu
             events.forEach(event => document.removeEventListener(event, handler));
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
         };
-    }, [session, resetTimeout]);
+    }, [session, status, resetTimeout]);
 
     return null;
 }

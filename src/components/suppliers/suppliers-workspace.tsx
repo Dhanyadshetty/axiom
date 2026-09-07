@@ -6,13 +6,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import {
     ArrowUpRight,
     BarChart3,
-    Filter,
-    Globe2,
     Loader,
     Pencil,
     Plus,
     Search,
     Trash2,
+    ChevronDown,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -29,11 +28,30 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { formatCurrency } from "@/lib/utils/currency";
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
+import { applyFieldFilters, type FilterFieldDef, type RawValue } from "@/components/filters/field-filter-engine";
+import { PerFieldFilter } from "@/components/filters/per-field-filter";
+import { usePersistedFilters } from "@/components/filters/use-persisted-filters";
 
 type WorkspaceRow = Awaited<ReturnType<typeof getSupplierWorkspaceRows>>[number];
 
@@ -49,36 +67,38 @@ type SupplierSection =
     | "watchlist"
     | "incidents";
 
-const SECTION_GROUPS: Array<{
+function getSectionGroups(ts: ReturnType<typeof t>): Array<{
     title: string;
     items: Array<{ id: SupplierSection; label: string; description: string }>;
-}> = [
-    {
-        title: "General Overviews",
-        items: [
-            { id: "classification", label: "Classification", description: "Volume, ABC, and trust posture." },
-            { id: "certificates", label: "Certificates & Documents", description: "Compliance coverage and record quality." },
-            { id: "performance", label: "Performance", description: "OTIF, quality, and active order load." },
-        ],
-    },
-    {
-        title: "Onboarding",
-        items: [
-            { id: "potential", label: "Potential Suppliers", description: "Prospects not yet qualified." },
-            { id: "qualification", label: "In Qualification", description: "Suppliers in onboarding flow." },
-            { id: "onboarded", label: "Onboarded Suppliers", description: "Approved network ready to transact." },
-            { id: "suspended", label: "Suspended / Rejected", description: "Stopped or rejected relationships." },
-        ],
-    },
-    {
-        title: "Risk & ESG",
-        items: [
-            { id: "risk", label: "Risk Development", description: "Operational and financial exposure." },
-            { id: "watchlist", label: "Suspicious Suppliers", description: "High-risk or low-trust suppliers." },
-            { id: "incidents", label: "Public Incidents", description: "Suppliers above critical risk threshold." },
-        ],
-    },
-];
+}> {
+    return [
+        {
+            title: ts.generalOverviews,
+            items: [
+                { id: "classification", label: ts.classification, description: ts.classificationDesc },
+                { id: "certificates", label: ts.certificates, description: ts.certificatesDesc },
+                { id: "performance", label: ts.performance, description: ts.performanceDesc },
+            ],
+        },
+        {
+            title: ts.onboardingSection,
+            items: [
+                { id: "potential", label: ts.potentialSuppliers, description: ts.potentialDesc },
+                { id: "qualification", label: ts.inQualification, description: ts.inQualificationDesc },
+                { id: "onboarded", label: ts.onboardedSuppliers, description: ts.onboardedDesc },
+                { id: "suspended", label: ts.suspendedRejected, description: ts.suspendedDesc },
+            ],
+        },
+        {
+            title: ts.riskEsg,
+            items: [
+                { id: "risk", label: ts.riskDevelopment, description: ts.riskDevelopmentDesc },
+                { id: "watchlist", label: ts.suspiciousSuppliers, description: ts.suspiciousDesc },
+                { id: "incidents", label: ts.publicIncidents, description: ts.incidentsDesc },
+            ],
+        },
+    ];
+}
 
 function applySection(rows: WorkspaceRow[], section: SupplierSection) {
     const copy = [...rows];
@@ -111,6 +131,97 @@ function applySection(rows: WorkspaceRow[], section: SupplierSection) {
 
 function getSectionCount(rows: WorkspaceRow[], section: SupplierSection) {
     return applySection(rows, section).length;
+}
+
+// ---------------------------------------------------------------------------
+// Per-field filter definitions and helpers
+// ---------------------------------------------------------------------------
+
+type SupplierFilterKey =
+    | "supplierId"
+    | "supplierName"
+    | "country"
+    | "orderVolume2025"
+    | "responsibleBuyer"
+    | "abcClassification"
+    | "orderVolume2024"
+    | "supplierStatus"
+    | "areaOfNeed"
+    | "supplierType"
+    | "commodityGroup"
+    | "strategicClassification";
+
+const SUPPLIER_FILTER_FIELDS: FilterFieldDef[] = [
+    { key: "supplierId", label: "Supplier ID", type: "text" },
+    { key: "supplierName", label: "Supplier Name", type: "text" },
+    { key: "country", label: "Country", type: "categorical" },
+    { key: "orderVolume2025", label: "Order Volume 2025", type: "number" },
+    { key: "responsibleBuyer", label: "Responsible Buyer", type: "categorical" },
+    { key: "abcClassification", label: "ABC Classification", type: "categorical" },
+    { key: "orderVolume2024", label: "Order Volume 2024", type: "number" },
+    { key: "supplierStatus", label: "Supplier Status", type: "categorical" },
+    { key: "areaOfNeed", label: "Area of Need", type: "categorical" },
+    { key: "supplierType", label: "Supplier Type", type: "categorical" },
+    { key: "commodityGroup", label: "Commodity Group", type: "categorical" },
+    { key: "strategicClassification", label: "Strategic Classification", type: "categorical" },
+];
+
+function getRowFilterValue(row: WorkspaceRow, key: SupplierFilterKey): RawValue {
+    switch (key) {
+        case "supplierId":
+            return row.supplierCode ?? row.supplierNumber ?? row.id;
+        case "supplierName":
+            return row.name;
+        case "country":
+            return row.countryCode ?? "";
+        case "orderVolume2025":
+            return row.currentYearVolume;
+        case "orderVolume2024":
+            return row.previousYearVolume;
+        case "responsibleBuyer":
+            return row.responsibleBuyer ?? [];
+        case "abcClassification":
+            return row.abcClassification;
+        case "supplierStatus":
+            return row.status;
+        case "areaOfNeed":
+            return row.areaOfNeed ?? [];
+        case "supplierType":
+            return row.supplierType ?? "";
+        case "commodityGroup":
+            return row.commodityGroup ?? [];
+        case "strategicClassification":
+            return row.strategicClassification ?? "";
+        default:
+            return "";
+    }
+}
+
+function countryDisplayName(code: string): string {
+    try {
+        const display = new Intl.DisplayNames(["en"], { type: "region" });
+        return display.of(code) || code;
+    } catch {
+        return code;
+    }
+}
+
+function getSupplierOptions(rows: WorkspaceRow[], key: string): string[] {
+    const collect = new Set<string>();
+    for (const row of rows) {
+        const raw = getRowFilterValue(row, key as SupplierFilterKey);
+        if (Array.isArray(raw)) {
+            for (const v of raw) {
+                if (v != null && String(v).trim() !== "") collect.add(String(v));
+            }
+        } else if (raw != null && String(raw).trim() !== "") {
+            collect.add(String(raw));
+        }
+    }
+    if (key === "country") {
+        return Array.from(collect).sort((a, b) => countryDisplayName(a).localeCompare(countryDisplayName(b)));
+    }
+    return Array.from(collect).sort((a, b) => a.localeCompare(b));
 }
 
 function countryLabel(countryCode: string | null) {
@@ -174,13 +285,14 @@ export function SuppliersWorkspace({
     const [rows, setRows] = useState<WorkspaceRow[]>(initialRows);
     const [section, setSection] = useState<SupplierSection>("classification");
     const [search, setSearch] = useState("");
-    const [countryFilter, setCountryFilter] = useState("all");
-    const [attentionFilter, setAttentionFilter] = useState("all");
+    const [filters, setFilters] = usePersistedFilters("supplier_filters");
     const [openDialog, setOpenDialog] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [selectedSupplier, setSelectedSupplier] = useState<WorkspaceRow | null>(null);
     const [supplierToDelete, setSupplierToDelete] = useState<WorkspaceRow | null>(null);
     const [isPending, startTransition] = useTransition();
+    const { language } = useLanguage();
+    const ts = t(language, "suppliers");
 
     const setSupplierDrawer = (supplierId: string | null) => {
         const nextParams = new URLSearchParams(searchParams.toString());
@@ -200,31 +312,27 @@ export function SuppliersWorkspace({
 
     const visibleSectionRows = useMemo(() => applySection(rows, section), [rows, section]);
 
-    const countryOptions = useMemo(() => {
-        const countries = Array.from(new Set(rows.map((row) => row.countryCode).filter(Boolean))) as string[];
-        return countries.sort();
-    }, [rows]);
+    const getSupplierFilterOptions = React.useCallback(
+        (key: string) => getSupplierOptions(rows, key),
+        [rows],
+    );
 
     const filteredRows = useMemo(() => {
-        return visibleSectionRows.filter((row) => {
+        const bySearch = visibleSectionRows.filter((row) => {
             const query = search.trim().toLowerCase();
-            const matchesSearch = !query
-                || row.name.toLowerCase().includes(query)
+            if (!query) return true;
+            return row.name.toLowerCase().includes(query)
                 || row.contactEmail.toLowerCase().includes(query)
                 || row.supplierCode.toLowerCase().includes(query)
+                || (row.supplierNumber ?? "").toLowerCase().includes(query)
                 || row.categories.some((category: string) => category.toLowerCase().includes(query));
-
-            const matchesCountry = countryFilter === "all" || row.countryCode === countryFilter;
-
-            const matchesAttention = attentionFilter === "all"
-                || (attentionFilter === "high_risk" && row.riskScore >= 60)
-                || (attentionFilter === "compliance_gap" && row.complianceCoverage < 55)
-                || (attentionFilter === "onboarding" && ["prospect", "onboarding"].includes(row.lifecycleStatus))
-                || (attentionFilter === "low_trust" && row.trustScore < 55);
-
-            return matchesSearch && matchesCountry && matchesAttention;
         });
-    }, [attentionFilter, countryFilter, search, visibleSectionRows]);
+        return applyFieldFilters(
+            bySearch,
+            filters,
+            (row, key) => getRowFilterValue(row, key as SupplierFilterKey),
+        );
+    }, [filters, search, visibleSectionRows]);
 
     const metrics = useMemo(() => {
         const totalCurrentVolume = filteredRows.reduce((sum, row) => sum + row.currentYearVolume, 0);
@@ -241,52 +349,55 @@ export function SuppliersWorkspace({
     }, [filteredRows, rows]);
 
     const handleSaveSupplier = async (formData: FormData) => {
-        startTransition(async () => {
-            let result;
-            if (selectedSupplier) {
-                const isoCertifications = Array.from(new Set([
-                    ...formData.getAll("iso").map((value) => String(value).trim()).filter(Boolean),
-                    ...String(formData.get("customCertifications") || "")
-                        .split(",")
-                        .map((value) => value.trim())
-                        .filter(Boolean),
-                ]));
+        let result;
+        if (selectedSupplier) {
+            const isoCertifications = Array.from(new Set([
+                ...formData.getAll("iso").map((value) => String(value).trim()).filter(Boolean),
+                ...String(formData.get("customCertifications") || "")
+                    .split(",")
+                    .map((value) => value.trim())
+                    .filter(Boolean),
+            ]));
 
-                result = await updateSupplier(selectedSupplier.id, {
-                    name: String(formData.get("name") || ""),
-                    contactEmail: String(formData.get("email") || ""),
-                    countryCode: String(formData.get("countryCode") || ""),
-                    city: String(formData.get("city") || ""),
-                    latitude: Number.parseFloat(String(formData.get("latitude") || "")),
-                    longitude: Number.parseFloat(String(formData.get("longitude") || "")),
-                    riskScore: Number.parseInt(String(formData.get("risk") || "0"), 10) || 0,
-                    performanceScore: Number.parseInt(String(formData.get("performance") || "0"), 10) || 0,
-                    esgScore: Number.parseInt(String(formData.get("esg") || "0"), 10) || 0,
-                    financialScore: Number.parseInt(String(formData.get("financial") || "0"), 10) || 0,
-                    lifecycleStatus: formData.get("lifecycleStatus") as "prospect" | "onboarding" | "active" | "suspended" | "terminated",
-                    status: formData.get("status") as "active" | "inactive" | "blacklisted",
-                    abcClassification: formData.get("abcClassification") as "A" | "B" | "C" | "None",
-                    tierLevel: formData.get("tier") as "tier_1" | "tier_2" | "tier_3" | "critical",
-                    isoCertifications,
-                    modernSlaveryStatement: formData.get("modern_slavery") === "on" ? "yes" : "no",
-                    esgEnvironmentScore: Number.parseInt(String(formData.get("esg_env") || "0"), 10) || 0,
-                    esgSocialScore: Number.parseInt(String(formData.get("esg_soc") || "0"), 10) || 0,
-                    esgGovernanceScore: Number.parseInt(String(formData.get("esg_gov") || "0"), 10) || 0,
-                    financialHealthRating: String(formData.get("financialHealthRating") || "Reviewed"),
-                });
-            } else {
-                result = await addSupplier(formData);
-            }
+            result = await updateSupplier(selectedSupplier.id, {
+                name: String(formData.get("name") || ""),
+                contactEmail: String(formData.get("email") || ""),
+                countryCode: String(formData.get("countryCode") || ""),
+                city: String(formData.get("city") || ""),
+                latitude: Number.parseFloat(String(formData.get("latitude") || "")),
+                longitude: Number.parseFloat(String(formData.get("longitude") || "")),
+                riskScore: Number.parseInt(String(formData.get("risk") || "0"), 10) || 0,
+                performanceScore: Number.parseInt(String(formData.get("performance") || "0"), 10) || 0,
+                esgScore: Number.parseInt(String(formData.get("esg") || "0"), 10) || 0,
+                financialScore: Number.parseInt(String(formData.get("financial") || "0"), 10) || 0,
+                lifecycleStatus: formData.get("lifecycleStatus") as "prospect" | "onboarding" | "active" | "suspended" | "terminated",
+                status: formData.get("status") as "active" | "inactive" | "blacklisted",
+                abcClassification: formData.get("abcClassification") as "A" | "B" | "C" | "None",
+                tierLevel: formData.get("tier") as "tier_1" | "tier_2" | "tier_3" | "critical",
+                isoCertifications,
+                modernSlaveryStatement: formData.get("modern_slavery") === "on" ? "yes" : "no",
+                esgEnvironmentScore: Number.parseInt(String(formData.get("esg_env") || "0"), 10) || 0,
+                esgSocialScore: Number.parseInt(String(formData.get("esg_soc") || "0"), 10) || 0,
+                esgGovernanceScore: Number.parseInt(String(formData.get("esg_gov") || "0"), 10) || 0,
+                financialHealthRating: String(formData.get("financialHealthRating") || "Reviewed"),
+                supplierType: formData.get("supplierType") ? String(formData.get("supplierType")) : undefined,
+                areaOfNeed: formData.getAll("areaOfNeed").map((v) => String(v).trim()).filter(Boolean),
+                commodityGroup: formData.getAll("commodityGroup").map((v) => String(v).trim()).filter(Boolean),
+                responsibleBuyer: formData.getAll("responsibleBuyer").map((v) => String(v).trim()).filter(Boolean),
+                strategicClassification: formData.get("strategicClassification") ? String(formData.get("strategicClassification")).trim() || undefined : undefined,
+            });
+        } else {
+            result = await addSupplier(formData);
+        }
 
-            if (result.success) {
-                toast.success(selectedSupplier ? "Supplier updated" : "Supplier added");
-                setOpenDialog(false);
-                setSelectedSupplier(null);
-                await reloadRows();
-            } else {
-                toast.error(result.error || "Failed to save supplier");
-            }
-        });
+        if (result.success) {
+            toast.success(selectedSupplier ? ts.updateSupplier : ts.onboardSupplier);
+            setOpenDialog(false);
+            setSelectedSupplier(null);
+            await reloadRows();
+        } else {
+            toast.error(result.error || ts.addNewSupplier);
+        }
     };
 
     const handleDeleteSupplier = async () => {
@@ -295,12 +406,12 @@ export function SuppliersWorkspace({
         startTransition(async () => {
             const result = await deleteSupplier(supplierToDelete.id);
             if (result.success) {
-                toast.success("Supplier deleted");
+                toast.success(ts.deleteSupplier.replace("?", "") || "Supplier deleted");
                 setDeleteOpen(false);
                 setSupplierToDelete(null);
                 await reloadRows();
             } else {
-                toast.error(result.error || "Failed to delete supplier");
+                toast.error(result.error || ts.deleteSupplierConfirm);
             }
         });
     };
@@ -309,10 +420,10 @@ export function SuppliersWorkspace({
         startTransition(async () => {
             const result = await calculateABCAnalysis();
             if (result.success) {
-                toast.success("ABC analysis refreshed");
+                toast.success(ts.refreshAbc + " " + ts.rows);
                 await reloadRows();
             } else {
-                toast.error(("error" in result ? result.error : undefined) || "Failed to refresh ABC analysis");
+                toast.error(("error" in result ? result.error : undefined) || ts.refreshAbc);
             }
         });
     };
@@ -321,190 +432,61 @@ export function SuppliersWorkspace({
         <div className="min-h-full bg-background p-4 lg:p-8">
             <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                    <h1 className="text-3xl font-black tracking-tight text-slate-950">Supplier Workspace</h1>
+                    <h1 className="text-3xl font-black tracking-tight text-slate-950">{ts.workspaceTitle}</h1>
                     <p className="mt-1 text-sm text-slate-500">
-                        Classification, onboarding, compliance coverage, and supplier risk in one operating view.
+                        {ts.workspaceSubtitle}
                     </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                     {canManage ? (
                         <Button variant="outline" className="gap-2" onClick={handleRunAbc} disabled={isPending}>
                             {isPending ? <Loader className="h-4 w-4 animate-spin" /> : <BarChart3 className="h-4 w-4" />}
-                            Refresh ABC
+                            {ts.refreshAbc}
                         </Button>
                     ) : null}
                     <Link href="/admin/ecosystem">
                         <Button variant="outline" className="gap-2">
-                            Open Ecosystem
+                            {ts.openEcosystem}
                             <ArrowUpRight className="h-4 w-4" />
                         </Button>
                     </Link>
                     {canManage ? (
-                        <Dialog open={openDialog} onOpenChange={(nextOpen) => {
-                            if (!nextOpen) {
-                                setSelectedSupplier(null);
-                            }
-                            setOpenDialog(nextOpen);
-                        }}>
-                            <DialogTrigger asChild>
-                                <Button className="gap-2" onClick={() => setSelectedSupplier(null)}>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button className="gap-2">
                                     <Plus className="h-4 w-4" />
-                                    Add new
+                                    {ts.addNew}
+                                    <ChevronDown className="h-4 w-4" />
                                 </Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-3xl">
-                                <DialogHeader>
-                                    <DialogTitle>{selectedSupplier ? "Edit supplier" : "Add new supplier"}</DialogTitle>
-                                    <DialogDescription>
-                                        Capture the commercial, compliance, and risk profile that should follow this supplier into sourcing and finance.
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <form action={handleSaveSupplier} className="grid gap-4 py-4">
-                                    <div className="grid gap-4 md:grid-cols-2">
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="name">Company name</Label>
-                                            <Input id="name" name="name" defaultValue={selectedSupplier?.name} required />
-                                        </div>
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="email">Contact email</Label>
-                                            <Input id="email" name="email" type="email" defaultValue={selectedSupplier?.contactEmail} required />
-                                        </div>
-                                    </div>
-                                    <div className="grid gap-4 md:grid-cols-4">
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="countryCode">Country</Label>
-                                            <Input id="countryCode" name="countryCode" maxLength={2} defaultValue={selectedSupplier?.countryCode || ""} />
-                                        </div>
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="city">City / region</Label>
-                                            <Input id="city" name="city" defaultValue={selectedSupplier?.city || ""} />
-                                        </div>
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="latitude">Latitude</Label>
-                                            <Input id="latitude" name="latitude" type="number" step="0.0000001" defaultValue="" />
-                                        </div>
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="longitude">Longitude</Label>
-                                            <Input id="longitude" name="longitude" type="number" step="0.0000001" defaultValue="" />
-                                        </div>
-                                    </div>
-                                    <div className="grid gap-4 md:grid-cols-4">
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="risk">Risk score</Label>
-                                            <Input id="risk" name="risk" type="number" min="0" max="100" defaultValue={selectedSupplier?.riskScore ?? 15} />
-                                        </div>
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="performance">Performance</Label>
-                                            <Input id="performance" name="performance" type="number" min="0" max="100" defaultValue={selectedSupplier?.performanceScore ?? 80} />
-                                        </div>
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="financial">Financial</Label>
-                                            <Input id="financial" name="financial" type="number" min="0" max="100" defaultValue={selectedSupplier?.financialScore ?? 70} />
-                                        </div>
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="esg">ESG</Label>
-                                            <Input id="esg" name="esg" type="number" min="0" max="100" defaultValue={selectedSupplier?.esgScore ?? 70} />
-                                        </div>
-                                    </div>
-                                    <div className="grid gap-4 md:grid-cols-4">
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="tier">Tier</Label>
-                                            <select id="tier" name="tier" defaultValue={selectedSupplier?.tierLevel ?? "tier_3"} className="h-10 rounded-md border bg-background px-3 text-sm">
-                                                <option value="tier_1">Tier 1</option>
-                                                <option value="tier_2">Tier 2</option>
-                                                <option value="tier_3">Tier 3</option>
-                                                <option value="critical">Critical</option>
-                                            </select>
-                                        </div>
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="lifecycleStatus">Lifecycle</Label>
-                                            <select id="lifecycleStatus" name="lifecycleStatus" defaultValue={selectedSupplier?.lifecycleStatus ?? "prospect"} className="h-10 rounded-md border bg-background px-3 text-sm">
-                                                <option value="prospect">Prospect</option>
-                                                <option value="onboarding">Onboarding</option>
-                                                <option value="active">Active</option>
-                                                <option value="suspended">Suspended</option>
-                                                <option value="terminated">Terminated</option>
-                                            </select>
-                                        </div>
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="status">Status</Label>
-                                            <select id="status" name="status" defaultValue={selectedSupplier?.status ?? "active"} className="h-10 rounded-md border bg-background px-3 text-sm">
-                                                <option value="active">Active</option>
-                                                <option value="inactive">Inactive</option>
-                                                <option value="blacklisted">Blacklisted</option>
-                                            </select>
-                                        </div>
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="abcClassification">ABC class</Label>
-                                            <select id="abcClassification" name="abcClassification" defaultValue={selectedSupplier?.abcClassification ?? "None"} className="h-10 rounded-md border bg-background px-3 text-sm">
-                                                <option value="None">None</option>
-                                                <option value="A">A</option>
-                                                <option value="B">B</option>
-                                                <option value="C">C</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div className="grid gap-4 md:grid-cols-3">
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="esg_env">ESG: Environment</Label>
-                                            <Input id="esg_env" name="esg_env" type="number" min="0" max="100" defaultValue={selectedSupplier?.esgScore ?? 70} />
-                                        </div>
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="esg_soc">ESG: Social</Label>
-                                            <Input id="esg_soc" name="esg_soc" type="number" min="0" max="100" defaultValue={selectedSupplier?.esgScore ?? 70} />
-                                        </div>
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="esg_gov">ESG: Governance</Label>
-                                            <Input id="esg_gov" name="esg_gov" type="number" min="0" max="100" defaultValue={selectedSupplier?.esgScore ?? 70} />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-3 pt-2">
-                                        <Label className="text-sm font-semibold">Compliance and certifications</Label>
-                                        <div className="grid gap-2 md:grid-cols-3">
-                                            {["ISO 9001", "ISO 14001", "ISO 27001", "ISO 45001", "IATF 16949", "REACH"].map((certification) => (
-                                                <label key={certification} className="flex items-center gap-2 text-sm">
-                                                    <input
-                                                        type="checkbox"
-                                                        name="iso"
-                                                        value={certification}
-                                                        defaultChecked={selectedSupplier?.isoCertifications?.includes(certification)}
-                                                    />
-                                                    {certification}
-                                                </label>
-                                            ))}
-                                            <label className="flex items-center gap-2 text-sm">
-                                                <input type="checkbox" name="modern_slavery" defaultChecked={selectedSupplier?.modernSlaveryStatement === "yes"} />
-                                                Modern slavery statement
-                                            </label>
-                                        </div>
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="customCertifications">Additional certifications</Label>
-                                            <Input id="customCertifications" name="customCertifications" placeholder="RoHS, TISAX, ISO 50001" />
-                                        </div>
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="financialHealthRating">Financial health note</Label>
-                                            <Input id="financialHealthRating" name="financialHealthRating" defaultValue="Reviewed" />
-                                        </div>
-                                    </div>
-                                    <div className="flex justify-end gap-2 pt-4">
-                                        <Button type="button" variant="outline" onClick={() => setOpenDialog(false)}>
-                                            Cancel
-                                        </Button>
-                                        <Button type="submit" disabled={isPending}>
-                                            {isPending ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : null}
-                                            {selectedSupplier ? "Update supplier" : "Onboard supplier"}
-                                        </Button>
-                                    </div>
-                                </form>
-                            </DialogContent>
-                        </Dialog>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="min-w-[180px]">
+                                <DropdownMenuItem
+                                    onSelect={() => {
+                                        setSelectedSupplier(null);
+                                        setOpenDialog(true);
+                                    }}
+                                    className="flex items-center gap-2"
+                                >
+                                    <Plus className="h-4 w-4" />
+                                    {ts.addSingleSupplier}
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                    onSelect={() => router.push("/suppliers/import")}
+                                    className="flex items-center gap-2"
+                                >
+                                    <ArrowUpRight className="h-4 w-4" />
+                                    {ts.bulkImportSuppliers}
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     ) : null}
                 </div>
             </div>
 
             <div className="grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
                 <aside className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-                    {SECTION_GROUPS.map((group) => (
+                    {getSectionGroups(ts).map((group) => (
                         <div key={group.title} className="mb-5 last:mb-0">
                             <p className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-slate-400">{group.title}</p>
                             <div className="space-y-1">
@@ -543,38 +525,38 @@ export function SuppliersWorkspace({
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                         <Card className="border-slate-200 shadow-sm">
                             <CardHeader className="pb-2">
-                                <CardDescription className="text-xs font-black uppercase tracking-[0.18em]">Current year volume</CardDescription>
-                                <CardTitle className="text-3xl font-black">{formatCurrency(metrics.totalCurrentVolume)}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-sm text-slate-500">Live order value in the current filtered workspace.</p>
+                                 <CardDescription className="text-xs font-black uppercase tracking-[0.18em]">{ts.currentYearVolume}</CardDescription>
+                                 <CardTitle className="text-3xl font-black">{formatCurrency(metrics.totalCurrentVolume)}</CardTitle>
+                             </CardHeader>
+                             <CardContent>
+                                 <p className="text-sm text-slate-500">{ts.liveOrderValue}</p>
                             </CardContent>
                         </Card>
                         <Card className="border-slate-200 shadow-sm">
                             <CardHeader className="pb-2">
-                                <CardDescription className="text-xs font-black uppercase tracking-[0.18em]">Onboarding queue</CardDescription>
-                                <CardTitle className="text-3xl font-black text-blue-700">{metrics.onboardingCount}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-sm text-slate-500">Suppliers still moving through qualification and onboarding.</p>
+                                 <CardDescription className="text-xs font-black uppercase tracking-[0.18em]">{ts.onboardingQueue}</CardDescription>
+                                 <CardTitle className="text-3xl font-black text-blue-700">{metrics.onboardingCount}</CardTitle>
+                             </CardHeader>
+                             <CardContent>
+                                 <p className="text-sm text-slate-500">{ts.stillMoving}</p>
                             </CardContent>
                         </Card>
                         <Card className="border-slate-200 shadow-sm">
                             <CardHeader className="pb-2">
-                                <CardDescription className="text-xs font-black uppercase tracking-[0.18em]">High-risk watchlist</CardDescription>
-                                <CardTitle className="text-3xl font-black text-rose-700">{metrics.highRiskCount}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-sm text-slate-500">Suppliers currently above the intervention threshold.</p>
+                                 <CardDescription className="text-xs font-black uppercase tracking-[0.18em]">{ts.highRiskWatchlist}</CardDescription>
+                                 <CardTitle className="text-3xl font-black text-rose-700">{metrics.highRiskCount}</CardTitle>
+                             </CardHeader>
+                             <CardContent>
+                                 <p className="text-sm text-slate-500">{ts.aboveThreshold}</p>
                             </CardContent>
                         </Card>
                         <Card className="border-slate-200 shadow-sm">
                             <CardHeader className="pb-2">
-                                <CardDescription className="text-xs font-black uppercase tracking-[0.18em]">Compliance gaps</CardDescription>
-                                <CardTitle className="text-3xl font-black text-amber-700">{metrics.complianceGapCount}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-sm text-slate-500">Suppliers with thin certification or control coverage.</p>
+                                 <CardDescription className="text-xs font-black uppercase tracking-[0.18em]">{ts.complianceGaps}</CardDescription>
+                                 <CardTitle className="text-3xl font-black text-amber-700">{metrics.complianceGapCount}</CardTitle>
+                             </CardHeader>
+                             <CardContent>
+                                 <p className="text-sm text-slate-500">{ts.thinCoverage}</p>
                             </CardContent>
                         </Card>
                     </div>
@@ -583,70 +565,40 @@ export function SuppliersWorkspace({
                         <CardHeader className="pb-4">
                             <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                                 <div>
-                                    <CardTitle className="text-xl font-black tracking-tight text-slate-950">
-                                        Supplier control table
-                                    </CardTitle>
-                                    <CardDescription>
-                                        Filter by lifecycle, risk, geography, and compliance without leaving the supplier workspace.
-                                    </CardDescription>
+                                     <CardTitle className="text-xl font-black tracking-tight text-slate-950">
+                                        {ts.supplierControlTable}
+                                     </CardTitle>
+                                     <CardDescription>
+                                        {ts.filterNote}
+                                     </CardDescription>
                                 </div>
                                 <div className="flex flex-wrap items-center gap-2">
-                                    <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
-                                        {filteredRows.length} rows
-                                    </Badge>
-                                    <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
-                                        8 columns live
-                                    </Badge>
+                                     <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
+                                        {filteredRows.length} {ts.rows}
+                                     </Badge>
+                                     <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
+                                        8 {ts.columnsLive}
+                                     </Badge>
                                 </div>
                             </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_200px_220px_auto]">
-                                <div className="relative">
+                            <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+                                <div className="relative w-full xl:max-w-sm">
                                     <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                                     <Input
                                         value={search}
                                         onChange={(event) => setSearch(event.target.value)}
-                                        placeholder="Search supplier, email, code, or category..."
-                                        className="pl-9"
+                                         placeholder={ts.searchPlaceholder}
+                                         className="pl-9"
                                     />
                                 </div>
-                                <div className="relative">
-                                    <Globe2 className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                                    <select
-                                        value={countryFilter}
-                                        onChange={(event) => setCountryFilter(event.target.value)}
-                                        className="h-10 w-full appearance-none rounded-md border bg-background pl-9 pr-3 text-sm"
-                                    >
-                                        <option value="all">All countries</option>
-                                        {countryOptions.map((countryCode) => (
-                                            <option key={countryCode} value={countryCode}>
-                                                {countryLabel(countryCode)}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="relative">
-                                    <Filter className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                                    <select
-                                        value={attentionFilter}
-                                        onChange={(event) => setAttentionFilter(event.target.value)}
-                                        className="h-10 w-full appearance-none rounded-md border bg-background pl-9 pr-3 text-sm"
-                                    >
-                                        <option value="all">All views</option>
-                                        <option value="high_risk">High risk</option>
-                                        <option value="compliance_gap">Compliance gaps</option>
-                                        <option value="onboarding">Onboarding</option>
-                                        <option value="low_trust">Low trust</option>
-                                    </select>
-                                </div>
-                                <Button variant="outline" onClick={() => {
-                                    setSearch("");
-                                    setCountryFilter("all");
-                                    setAttentionFilter("all");
-                                }}>
-                                    Reset
-                                </Button>
+                                <PerFieldFilter
+                                    fields={SUPPLIER_FILTER_FIELDS}
+                                    filters={filters}
+                                    onChange={setFilters}
+                                    getOptions={getSupplierFilterOptions}
+                                />
                             </div>
 
                             <div className="overflow-hidden rounded-2xl border">
@@ -654,14 +606,14 @@ export function SuppliersWorkspace({
                                     <table className="w-full min-w-[1120px] text-sm">
                                         <thead className="bg-slate-50">
                                             <tr className="border-b">
-                                                <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-[0.18em] text-slate-500">Supplier</th>
-                                                <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-[0.18em] text-slate-500">Country</th>
-                                                <th className="px-4 py-3 text-right text-xs font-black uppercase tracking-[0.18em] text-slate-500">Order volume {new Date().getUTCFullYear()}</th>
-                                                <th className="px-4 py-3 text-right text-xs font-black uppercase tracking-[0.18em] text-slate-500">Order volume {new Date().getUTCFullYear() - 1}</th>
-                                                <th className="px-4 py-3 text-center text-xs font-black uppercase tracking-[0.18em] text-slate-500">ABC</th>
-                                                <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-[0.18em] text-slate-500">Trust & compliance</th>
-                                                <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-[0.18em] text-slate-500">Lifecycle</th>
-                                                <th className="px-4 py-3 text-right text-xs font-black uppercase tracking-[0.18em] text-slate-500">Actions</th>
+                                                 <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-[0.18em] text-slate-500">{ts.supplier}</th>
+                                                 <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-[0.18em] text-slate-500">{ts.countryCol}</th>
+                                                 <th className="px-4 py-3 text-right text-xs font-black uppercase tracking-[0.18em] text-slate-500">{ts.orderVolume} {new Date().getUTCFullYear()}</th>
+                                                 <th className="px-4 py-3 text-right text-xs font-black uppercase tracking-[0.18em] text-slate-500">{ts.orderVolume} {new Date().getUTCFullYear() - 1}</th>
+                                                 <th className="px-4 py-3 text-center text-xs font-black uppercase tracking-[0.18em] text-slate-500">{ts.abc}</th>
+                                                 <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-[0.18em] text-slate-500">{ts.trustCompliance}</th>
+                                                 <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-[0.18em] text-slate-500">{ts.lifecycleCol}</th>
+                                                 <th className="px-4 py-3 text-right text-xs font-black uppercase tracking-[0.18em] text-slate-500">{ts.actions}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -669,13 +621,12 @@ export function SuppliersWorkspace({
                                                 <tr key={row.id} className="border-b last:border-b-0 hover:bg-slate-50/70">
                                                     <td className="px-4 py-4 align-top">
                                                         <div className="space-y-1">
-                                                            <button
-                                                                type="button"
-                                                                className="text-left text-sm font-bold text-slate-950 transition-colors hover:text-primary"
-                                                                onClick={() => setSupplierDrawer(row.id)}
-                                                            >
-                                                                {row.name}
-                                                            </button>
+                                                        <Link
+                                                            href={`/suppliers/${row.id}`}
+                                                            className="text-left text-sm font-bold text-slate-950 transition-colors hover:text-primary hover:underline"
+                                                        >
+                                                            {row.name}
+                                                        </Link>
                                                             <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
                                                                 <span>{row.supplierCode}</span>
                                                                 <span>•</span>
@@ -688,7 +639,7 @@ export function SuppliersWorkspace({
                                                             <span className="text-lg">{flagEmoji(row.countryCode)}</span>
                                                             <div>
                                                                 <p className="font-medium text-slate-900">{countryLabel(row.countryCode)}</p>
-                                                                <p className="text-xs text-slate-500">{row.city || "Region pending"}</p>
+                                                                 <p className="text-xs text-slate-500">{row.city || ts.regionPending}</p>
                                                             </div>
                                                         </div>
                                                     </td>
@@ -706,20 +657,20 @@ export function SuppliersWorkspace({
                                                     <td className="px-4 py-4 align-top">
                                                         <div className="space-y-2">
                                                             <div className="flex items-center justify-between text-xs">
-                                                                <span className="font-semibold text-slate-700">Trust {row.trustScore}</span>
-                                                                <span className="text-slate-500">Coverage {row.complianceCoverage}%</span>
+                                                                 <span className="font-semibold text-slate-700">{ts.trust} {row.trustScore}</span>
+                                                                 <span className="text-slate-500">{ts.coverage} {row.complianceCoverage}%</span>
                                                             </div>
                                                             <Progress value={row.complianceCoverage} className="h-1.5" />
                                                             <div className="flex flex-wrap gap-1">
                                                                 <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
-                                                                    Risk {row.riskScore}
-                                                                </Badge>
-                                                                <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
-                                                                    Perf {row.performanceScore}
-                                                                </Badge>
-                                                                <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
-                                                                    Docs {row.documentCount}
-                                                                </Badge>
+                                                                     {ts.risk} {row.riskScore}
+                                                                 </Badge>
+                                                                 <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
+                                                                     {ts.perf} {row.performanceScore}
+                                                                 </Badge>
+                                                                 <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
+                                                                     {ts.docs} {row.documentCount}
+                                                                 </Badge>
                                                             </div>
                                                         </div>
                                                     </td>
@@ -729,7 +680,7 @@ export function SuppliersWorkspace({
                                                                 {row.lifecycleStatus.replace("_", " ")}
                                                             </Badge>
                                                             <div className="text-xs text-slate-500">
-                                                                {row.activeOrders} active orders • {row.quotedRfqs} quoted RFQs
+                                                                 {row.activeOrders} {ts.activeOrders} • {row.quotedRfqs} {ts.quotedRfqs}
                                                             </div>
                                                         </div>
                                                     </td>
@@ -743,11 +694,11 @@ export function SuppliersWorkspace({
                                                                 variant="ghost"
                                                                 className="h-8 w-8"
                                                             />
-                                                            <Button variant="outline" size="sm" onClick={() => setSupplierDrawer(row.id)}>
-                                                                Quick view
-                                                            </Button>
-                                                            <Link href={`/suppliers/${row.id}`}>
-                                                                <Button variant="ghost" size="sm">Profile</Button>
+                                                                 <Button variant="outline" size="sm" onClick={() => setSupplierDrawer(row.id)}>
+                                                                     {ts.quickView}
+                                                                 </Button>
+                                                                 <Link href={`/suppliers/${row.id}`}>
+                                                                     <Button variant="ghost" size="sm">{ts.profile}</Button>
                                                             </Link>
                                                             {canManage ? (
                                                                 <>
@@ -772,10 +723,10 @@ export function SuppliersWorkspace({
                                             {filteredRows.length === 0 ? (
                                                 <tr>
                                                     <td colSpan={8} className="px-6 py-12 text-center">
-                                                        <p className="text-base font-semibold text-slate-900">No suppliers match this view.</p>
-                                                        <p className="mt-1 text-sm text-slate-500">
-                                                            Adjust the workspace section or clear filters to broaden the supplier set.
-                                                        </p>
+                                                         <p className="text-base font-semibold text-slate-900">{ts.noSuppliersMatch}</p>
+                                                         <p className="mt-1 text-sm text-slate-500">
+                                                             {ts.adjustView}
+                                                         </p>
                                                     </td>
                                                 </tr>
                                             ) : null}
@@ -792,22 +743,199 @@ export function SuppliersWorkspace({
                 if (!open) setSupplierDrawer(null);
             }} />
 
+            <Dialog open={openDialog} onOpenChange={(nextOpen) => {
+                if (!nextOpen) {
+                    setSelectedSupplier(null);
+                }
+                setOpenDialog(nextOpen);
+            }}>
+                <DialogContent className="max-w-3xl">
+                    <DialogHeader>
+                        <DialogTitle>{selectedSupplier ? ts.editSupplier : ts.addNewSupplier}</DialogTitle>
+                        <DialogDescription>
+                            {ts.dialogDescription}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <form action={handleSaveSupplier} className="grid gap-4 py-4">
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <div className="grid gap-2">
+                                <Label htmlFor="name">{ts.companyName}</Label>
+                                <Input id="name" name="name" defaultValue={selectedSupplier?.name} required />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="email">{ts.contactEmail}</Label>
+                                <Input id="email" name="email" type="email" defaultValue={selectedSupplier?.contactEmail} required />
+                            </div>
+                        </div>
+                        <div className="grid gap-4 md:grid-cols-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="countryCode">{ts.country}</Label>
+                                <Input id="countryCode" name="countryCode" maxLength={2} defaultValue={selectedSupplier?.countryCode || ""} />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="city">{ts.cityRegion}</Label>
+                                <Input id="city" name="city" defaultValue={selectedSupplier?.city || ""} />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="latitude">{ts.latitude}</Label>
+                                <Input id="latitude" name="latitude" type="number" step="0.0000001" defaultValue="" />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="longitude">{ts.longitude}</Label>
+                                <Input id="longitude" name="longitude" type="number" step="0.0000001" defaultValue="" />
+                            </div>
+                        </div>
+                        <div className="grid gap-4 md:grid-cols-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="risk">{ts.riskScore}</Label>
+                                <Input id="risk" name="risk" type="number" min="0" max="100" defaultValue={selectedSupplier?.riskScore ?? 15} />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="performance">{ts.performance}</Label>
+                                <Input id="performance" name="performance" type="number" min="0" max="100" defaultValue={selectedSupplier?.performanceScore ?? 80} />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="financial">{ts.financial}</Label>
+                                <Input id="financial" name="financial" type="number" min="0" max="100" defaultValue={selectedSupplier?.financialScore ?? 70} />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="esg">{ts.esg}</Label>
+                                <Input id="esg" name="esg" type="number" min="0" max="100" defaultValue={selectedSupplier?.esgScore ?? 70} />
+                            </div>
+                        </div>
+                        <div className="grid gap-4 md:grid-cols-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="tier">{ts.tier}</Label>
+                                <select id="tier" name="tier" defaultValue={selectedSupplier?.tierLevel ?? "tier_3"} className="h-10 rounded-md border bg-background px-3 text-sm">
+                                    <option value="tier_1">{ts.tier1}</option>
+                                    <option value="tier_2">{ts.tier2}</option>
+                                    <option value="tier_3">{ts.tier3}</option>
+                                    <option value="critical">{ts.critical}</option>
+                                </select>
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="lifecycleStatus">{ts.lifecycle}</Label>
+                                <select id="lifecycleStatus" name="lifecycleStatus" defaultValue={selectedSupplier?.lifecycleStatus ?? "prospect"} className="h-10 rounded-md border bg-background px-3 text-sm">
+                                    <option value="prospect">{ts.prospect}</option>
+                                    <option value="onboarding">{ts.onboarding}</option>
+                                    <option value="active">{ts.active}</option>
+                                    <option value="suspended">{ts.suspended}</option>
+                                    <option value="terminated">{ts.terminated}</option>
+                                </select>
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="status">{ts.status}</Label>
+                                <select id="status" name="status" defaultValue={selectedSupplier?.status ?? "active"} className="h-10 rounded-md border bg-background px-3 text-sm">
+                                    <option value="active">{ts.statusActive}</option>
+                                    <option value="inactive">{ts.statusInactive}</option>
+                                    <option value="blacklisted">{ts.statusBlacklisted}</option>
+                                </select>
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="abcClassification">{ts.abcClass}</Label>
+                                <select id="abcClassification" name="abcClassification" defaultValue={selectedSupplier?.abcClassification ?? "None"} className="h-10 rounded-md border bg-background px-3 text-sm">
+                                    <option value="None">{ts.none}</option>
+                                    <option value="A">A</option>
+                                    <option value="B">B</option>
+                                    <option value="C">C</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div className="grid gap-4 md:grid-cols-3">
+                            <div className="grid gap-2">
+                                <Label htmlFor="esg_env">{ts.esgEnv}</Label>
+                                <Input id="esg_env" name="esg_env" type="number" min="0" max="100" defaultValue={selectedSupplier?.esgScore ?? 70} />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="esg_soc">{ts.esgSoc}</Label>
+                                <Input id="esg_soc" name="esg_soc" type="number" min="0" max="100" defaultValue={selectedSupplier?.esgScore ?? 70} />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="esg_gov">{ts.esgGov}</Label>
+                                <Input id="esg_gov" name="esg_gov" type="number" min="0" max="100" defaultValue={selectedSupplier?.esgScore ?? 70} />
+                            </div>
+                        </div>
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <div className="grid gap-2">
+                                <Label htmlFor="supplierType">{ts.supplierType}</Label>
+                                <Input id="supplierType" name="supplierType" defaultValue={selectedSupplier?.supplierType || ""} placeholder="e.g. Manufacturer, Distributor" />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="strategicClassification">{ts.strategicClassification}</Label>
+                                <Input id="strategicClassification" name="strategicClassification" defaultValue={selectedSupplier?.strategicClassification || ""} placeholder="e.g. Strategic, Preferred, Approved" />
+                            </div>
+                        </div>
+                        <div className="grid gap-4 md:grid-cols-3">
+                            <div className="grid gap-2">
+                                <Label htmlFor="areaOfNeed">{ts.areaOfNeed}</Label>
+                                <Input id="areaOfNeed" name="areaOfNeed" defaultValue={selectedSupplier?.areaOfNeed?.join(", ") || ""} placeholder="Production, Logistics" />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="commodityGroup">{ts.commodityGroup}</Label>
+                                <Input id="commodityGroup" name="commodityGroup" defaultValue={selectedSupplier?.commodityGroup?.join(", ") || ""} placeholder="Electronics, Fasteners" />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="responsibleBuyer">{ts.responsibleBuyer}</Label>
+                                <Input id="responsibleBuyer" name="responsibleBuyer" defaultValue={selectedSupplier?.responsibleBuyer?.join(", ") || ""} placeholder="j.smith, a.khan" />
+                            </div>
+                        </div>
+                        <div className="space-y-3 pt-2">
+                            <Label className="text-sm font-semibold">{ts.complianceCerts}</Label>
+                            <div className="grid gap-2 md:grid-cols-3">
+                                {["ISO 9001", "ISO 14001", "ISO 27001", "ISO 45001", "IATF 16949", "REACH"].map((certification) => (
+                                    <label key={certification} className="flex items-center gap-2 text-sm">
+                                        <input
+                                            type="checkbox"
+                                            name="iso"
+                                            value={certification}
+                                            defaultChecked={selectedSupplier?.isoCertifications?.includes(certification)}
+                                        />
+                                        {certification}
+                                    </label>
+                                ))}
+                                <label className="flex items-center gap-2 text-sm">
+                                    <input type="checkbox" name="modern_slavery" defaultChecked={selectedSupplier?.modernSlaveryStatement === "yes"} />
+                                    {ts.modernSlaveryStatement}
+                                </label>
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="customCertifications">{ts.additionalCerts}</Label>
+                                <Input id="customCertifications" name="customCertifications" placeholder="RoHS, TISAX, ISO 50001" />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="financialHealthRating">{ts.financialHealthNote}</Label>
+                                <Input id="financialHealthRating" name="financialHealthRating" defaultValue="Reviewed" />
+                            </div>
+                        </div>
+                        <div className="flex justify-end gap-2 pt-4">
+                            <Button type="button" variant="outline" onClick={() => setOpenDialog(false)}>
+                                {ts.cancel}
+                            </Button>
+                            <Button type="submit" disabled={isPending}>
+                                {isPending ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                {selectedSupplier ? ts.updateSupplier : ts.onboardSupplier}
+                            </Button>
+                        </div>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
             <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Delete supplier?</AlertDialogTitle>
+                        <AlertDialogTitle>{ts.deleteSupplier}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This will remove {supplierToDelete?.name || "this supplier"} only if there are no active commercial dependencies left in orders or RFQs.
+                            {ts.deleteSupplierConfirm}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel>{ts.cancel}</AlertDialogCancel>
                         <AlertDialogAction onClick={(event) => {
                             event.preventDefault();
                             void handleDeleteSupplier();
                         }} disabled={isPending} className="bg-rose-600 hover:bg-rose-700">
                             {isPending ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : null}
-                            Delete
+                            {ts.confirmDelete}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

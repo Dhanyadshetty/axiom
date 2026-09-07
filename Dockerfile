@@ -16,6 +16,7 @@ COPY . .
 
 # Environment variables for build time
 ENV NEXT_TELEMETRY_DISABLED 1
+ENV AUTH_SECRET="dummy_build_secret_for_nextjs_auth"
 RUN npm run build
 
 # Runner stage
@@ -28,7 +29,7 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 

@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { FileText } from "lucide-react";
 import Link from "next/link";
+import { t, getActiveLanguage } from "@/lib/i18n";
 
 export const dynamic = 'force-dynamic';
 
@@ -16,41 +17,43 @@ const statusClasses: Record<string, string> = {
 
 export default async function SupplierRFQsPage() {
     const rfqs = await getSupplierRFQs();
+    const language = await getActiveLanguage();
+    const tc = t(language, "portal");
 
     return (
         <div className="flex min-h-full flex-col bg-muted/40 p-4 lg:p-8 space-y-6">
             <div>
                 <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
-                    <FileText className="h-8 w-8 text-primary" /> Incoming Bids
+                    <FileText className="h-8 w-8 text-primary" /> {tc.rfqsIncomingBids}
                 </h1>
-                <p className="text-muted-foreground mt-1 font-medium">RFQs and sourcing invitations from the procurement team.</p>
+                <p className="text-muted-foreground mt-1 font-medium">{tc.rfqsSubtitle}</p>
             </div>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Bid Invitations</CardTitle>
-                    <CardDescription>{rfqs.length} invitation(s) available</CardDescription>
+                    <CardTitle>{tc.rfqBidInvitations}</CardTitle>
+                    <CardDescription>{tc.rfqInvitationsAvailable.replace("{n}", String(rfqs.length))}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     {rfqs.length === 0 ? (
-                        <p className="text-muted-foreground text-sm py-6 text-center">No bid invitations yet. You&apos;ll see them here when the procurement team invites you to quote.</p>
+                        <p className="text-muted-foreground text-sm py-6 text-center">{tc.rfqNoInvitations}</p>
                     ) : (
                         <div className="rounded-md border overflow-auto">
                             <table className="w-full text-sm">
                                 <thead>
                                     <tr className="border-b bg-muted/50">
-                                        <th className="h-11 px-4 text-left text-xs uppercase text-muted-foreground">RFQ</th>
-                                        <th className="h-11 px-4 text-left text-xs uppercase text-muted-foreground">Title</th>
-                                        <th className="h-11 px-4 text-left text-xs uppercase text-muted-foreground">Status</th>
-                                        <th className="h-11 px-4 text-left text-xs uppercase text-muted-foreground">Date</th>
-                                        <th className="h-11 px-4 text-left text-xs uppercase text-muted-foreground">Action</th>
+                                        <th className="h-11 px-4 text-left text-xs uppercase text-muted-foreground">{tc.rfqHeaderRfq}</th>
+                                        <th className="h-11 px-4 text-left text-xs uppercase text-muted-foreground">{tc.rfqHeaderTitle}</th>
+                                        <th className="h-11 px-4 text-left text-xs uppercase text-muted-foreground">{tc.rfqHeaderStatus}</th>
+                                        <th className="h-11 px-4 text-left text-xs uppercase text-muted-foreground">{tc.rfqHeaderDate}</th>
+                                        <th className="h-11 px-4 text-left text-xs uppercase text-muted-foreground">{tc.rfqHeaderAction}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {rfqs.map((rfq) => (
                                         <tr key={rfq.id} className="border-b hover:bg-muted/40 transition-colors">
                                             <td className="p-4 font-mono text-xs text-primary font-bold">{rfq.id?.slice(0, 8)}</td>
-                                            <td className="p-4 font-medium">{rfq.title || 'Untitled RFQ'}</td>
+                                            <td className="p-4 font-medium">{rfq.title || tc.rfqUntitled}</td>
                                             <td className="p-4">
                                                 <Badge variant="outline" className={statusClasses[rfq.status || 'pending'] || statusClasses.pending}>
                                                     {rfq.status || 'pending'}
@@ -64,7 +67,7 @@ export default async function SupplierRFQsPage() {
                                                     href={`/portal/rfqs/${rfq.rfqId}`}
                                                     className="text-primary hover:underline text-xs font-medium"
                                                 >
-                                                    View & Quote →
+                                                    {tc.rfqViewQuote}
                                                 </Link>
                                             </td>
                                         </tr>

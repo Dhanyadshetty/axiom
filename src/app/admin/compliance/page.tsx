@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { COMPLIANCE_POLICY_PACKS } from "@/lib/compliance-policy-packs";
+import { getActiveLanguage, t } from "@/lib/i18n";
 
 const statusColors: Record<string, string> = {
     active: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
@@ -20,6 +21,8 @@ const statusColors: Record<string, string> = {
 };
 
 export default async function CompliancePage() {
+    const language = await getActiveLanguage();
+    const ta = t(language, "admin");
     const session = await auth();
     if (!session?.user || !['admin', 'user'].includes(session.user.role)) {
         redirect('/');
@@ -51,10 +54,10 @@ export default async function CompliancePage() {
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <ShieldCheck className="h-6 w-6 text-primary" />
-                        Compliance Intelligence
+                        {ta.riskComplianceIntelligence}
                     </h1>
                     <p className="text-muted-foreground text-sm mt-1">
-                        Deadline-driven compliance obligations, evidence tracking, and supplier attestations
+                        {ta.riskComplianceSubtitle}
                     </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -75,7 +78,7 @@ export default async function CompliancePage() {
                             <Clock className="h-8 w-8 text-amber-500" />
                             <div>
                                 <p className="text-2xl font-bold">{dashboard.expiringSoon}</p>
-                                <p className="text-xs text-muted-foreground">Expiring Soon</p>
+                                 <p className="text-xs text-muted-foreground">{ta.expiringSoon}</p>
                             </div>
                         </div>
                     </CardContent>
@@ -86,7 +89,7 @@ export default async function CompliancePage() {
                             <AlertTriangle className="h-8 w-8 text-red-500" />
                             <div>
                                 <p className="text-2xl font-bold">{dashboard.expired}</p>
-                                <p className="text-xs text-muted-foreground">Expired</p>
+                                <p className="text-xs text-muted-foreground">{ta.expired}</p>
                             </div>
                         </div>
                     </CardContent>
@@ -97,7 +100,7 @@ export default async function CompliancePage() {
                             <FileX className="h-8 w-8 text-orange-500" />
                             <div>
                                 <p className="text-2xl font-bold">{dashboard.missingEvidence}</p>
-                                <p className="text-xs text-muted-foreground">Missing Evidence</p>
+                                <p className="text-xs text-muted-foreground">{ta.missingEvidence}</p>
                             </div>
                         </div>
                     </CardContent>
@@ -106,7 +109,7 @@ export default async function CompliancePage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-lg">Regional Policy Pack Coverage</CardTitle>
+                    <CardTitle className="text-lg">{ta.regionalPolicyPackCoverage}</CardTitle>
                 </CardHeader>
                 <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                     {COMPLIANCE_POLICY_PACKS.map((pack) => {
@@ -129,13 +132,13 @@ export default async function CompliancePage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-lg">Compliance Obligations</CardTitle>
+                    <CardTitle className="text-lg">{ta.complianceObligations}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     {obligations.length === 0 ? (
                         <div className="text-center py-12 text-muted-foreground">
                             <ShieldCheck className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                            <p className="text-sm">No compliance obligations configured yet.</p>
+                            <p className="text-sm">{ta.noComplianceObligations}</p>
                         </div>
                     ) : (
                         <div className="divide-y">
@@ -151,41 +154,41 @@ export default async function CompliancePage() {
                                             {ob.policyPack ? <Badge variant="outline" className="text-[10px]">{ob.policyPack}</Badge> : null}
                                         </div>
                                         <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground flex-wrap">
-                                            {ob.supplierName ? <span>Supplier: {ob.supplierName}</span> : null}
-                                            {ob.ownerName ? <span>Owner: {ob.ownerName}</span> : null}
-                                            {ob.region ? <span>Region: {ob.region}</span> : null}
+                                            {ob.supplierName ? <span>{ta.supplier}: {ob.supplierName}</span> : null}
+                                            {ob.ownerName ? <span>{ta.owner}: {ob.ownerName}</span> : null}
+                                            {ob.region ? <span>{ta.region}: {ob.region}</span> : null}
                                             {ob.expiresAt ? (
                                                 <span className={new Date(ob.expiresAt) < new Date() ? 'text-red-600 font-medium' : ''}>
-                                                    Expires: {new Date(ob.expiresAt).toLocaleDateString()}
+                                                    {ta.expires}: {new Date(ob.expiresAt).toLocaleDateString()}
                                                 </span>
                                             ) : null}
                                             {ob.documentRequired === 'yes' && !ob.documentUrl ? (
-                                                <span className="text-orange-600">Evidence missing</span>
+                                                <span className="text-orange-600">{ta.evidenceMissing}</span>
                                             ) : null}
-                                            {ob.documentUrl ? <span className="text-green-600">Evidence submitted</span> : null}
+                                            {ob.documentUrl ? <span className="text-green-600">{ta.evidenceSubmitted}</span> : null}
                                         </div>
                                         <div className="mt-3 flex flex-wrap gap-2">
                                             {ob.supplierId ? (
                                                 <Link href={`/suppliers/${ob.supplierId}`}>
                                                     <Button size="sm" variant="outline" className="h-8 text-[10px] font-bold uppercase">
-                                                        Open Supplier
+                                                        {ta.openSupplier}
                                                     </Button>
                                                 </Link>
                                             ) : null}
                                             <Link href="/admin/tasks">
                                                 <Button size="sm" variant="outline" className="h-8 text-[10px] font-bold uppercase">
-                                                    Review Tasks
+                                                        {ta.reviewTasks}
                                                 </Button>
                                             </Link>
                                             {ob.documentUrl ? (
                                                 <Link href={ob.documentUrl}>
                                                     <Button size="sm" variant="outline" className="h-8 text-[10px] font-bold uppercase">
-                                                        Open Evidence
+                                                        {ta.openEvidence}
                                                     </Button>
                                                 </Link>
                                             ) : (
                                                 <Button size="sm" variant="outline" disabled className="h-8 text-[10px] font-bold uppercase">
-                                                    Awaiting Evidence
+                                                    {ta.awaitingEvidence}
                                                 </Button>
                                             )}
                                         </div>

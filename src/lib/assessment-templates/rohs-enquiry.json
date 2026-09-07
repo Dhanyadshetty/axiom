@@ -1,0 +1,86 @@
+{
+  "id": "rohs_enquiry",
+  "name": "RoHS Anfrage",
+  "category": "rohs_enquiry",
+  "version": "1.0",
+  "description": "RoHS (Restriction of Hazardous Substances) enquiry.",
+  "sections": [
+    {
+      "key": "buyer_message",
+      "title": "Message from the buyer",
+      "titleDe": "Nachricht des Käufers",
+      "order": 0,
+      "blocks": [
+        {
+          "key": "buyer_message_block",
+          "title": "Message from the buyer",
+          "titleDe": "Nachricht des Käufers",
+          "icon": "message-square",
+          "message": "Dear Supplier,\n\nPlease complete this RoHS enquiry. RoHS (Directive 2011/65/EU and amendments) restricts hazardous substances in electrical and electronic equipment. Your responses help us ensure ongoing compliance in our supply chain.\n\nKind regards,\n[Buyer Name]\n[Buyer Company]",
+          "messageDe": "Sehr geehrte(r) Lieferant(in),\n\nBitte füllen Sie diese RoHS-Anfrage aus. RoHS (Richtlinie 2011/65/EU und Änderungen) beschränkt gefährliche Stoffe in Elektro- und Elektronikgeräten. Ihre Antworten helfen uns, die laufende Compliance in unserer Lieferkette sicherzustellen.\n\nMit freundlichen Grüßen,\n[Name des Käufers]\n[Firma des Käufers]",
+          "fields": []
+        }
+      ]
+    },
+    {
+      "key": "supplier_identification",
+      "title": "1. Supplier Identification",
+      "titleDe": "1. Lieferantenidentifikation",
+      "order": 1,
+      "blocks": [
+        {
+          "key": "company_address",
+          "title": "Company address",
+          "titleDe": "Unternehmensanschrift",
+          "icon": "building",
+          "fields": [
+            { "key": "supplier_number", "label": "Supplier number", "labelDe": "Lieferantennummer", "type": "short_text", "required": false },
+            { "key": "company_name", "label": "Company name", "labelDe": "Firmenname", "type": "short_text", "required": true },
+            { "key": "address", "label": "Address", "labelDe": "Anschrift", "type": "short_text", "required": true },
+            { "key": "country", "label": "Country", "labelDe": "Land", "type": "short_text", "required": false }
+          ]
+        },
+        {
+          "key": "primary_contact",
+          "title": "Primary contact",
+          "titleDe": "Primärkontakt",
+          "icon": "user",
+          "fields": [
+            { "key": "contact_person_name", "label": "Contact name", "labelDe": "Kontaktname", "type": "short_text", "required": false },
+            { "key": "contact_email", "label": "Contact email", "labelDe": "Kontakt-E-Mail", "type": "short_text", "required": false }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "rohs_compliance",
+      "title": "2. RoHS Compliance",
+      "titleDe": "2. RoHS-Compliance",
+      "order": 2,
+      "blocks": [
+        {
+          "key": "rohs_status",
+          "title": "RoHS status",
+          "titleDe": "RoHS-Status",
+          "icon": "alert-triangle",
+          "fields": [
+            { "key": "rohs_aware", "label": "We are aware of RoHS obligations (Directive 2011/65/EU)", "labelDe": "Wir kennen die RoHS-Verpflichtungen (Richtlinie 2011/65/EU)", "type": "yes_no_confirm", "required": true },
+            { "key": "rohs_substances_under_limits", "label": "Restricted substances are below legal thresholds", "labelDe": "Beschränkte Stoffe liegen unter den gesetzlichen Grenzwerten", "type": "yes_no_confirm", "required": true },
+            { "key": "rohs_testing_performed", "label": "Material testing is performed to verify RoHS compliance", "labelDe": "Materialprüfungen werden zur RoHS-Compliance durchgeführt", "type": "yes_no_confirm", "required": true },
+            { "key": "rohs_comments", "label": "Comments / evidence", "labelDe": "Kommentare / Nachweise", "type": "long_text_rich", "required": false }
+          ]
+        },
+        {
+          "key": "rohs_documents",
+          "title": "RoHS documentation",
+          "titleDe": "RoHS-Dokumentation",
+          "icon": "file-text",
+          "fields": [
+            { "key": "rohs_declaration", "label": "RoHS compliance declaration", "labelDe": "RoHS-Compliance-Erklärung", "type": "document_upload", "required": false },
+            { "key": "material_test_report", "label": "Material test report", "labelDe": "Materialprüfbericht", "type": "document_upload", "required": false }
+          ]
+        }
+      ]
+    }
+  ]
+}

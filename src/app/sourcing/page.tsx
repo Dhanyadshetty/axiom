@@ -17,6 +17,7 @@ import { getMarketIntelligenceSummary } from "@/app/actions/cost-intelligence";
 import { getPlatformSettingsForLayout } from "@/app/actions/settings";
 import { RefreshBenchmarksButton } from "@/components/sourcing/refresh-benchmarks-button";
 import { auth } from "@/auth";
+import { getActiveLanguage, t } from "@/lib/i18n";
 
 export default async function SourcingIntelligencePage() {
     const session = await auth();
@@ -41,6 +42,8 @@ export default async function SourcingIntelligencePage() {
         }>,
         lastBenchmarkRefresh: null as Date | null,
     }));
+    const language = await getActiveLanguage();
+    const ts = t(language, "sourcing");
     const leadCategory = marketSummary.hotCategories[0] || null;
 
     return (
@@ -48,9 +51,9 @@ export default async function SourcingIntelligencePage() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-stone-900 flex items-center gap-3">
-                        Sourcing Command Hub
-                    </h1>
-                    <p className="text-muted-foreground mt-1 text-sm">Strategic oversight of requisitions, contracts, and savings opportunities.</p>
+                         {ts.sourcingCommandHub}
+                     </h1>
+                    <p className="text-muted-foreground mt-1 text-sm">{ts.sourcingSubtitle}</p>
                 </div>
                 {isAdmin ? <RefreshBenchmarksButton /> : null}
             </div>
@@ -58,53 +61,53 @@ export default async function SourcingIntelligencePage() {
             <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
                 <Card className="border-l-4 border-l-primary bg-gradient-to-br from-background to-primary/5 shadow-sm">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium flex items-center justify-between">
-                            Sourcing Alpha
-                            <Zap className="h-4 w-4 text-primary fill-primary" />
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-stone-900">{stats.savingsRate}%</div>
-                        <p className="text-[10px] text-stone-500 mt-1 uppercase tracking-wider font-bold">Negotiated Savings Rate</p>
+                            <CardTitle className="text-sm font-medium flex items-center justify-between">
+                             {ts.sourcingAlpha}
+                             <Zap className="h-4 w-4 text-primary fill-primary" />
+                         </CardTitle>
+                     </CardHeader>
+                     <CardContent>
+                         <div className="text-2xl font-bold text-stone-900">{stats.savingsRate}%</div>
+                         <p className="text-[10px] text-stone-500 mt-1 uppercase tracking-wider font-bold">{ts.negotiatedSavingsRate}</p>
                     </CardContent>
                 </Card>
 
                 <Card className="border-l-4 border-l-emerald-500 shadow-sm">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium flex items-center justify-between">
-                            Realized Cost Avoidance
-                            <Target className="h-4 w-4 text-emerald-600" />
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-emerald-700">{currencyCode} {stats.realizedSavings.toLocaleString()}</div>
-                        <p className="text-[10px] text-stone-500 mt-1 uppercase tracking-wider font-bold">Total Savings Identified</p>
+                            <CardTitle className="text-sm font-medium flex items-center justify-between">
+                             {ts.realizedCostAvoidance}
+                             <Target className="h-4 w-4 text-emerald-600" />
+                         </CardTitle>
+                     </CardHeader>
+                     <CardContent>
+                         <div className="text-2xl font-bold text-emerald-700">{currencyCode} {stats.realizedSavings.toLocaleString()}</div>
+                         <p className="text-[10px] text-stone-500 mt-1 uppercase tracking-wider font-bold">{ts.totalSavingsIdentified}</p>
                     </CardContent>
                 </Card>
 
                 <Card className="border-l-4 border-l-amber-500 shadow-sm">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium flex items-center justify-between">
-                            Benchmark Coverage
-                            <BarChart3 className="h-4 w-4 text-amber-600" />
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-amber-700">{marketSummary.benchmarkCoverage}%</div>
-                        <p className="text-[10px] text-stone-500 mt-1 uppercase tracking-wider font-bold">{marketSummary.categoriesTracked}/{marketSummary.totalCategories} categories benchmarked</p>
+                            <CardTitle className="text-sm font-medium flex items-center justify-between">
+                             {ts.benchmarkCoverage}
+                             <BarChart3 className="h-4 w-4 text-amber-600" />
+                         </CardTitle>
+                     </CardHeader>
+                     <CardContent>
+                         <div className="text-2xl font-bold text-amber-700">{marketSummary.benchmarkCoverage}%</div>
+                         <p className="text-[10px] text-stone-500 mt-1 uppercase tracking-wider font-bold">{marketSummary.categoriesTracked}/{marketSummary.totalCategories} {ts.categoriesBenchmarked}</p>
                     </CardContent>
                 </Card>
 
                 <Card className="border-l-4 border-l-sky-500 shadow-sm">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium flex items-center justify-between">
-                            Negotiation Queue
-                            <ArrowUpRight className="h-4 w-4 text-sky-600" />
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-sky-700">{marketSummary.rfqsReadyForNegotiation}</div>
-                        <p className="text-[10px] text-stone-500 mt-1 uppercase tracking-wider font-bold">RFQs with 2+ live quotes</p>
+                            <CardTitle className="text-sm font-medium flex items-center justify-between">
+                             {ts.negotiationQueue}
+                             <ArrowUpRight className="h-4 w-4 text-sky-600" />
+                         </CardTitle>
+                     </CardHeader>
+                     <CardContent>
+                         <div className="text-2xl font-bold text-sky-700">{marketSummary.rfqsReadyForNegotiation}</div>
+                         <p className="text-[10px] text-stone-500 mt-1 uppercase tracking-wider font-bold">{ts.rfqsLiveQuotes}</p>
                     </CardContent>
                 </Card>
             </div>
@@ -117,8 +120,8 @@ export default async function SourcingIntelligencePage() {
                             <Briefcase size={80} />
                         </div>
                         <CardHeader>
-                            <CardTitle>Category Strategy</CardTitle>
-                            <CardDescription className="text-stone-400">Internal benchmark intelligence generated from real Axiom order and quote history.</CardDescription>
+                             <CardTitle>{ts.categoryStrategy}</CardTitle>
+                             <CardDescription className="text-stone-400">{ts.benchmarkDesc}</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             {leadCategory ? (
@@ -143,14 +146,14 @@ export default async function SourcingIntelligencePage() {
                 <div className="space-y-8">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Market Intelligence Feed</CardTitle>
+                            <CardTitle>{ts.marketIntelligenceFeed}</CardTitle>
                             <CardDescription>
-                                Highest-signal categories from internal benchmarks and realized spend.
+                                {ts.highestSignal}
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
                             {marketSummary.hotCategories.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">No benchmark categories available yet.</p>
+                                 <p className="text-sm text-muted-foreground">{ts.noBenchmarkCategories}</p>
                             ) : marketSummary.hotCategories.map((category) => (
                                 <div key={category.category} className="rounded-xl border p-3 bg-background/80">
                                     <div className="flex items-center justify-between gap-3">
@@ -163,8 +166,8 @@ export default async function SourcingIntelligencePage() {
                                         </div>
                                     </div>
                                     <div className="mt-2 text-xs text-muted-foreground flex items-center justify-between">
-                                        <span>Avg buy price: {currencyCode} {category.averagePrice.toLocaleString()}</span>
-                                        <span>Benchmark: {currencyCode} {category.benchmarkPrice.toLocaleString()}</span>
+                                         <span>{ts.avgBuyPrice}: {currencyCode} {category.averagePrice.toLocaleString()}</span>
+                                         <span>{ts.benchmark}: {currencyCode} {category.benchmarkPrice.toLocaleString()}</span>
                                     </div>
                                 </div>
                             ))}

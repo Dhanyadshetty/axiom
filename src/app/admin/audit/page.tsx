@@ -19,6 +19,7 @@ import { AuditLogView } from "@/components/admin/audit-log-view";
 import { canAccessAuditTrail } from "@/lib/rbac";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { getActiveLanguage, t } from "@/lib/i18n";
 
 export const dynamic = 'force-dynamic';
 
@@ -52,6 +53,8 @@ function formatRelativeTime(date: Date | null | undefined) {
 }
 
 export default async function AuditDashboard() {
+    const language = await getActiveLanguage();
+    const ta = t(language, "admin");
     const session = await auth();
     const isAllowed = canAccessAuditTrail(session?.user);
 
@@ -60,17 +63,17 @@ export default async function AuditDashboard() {
             <div className="flex min-h-full items-center justify-center p-8">
                 <Card className="w-full max-w-xl border-amber-200">
                     <CardHeader>
-                        <CardTitle className="text-2xl font-black tracking-tight">Access Denied</CardTitle>
+                        <CardTitle className="text-2xl font-black tracking-tight">{ta.accessDenied}</CardTitle>
                         <CardDescription>
-                            The audit trail is limited to finance and super-admin access profiles. If you need an export or investigation snapshot, contact your platform administrator.
+                            {ta.auditTrailLimited}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="flex gap-3">
                         <Link href="/">
-                            <Button>Return to workspace</Button>
+                            <Button>{ta.returnToWorkspace}</Button>
                         </Link>
                         <Link href="/support">
-                            <Button variant="outline">Contact administrator</Button>
+                            <Button variant="outline">{ta.contactAdministrator}</Button>
                         </Link>
                     </CardContent>
                 </Card>
@@ -95,10 +98,10 @@ export default async function AuditDashboard() {
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
                         <History className="h-8 w-8 text-amber-600" />
-                        Global Audit Trail
+                        {ta.globalAuditTrail}
                     </h1>
                     <p className="text-muted-foreground mt-1">
-                        Immutable record of all system-wide actions for compliance and forensics.
+                        {ta.auditImmutability}
                     </p>
                 </div>
                 <Badge
@@ -108,59 +111,59 @@ export default async function AuditDashboard() {
                         : "h-10 px-4 gap-2 border-amber-200 bg-amber-50 text-amber-700"}
                 >
                     <ShieldCheck className="h-4 w-4" />
-                    {immutableEnforced ? "WORM Enforced" : "Storage Hardening Pending"}
+                    {immutableEnforced ? ta.wormEnforced : ta.storageHardeningPending}
                 </Badge>
             </div>
 
             <div className="grid gap-6 mb-8 grid-cols-1 md:grid-cols-2 xl:grid-cols-4">
                 <Card className="bg-gradient-to-br from-amber-600/5 to-transparent border-amber-100/50">
                     <CardHeader className="pb-2">
-                        <CardDescription className="text-xs font-bold uppercase tracking-wider">Total Actions Captured</CardDescription>
+                        <CardDescription className="text-xs font-bold uppercase tracking-wider">{ta.totalActionsCaptured}</CardDescription>
                         <CardTitle className="text-2xl">{logs.length}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Clock className="h-3 w-3" /> Last event logged {formatRelativeTime(latestEventAt)}
+                            <Clock className="h-3 w-3" /> {ta.lastEventLogged} {formatRelativeTime(latestEventAt)}
                         </div>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardDescription className="text-xs font-bold uppercase tracking-wider">Active Auditors</CardDescription>
+                        <CardDescription className="text-xs font-bold uppercase tracking-wider">{ta.activeAuditors}</CardDescription>
                         <CardTitle className="text-2xl">
                             {new Set(logs.map((l) => l.userName)).size}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="text-xs text-muted-foreground flex items-center gap-1">
-                            <User className="h-3 w-3" /> Authorized system administrators
+                            <User className="h-3 w-3" /> {ta.authorizedAdministrators}
                         </div>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardDescription className="text-xs font-bold uppercase tracking-wider">Entity Coverage</CardDescription>
+                        <CardDescription className="text-xs font-bold uppercase tracking-wider">{ta.entityCoverage}</CardDescription>
                         <CardTitle className="text-2xl">
                             {new Set(logs.map((l) => l.entityType)).size}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Database className="h-3 w-3" /> Types of objects tracked
+                            <Database className="h-3 w-3" /> {ta.typesOfObjectsTracked}
                         </div>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardDescription className="text-xs font-bold uppercase tracking-wider">Tamper Surface</CardDescription>
-                        <CardTitle className="text-2xl">{immutableEnforced ? "Locked" : "App-only"}</CardTitle>
+                        <CardDescription className="text-xs font-bold uppercase tracking-wider">{ta.tamperSurface}</CardDescription>
+                        <CardTitle className="text-2xl">{immutableEnforced ? ta.locked : ta.appOnly}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="text-xs text-muted-foreground flex items-center gap-1">
                             <ShieldCheck className="h-3 w-3" />
                             {immutableEnforced
-                                ? "Update, delete, and truncate are blocked at the database layer for audit logs."
-                                : "The app is read and export only, but the database hard lock is not yet verified."}
+                                ? ta.updateDeleteTruncateBlocked
+                                : ta.databaseHardLockNotVerified}
                         </div>
                     </CardContent>
                 </Card>

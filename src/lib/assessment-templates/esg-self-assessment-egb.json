@@ -1,0 +1,76 @@
+{
+  "id": "esg_self_assessment_egb",
+  "name": "ESG Selbstauskunft - EGB",
+  "category": "esg_self_assessment_egb",
+  "version": "1.0",
+  "description": "ESG self-assessment for EGB (German Works Council / employee representation).",
+  "sections": [
+    {
+      "key": "buyer_message",
+      "title": "Message from the buyer",
+      "titleDe": "Nachricht des Käufers",
+      "order": 0,
+      "blocks": [
+        {
+          "key": "buyer_message_block",
+          "title": "Message from the buyer",
+          "titleDe": "Nachricht des Käufers",
+          "icon": "message-square",
+          "message": "Dear Supplier,\n\nPlease complete this ESG self-assessment regarding employee representation and works council (EGB) matters in your organisation.\n\nKind regards,\n[Buyer Name]\n[Buyer Company]",
+          "messageDe": "Sehr geehrte(r) Lieferant(in),\n\nBitte füllen Sie diese ESG-Selbstauskunft zu Fragen der Mitarbeitervertretung und des Betriebsrats (EGB) in Ihrem Unternehmen aus.\n\nMit freundlichen Grüßen,\n[Name des Käufers]\n[Firma des Käufers]",
+          "fields": []
+        }
+      ]
+    },
+    {
+      "key": "supplier_identification",
+      "title": "1. Supplier Identification",
+      "titleDe": "1. Lieferantenidentifikation",
+      "order": 1,
+      "blocks": [
+        {
+          "key": "company_address",
+          "title": "Company address",
+          "titleDe": "Unternehmensanschrift",
+          "icon": "building",
+          "fields": [
+            { "key": "supplier_number", "label": "Supplier number", "labelDe": "Lieferantennummer", "type": "short_text", "required": false },
+            { "key": "company_name", "label": "Company name", "labelDe": "Firmenname", "type": "short_text", "required": true },
+            { "key": "address", "label": "Address", "labelDe": "Anschrift", "type": "short_text", "required": true },
+            { "key": "country", "label": "Country", "labelDe": "Land", "type": "short_text", "required": false }
+          ]
+        },
+        {
+          "key": "primary_contact",
+          "title": "Primary contact",
+          "titleDe": "Primärkontakt",
+          "icon": "user",
+          "fields": [
+            { "key": "contact_person_name", "label": "Contact name", "labelDe": "Kontaktname", "type": "short_text", "required": false },
+            { "key": "contact_email", "label": "Contact email", "labelDe": "Kontakt-E-Mail", "type": "short_text", "required": false }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "egb",
+      "title": "2. Employee Representation",
+      "titleDe": "2. Mitarbeitervertretung",
+      "order": 2,
+      "blocks": [
+        {
+          "key": "works_council",
+          "title": "Works council / employee representation",
+          "titleDe": "Betriebsrat / Mitarbeitervertretung",
+          "icon": "users",
+          "fields": [
+            { "key": "works_council_exists", "label": "A works council or employee representative body exists", "labelDe": "Ein Betriebsrat oder eine Mitarbeitervertretung ist vorhanden", "type": "yes_no_confirm", "required": true },
+            { "key": "works_council_rights_respected", "label": "Works council rights are respected per applicable law", "labelDe": "Betriebsratsrechte werden gemäß geltendem Recht respektiert", "type": "yes_no_confirm", "required": true },
+            { "key": "no_interference", "label": "There is no interference with employee representation", "labelDe": "Es findet keine Beeinflussung der Mitarbeitervertretung statt", "type": "yes_no_confirm", "required": true },
+            { "key": "egb_comments", "label": "Comments / evidence", "labelDe": "Kommentare / Nachweise", "type": "long_text_rich", "required": false }
+          ]
+        }
+      ]
+    }
+  ]
+}

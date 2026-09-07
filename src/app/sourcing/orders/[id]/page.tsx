@@ -18,11 +18,14 @@ import { Truck, Globe } from "lucide-react";
 import { getDocuments } from "@/app/actions/documents";
 import { DocumentList } from "@/components/shared/document-list";
 import { getOrderById } from "@/app/actions/orders";
+import { getActiveLanguage, t } from "@/lib/i18n";
 
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     const session = await auth();
     const isAdmin = (session?.user as any)?.role === 'admin';
+    const language = await getActiveLanguage();
+    const ts = t(language, "sourcing");
 
     // Fetches order with supplier-scoped access control via the server action
     const order = await getOrderById(id);
@@ -40,7 +43,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             <div className="mb-6">
                 <Link href="/sourcing/orders" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
                     <ArrowLeft className="h-4 w-4" />
-                    Back to Orders
+                    {ts.backToOrders}
                 </Link>
             </div>
 
@@ -48,11 +51,11 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
                         <ShoppingCart className="h-8 w-8 text-primary" />
-                        Order Details
+                        {ts.orderDetails}
                     </h1>
                     <div className="flex items-center gap-3 mt-1">
                         <p className="text-muted-foreground font-mono text-sm leading-none">
-                            ID: {order.id}
+                            {ts.idLabel}: {order.id}
                         </p>
                         {order.incoterms && (
                             <Badge variant="outline" className="text-[10px] font-black h-5 uppercase border-primary/20 text-primary">
@@ -84,7 +87,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Building2 className="h-5 w-5" />
-                            Supplier Information
+                            {ts.supplierInformation}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -93,7 +96,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                             <p className="text-sm text-muted-foreground">{order.supplier.contactEmail}</p>
                             {order.contract && (
                                 <div className="mt-4 pt-4 border-t">
-                                    <p className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Framework Agreement</p>
+                                    <p className="text-[10px] text-muted-foreground uppercase font-bold mb-1">{ts.frameworkAgreement}</p>
                                     <Link href="/sourcing/contracts" className="text-sm text-primary font-medium hover:underline flex items-center gap-1.5">
                                         <FileText className="h-4 w-4" />
                                         {order.contract.title}
@@ -108,30 +111,30 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Calendar className="h-5 w-5" />
-                            Order Summary
+                            {ts.orderSummary}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="flex justify-between items-end">
                             <div className="space-y-1">
-                                <p className="text-sm text-muted-foreground">Placed On</p>
-                                <p className="font-semibold">{order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}</p>
+                                <p className="text-sm text-muted-foreground">{ts.placedOn}</p>
+                                <p className="font-semibold">{order.createdAt ? new Date(order.createdAt).toLocaleDateString() : ts.notAvailableShort}</p>
                                 {order.requisitionId && (
                                     <div className="mt-2">
-                                        <p className="text-[10px] text-muted-foreground uppercase font-bold">Source</p>
+                                        <p className="text-[10px] text-muted-foreground uppercase font-bold">{ts.source}</p>
                                         <Link href="/sourcing/requisitions" className="text-xs text-primary hover:underline flex items-center gap-1">
                                             <Repeat size={10} />
-                                            Requisition #{order.requisitionId.split('-')[0].toUpperCase()}
+                                            {ts.requisitionRef} #{order.requisitionId.split('-')[0].toUpperCase()}
                                         </Link>
                                     </div>
                                 )}
                                 <div className="mt-2">
-                                    <p className="text-[10px] text-muted-foreground uppercase font-bold">Standard</p>
-                                    <p className="text-xs">Global Procurement Standard Compliant</p>
+                                    <p className="text-[10px] text-muted-foreground uppercase font-bold">{ts.standard}</p>
+                                    <p className="text-xs">{ts.standardCompliant}</p>
                                 </div>
                             </div>
                             <div className="text-right">
-                                <p className="text-sm text-muted-foreground">Total Amount</p>
+                                <p className="text-sm text-muted-foreground">{ts.totalAmount}</p>
                                 <p className="text-2xl font-bold text-primary">₹{parseFloat(order.totalAmount || '0').toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
                             </div>
                         </div>
@@ -142,7 +145,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium flex items-center gap-2">
                             <Truck className="h-4 w-4 text-primary" />
-                            Logistics & Tracking
+                            {ts.logisticsTracking}
                         </CardTitle>
                         <UpdateLogisticsDialog
                             orderId={id}
@@ -158,24 +161,24 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                             {order.trackingNumber ? (
                                 <>
                                     <div className="flex justify-between items-center text-sm">
-                                        <span className="text-muted-foreground">Carrier:</span>
+                                        <span className="text-muted-foreground">{ts.carrier}:</span>
                                         <span className="font-bold">{order.carrier}</span>
                                     </div>
                                     <div className="flex justify-between items-center text-sm">
-                                        <span className="text-muted-foreground">Tracking:</span>
+                                        <span className="text-muted-foreground">{ts.tracking}:</span>
                                         <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded border">{order.trackingNumber}</span>
                                     </div>
                                     <div className="flex justify-between items-center text-sm pt-2 border-t border-dashed">
-                                        <span className="text-muted-foreground">Estimated Arrival:</span>
+                                        <span className="text-muted-foreground">{ts.estimatedArrival}:</span>
                                         <span className="font-bold text-blue-600">
-                                            {order.estimatedArrival ? new Date(order.estimatedArrival).toLocaleDateString() : 'N/A'}
+                                            {order.estimatedArrival ? new Date(order.estimatedArrival).toLocaleDateString() : ts.notAvailableShort}
                                         </span>
                                     </div>
                                 </>
                             ) : (
                                 <div className="text-center py-4">
                                     <Globe className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
-                                    <p className="text-sm text-muted-foreground italic">No tracking information provided.</p>
+                                    <p className="text-sm text-muted-foreground italic">{ts.noTrackingInfo}</p>
                                 </div>
                             )}
                         </div>
@@ -187,7 +190,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Package className="h-5 w-5" />
-                        Items Ordered
+                        {ts.itemsOrdered}
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -195,11 +198,11 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                         <table className="w-full text-sm">
                             <thead className="bg-muted/50 border-b">
                                 <tr>
-                                    <th className="h-10 px-4 text-left font-medium">Part Name</th>
-                                    <th className="h-10 px-4 text-left font-medium">SKU</th>
-                                    <th className="h-10 px-4 text-right font-medium">Quantity</th>
-                                    <th className="h-10 px-4 text-right font-medium">Unit Price</th>
-                                    <th className="h-10 px-4 text-right font-medium">Subtotal</th>
+                                    <th className="h-10 px-4 text-left font-medium">{ts.partName}</th>
+                                    <th className="h-10 px-4 text-left font-medium">{ts.sku}</th>
+                                    <th className="h-10 px-4 text-right font-medium">{ts.quantity}</th>
+                                    <th className="h-10 px-4 text-right font-medium">{ts.unitPrice}</th>
+                                    <th className="h-10 px-4 text-right font-medium">{ts.subtotal}</th>
                                 </tr>
                             </thead>
                             <tbody>

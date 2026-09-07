@@ -1,5 +1,14 @@
-import NextAuth from "next-auth"
+import NextAuth, { CredentialsSignin } from "next-auth"
 import { authConfig } from "./auth.config"
+
+class SetupTwoFactorError extends CredentialsSignin {
+    code = "setup-2fa"
+}
+
+class RequireTwoFactorError extends CredentialsSignin {
+    code = "require-2fa"
+}
+
 import Credentials from "next-auth/providers/credentials"
 import Google from "next-auth/providers/google"
 import MicrosoftEntraId from "next-auth/providers/microsoft-entra-id"
@@ -10,10 +19,7 @@ import bcrypt from "bcryptjs"
 import { TelemetryService } from "./lib/telemetry"
 import { TotpService } from "@/lib/totp";
 import crypto from "node:crypto";
-
-function normalizeIdentifier(identifier: string) {
-    return identifier.trim().toLowerCase();
-}
+import { normalizeIdentifier, verifyPassword } from "./lib/auth-credentials";
 
 function identifierHash(identifier: string) {
     return crypto.createHash("sha256").update(normalizeIdentifier(identifier)).digest("hex").slice(0, 16);
@@ -88,7 +94,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                         return null;
                     }
 
-                    const passwordsMatch = await bcrypt.compare(password, user.password);
+                    const passwordsMatch = await verifyPassword(password, user.password);
 
                     if (passwordsMatch) {
                         if (user.role === 'supplier') {
@@ -109,7 +115,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                             // 2FA is fully enabled — require a valid code
                             if (!code || code === 'undefined' || code === 'null' || code === '') {
                                 console.log(`[AUTH] 2FA_REQUIRED | user: ${user.email}`);
-                                throw new Error("require-2fa");
+                                throw new RequireTwoFactorError();
                             }
 
                             const isValidToken = TotpService.verifyToken(user.twoFactorSecret, code);
@@ -124,13 +130,13 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                         } else if (!user.isTwoFactorEnabled) {
                             // 2FA not yet enabled — user must complete setup before logging in
                             console.log(`[AUTH] 2FA_SETUP_REQUIRED | user: ${user.email}`);
-                            throw new Error("setup-2fa");
+                            throw new SetupTwoFactorError();
                         } else {
                             // Edge case: isTwoFactorEnabled=true but secret is missing (corrupt state)
                             // Reset the flag and require fresh setup
                             console.warn(`[AUTH] 2FA_CORRUPT_STATE | user: ${user.email} | enabled but no secret`);
                             await db.update(users).set({ isTwoFactorEnabled: false }).where(emailEquals(identifier));
-                            throw new Error("setup-2fa");
+                            throw new SetupTwoFactorError();
                         }
 
                         console.log(`[AUTH] LOGIN_SUCCESS | user: ${user.email} | role: ${user.role}`);
@@ -149,6 +155,8 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                             countryScope: user.countryScope,
                             regionScope: user.regionScope,
                             supplierId: user.supplierId,
+                            onboardingCompleted: user.onboardingCompleted,
+                            isTwoFactorEnabled: user.isTwoFactorEnabled,
                         }
                     } else {
                         console.warn(`[AUTH] LOGIN_FAILED_WRONG_PASSWORD | identifierHash: ${identifierHash(identifier)}`);
@@ -159,6 +167,9 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                         return null;
                     }
                 } catch (error: unknown) {
+                    if (error instanceof CredentialsSignin) {
+                        throw error;
+                    }
                     const err = error as Error;
                     if (err.message === 'require-2fa' || err.message === 'setup-2fa') {
                         throw error;
@@ -228,6 +239,8 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                 user.countryScope = existingUser.countryScope;
                 user.regionScope = existingUser.regionScope;
                 user.supplierId = existingUser.supplierId;
+                user.onboardingCompleted = existingUser.onboardingCompleted;
+                user.isTwoFactorEnabled = existingUser.isTwoFactorEnabled;
             }
             return true;
         },

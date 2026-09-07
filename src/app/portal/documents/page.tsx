@@ -37,10 +37,14 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { openOrDownloadFile } from "@/lib/client/download";
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 
 type SupplierDocumentRecord = Awaited<ReturnType<typeof getSupplierDocuments>>[number];
 
 export default function SupplierDocuments() {
+    const { language } = useLanguage();
+    const tc = t(language, "documents");
     const [docs, setDocs] = useState<SupplierDocumentRecord[]>([]);
     const [loading, setLoading] = useState(true);
     const [isPending, startTransition] = useTransition();
@@ -66,13 +70,13 @@ export default function SupplierDocuments() {
 
         startTransition(async () => {
             const res = await uploadSupplierDocument(formData);
-            if (res.success) {
-                toast.success("Document uploaded successfully");
-                setIsModalOpen(false);
-                loadDocs();
-            } else {
-                toast.error(res.error || "Upload failed");
-            }
+        if (res.success) {
+            toast.success(tc.uploadSuccess);
+            setIsModalOpen(false);
+            loadDocs();
+        } else {
+            toast.error(res.error || tc.uploadFailed);
+        }
         });
     };
 
@@ -92,57 +96,57 @@ export default function SupplierDocuments() {
         !search.trim() || String(doc.name || "").toLowerCase().includes(search.trim().toLowerCase())
     );
 
-    if (loading) return <div className="p-8">Syncing vault...</div>;
+    if (loading) return <div className="p-8">{tc.syncingVault}</div>;
 
     return (
         <div className="flex min-h-full flex-col bg-muted/40 p-4 lg:p-8 space-y-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Document Vault</h1>
-                    <p className="text-muted-foreground mt-1">Manage your contracts, certifications, and compliance documentation.</p>
+                    <h1 className="text-3xl font-bold tracking-tight">{tc.vaultTitle}</h1>
+                    <p className="text-muted-foreground mt-1">{tc.vaultSubtitle}</p>
                 </div>
 
                 <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                     <DialogTrigger asChild>
                         <Button className="gap-2 font-bold h-11 shadow-lg bg-amber-600 hover:bg-amber-700 text-white shadow-amber-100">
-                            <Plus className="h-4 w-4" /> Upload New Document
+                            <Plus className="h-4 w-4" /> {tc.uploadNewDocument}
                         </Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-[425px]">
                         <form onSubmit={handleUpload}>
                             <DialogHeader>
-                                <DialogTitle>Secure Upload</DialogTitle>
+                                <DialogTitle>{tc.secureUpload}</DialogTitle>
                                 <DialogDescription>
-                                    Add a new document to your Axiom profile.
+                                    {tc.secureUploadDesc}
                                 </DialogDescription>
                             </DialogHeader>
                             <div className="grid gap-6 py-6">
                                 <div className="space-y-2">
-                                    <Label htmlFor="name">Document Name</Label>
-                                    <Input id="name" name="name" placeholder="e.g. ISO 9001 Certificate" required />
+                                    <Label htmlFor="name">{tc.documentName}</Label>
+                                    <Input id="name" name="name" placeholder={tc.documentNamePlaceholder} required />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="type">Document Type</Label>
+                                    <Label htmlFor="type">{tc.documentType}</Label>
                                     <Select name="type" defaultValue="other">
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Select type" />
+                                            <SelectValue placeholder={tc.selectType} />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="contract">Contract</SelectItem>
-                                            <SelectItem value="invoice">Invoice</SelectItem>
-                                            <SelectItem value="quote">Quote</SelectItem>
-                                            <SelectItem value="license">License / Certification</SelectItem>
-                                            <SelectItem value="other">Other</SelectItem>
+                                            <SelectItem value="contract">{tc.typeContract}</SelectItem>
+                                            <SelectItem value="invoice">{tc.typeInvoice}</SelectItem>
+                                            <SelectItem value="quote">{tc.typeQuote}</SelectItem>
+                                            <SelectItem value="license">{tc.typeLicense}</SelectItem>
+                                            <SelectItem value="other">{tc.typeOther}</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="file">File (PDF/Image)</Label>
+                                    <Label htmlFor="file">{tc.fileLabel}</Label>
                                     <label htmlFor="file" className="flex items-center justify-center border-2 border-dashed rounded-xl p-4 lg:p-8 hover:bg-muted/50 transition-colors cursor-pointer group">
                                         <div className="flex flex-col items-center gap-2">
                                             <Upload className="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />
-                                            <span className="text-sm text-muted-foreground">Click to select a file</span>
-                                            <span className="text-[11px] text-muted-foreground">PDF, image, CSV, TXT, XLS, or XLSX up to 10MB</span>
+                                            <span className="text-sm text-muted-foreground">{tc.clickToSelect}</span>
+                                            <span className="text-[11px] text-muted-foreground">{tc.fileHint}</span>
                                         </div>
                                     </label>
                                     <Input id="file" name="file" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,.csv,.txt,.xlsx,.xls" required />
@@ -150,7 +154,7 @@ export default function SupplierDocuments() {
                             </div>
                             <DialogFooter>
                                 <Button type="submit" className="w-full h-11 font-bold" disabled={isPending}>
-                                    {isPending ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : "Verify & Upload"}
+                                    {isPending ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : tc.verifyUpload}
                                 </Button>
                             </DialogFooter>
                         </form>
@@ -163,13 +167,12 @@ export default function SupplierDocuments() {
                     <CardHeader className="pb-3">
                         <CardTitle className="text-lg flex items-center gap-2">
                             <FileCheck className="h-5 w-5 text-amber-600" />
-                            Vault Security Notice
+                            {tc.vaultSecurityNotice}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <p className="text-sm text-blue-800/80 leading-relaxed max-w-2xl">
-                            All documents are encrypted at rest and shared only with authorized procurement managers.
-                            Ensure all certifications are up to date to maintain your Preferred Supplier status.
+                            {tc.vaultSecurityText}
                         </p>
                     </CardContent>
                 </Card>
@@ -178,13 +181,13 @@ export default function SupplierDocuments() {
                     <CardHeader>
                         <div className="flex items-center justify-between">
                             <div>
-                                <CardTitle>Stored Documents</CardTitle>
-                                <CardDescription>Access and manage your digital archive.</CardDescription>
+                                <CardTitle>{tc.storedDocuments}</CardTitle>
+                                <CardDescription>{tc.storedDocumentsDesc}</CardDescription>
                             </div>
                             <div className="relative w-72">
                                 <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                                 <Input
-                                    placeholder="Filter by name..."
+                                    placeholder={tc.filterByName}
                                     className="pl-9 bg-muted/30 border-none shadow-none"
                                     value={search}
                                     onChange={(event) => setSearch(event.target.value)}
@@ -199,7 +202,7 @@ export default function SupplierDocuments() {
                                     <div className="h-16 w-16 bg-muted rounded-full flex items-center justify-center">
                                         <FileWarning className="h-8 w-8 text-muted-foreground opacity-20" />
                                     </div>
-                                    <p className="text-muted-foreground">{docs.length === 0 ? "Your vault is currently empty." : "No documents match the current search."}</p>
+                                    <p className="text-muted-foreground">{docs.length === 0 ? tc.vaultEmpty : tc.vaultNoMatch}</p>
                                 </div>
                             ) : (
                                 filteredDocs.map((doc) => (
@@ -230,7 +233,7 @@ export default function SupplierDocuments() {
                                                     if (doc.url) {
                                                         openOrDownloadFile(doc.url, doc.name);
                                                     } else {
-                                                        toast.error("Document file is unavailable");
+                                                        toast.error(tc.fileUnavailable);
                                                     }
                                                 }}
                                             >

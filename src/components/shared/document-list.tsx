@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { openOrDownloadFile } from "@/lib/client/download";
 import { uploadFileToStorage } from "@/lib/client/upload";
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 
 interface Document {
     id: string;
@@ -32,6 +34,8 @@ export function DocumentList({ supplierId, orderId, documents: initialDocs, isAd
     const [pendingType, setPendingType] = useState<Document["type"]>('contract');
     const [docs, setDocs] = useState<Document[]>(initialDocs);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const { language } = useLanguage();
+    const td = t(language, "documents");
 
     useEffect(() => {
         setDocs(initialDocs);
@@ -46,7 +50,7 @@ export function DocumentList({ supplierId, orderId, documents: initialDocs, isAd
         const file = event.target.files?.[0];
         if (!file) return;
         if (file.size > MAX_DOCUMENT_SIZE_BYTES) {
-            toast.error("File size too large. Max 10MB allowed.");
+            toast.error(td.fileTooLarge);
             event.target.value = '';
             return;
         }
@@ -68,9 +72,9 @@ export function DocumentList({ supplierId, orderId, documents: initialDocs, isAd
                     if (result.document) {
                         setDocs((current) => [result.document as Document, ...current]);
                     }
-                    toast.success(`Uploaded '${file.name}'`);
-                } else {
-                    toast.error(result.error || "Failed to upload document");
+                    toast.success(`${td.uploaded} '${file.name}'`);
+                 } else {
+                     toast.error(result.error || td.failedUpload);
                 }
             } catch (error) {
                 toast.error(error instanceof Error ? error.message : "Failed to upload document");
@@ -88,9 +92,9 @@ export function DocumentList({ supplierId, orderId, documents: initialDocs, isAd
                 const result = await deleteDocument(docId, supplierId, orderId);
                 if (result.success) {
                     setDocs((current) => current.filter((doc) => doc.id !== docId));
-                    toast.success("Document removed");
-                } else {
-                    toast.error("Failed to remove document");
+                    toast.success(td.documentRemoved);
+                 } else {
+                     toast.error(td.failedRemove);
                 }
             } finally {
                 setIsBusy(false);
@@ -103,10 +107,10 @@ export function DocumentList({ supplierId, orderId, documents: initialDocs, isAd
             <CardHeader className="flex flex-row items-center justify-between pb-3">
                 <div>
                     <CardTitle className="text-xl flex items-center gap-2">
-                        <FileText className="h-5 w-5 text-primary" />
-                        Documents
-                    </CardTitle>
-                    <CardDescription>Contracts, quotes, and compliance files.</CardDescription>
+                         <FileText className="h-5 w-5 text-primary" />
+                         {td.title}
+                     </CardTitle>
+                     <CardDescription>{td.description}</CardDescription>
                 </div>
                 {isAdmin && (
                     <div className="flex gap-2">
@@ -118,12 +122,12 @@ export function DocumentList({ supplierId, orderId, documents: initialDocs, isAd
                             onChange={handleFileUpload}
                         />
                         <Button size="sm" variant="outline" onClick={() => triggerUpload(orderId ? 'invoice' : 'contract')} disabled={isBusy}>
-                            <Upload className="h-3 w-3 mr-1" />
-                            Upload {orderId ? 'Invoice' : 'Contract'}
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={() => triggerUpload('other')} disabled={isBusy}>
-                            <Plus className="h-3 w-3 mr-1" />
-                            Supporting Doc
+                             <Upload className="h-3 w-3 mr-1" />
+                             {orderId ? td.uploadInvoice : td.uploadContract}
+                         </Button>
+                         <Button size="sm" variant="outline" onClick={() => triggerUpload('other')} disabled={isBusy}>
+                             <Plus className="h-3 w-3 mr-1" />
+                             {td.supportingDoc}
                         </Button>
                     </div>
                 )}
@@ -157,9 +161,9 @@ export function DocumentList({ supplierId, orderId, documents: initialDocs, isAd
                                         if (doc.url) {
                                             openOrDownloadFile(doc.url, doc.name);
                                         } else {
-                                            toast.info("Preview unavailable", {
-                                                description: `The file '${doc.name}' does not have a stored preview URL yet.`,
-                                            });
+                                             toast.info(td.previewUnavailable, {
+                                                 description: `${td.previewUnavailableDesc}`,
+                                             });
                                         }
                                     }}
                                 >
@@ -181,12 +185,12 @@ export function DocumentList({ supplierId, orderId, documents: initialDocs, isAd
                     ))}
                     {docs.length === 0 && (
                         <div className="flex flex-col items-center justify-center py-8 text-center border-2 border-dashed rounded-lg bg-muted/10">
-                            <FileText className="h-8 w-8 text-muted-foreground/30 mb-2" />
-                            <p className="text-sm text-muted-foreground">No documents uploaded yet.</p>
-                            {isAdmin && (
-                                <p className="text-[10px] text-muted-foreground mt-1 underline cursor-pointer" onClick={() => triggerUpload('other')}>
-                                    Upload your first document
-                                </p>
+                             <FileText className="h-8 w-8 text-muted-foreground/30 mb-2" />
+                             <p className="text-sm text-muted-foreground">{td.noDocuments}</p>
+                             {isAdmin && (
+                                 <p className="text-[10px] text-muted-foreground mt-1 underline cursor-pointer" onClick={() => triggerUpload('other')}>
+                                     {td.uploadFirst}
+                                 </p>
                             )}
                         </div>
                     )}

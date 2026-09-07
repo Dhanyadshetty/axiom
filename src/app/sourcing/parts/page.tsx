@@ -4,11 +4,14 @@ import { CreatePartDialog } from "@/components/parts/create-part-dialog";
 import { PartsClient } from "@/components/parts/parts-client";
 import { PartCharts } from "@/components/parts/part-charts";
 import Link from "next/link";
+import { getActiveLanguage, t } from "@/lib/i18n";
 
 export const dynamic = 'force-dynamic';
 
 export default async function PartsPage() {
   const [parts, linkCounts] = await Promise.all([getParts(), getPartLinkedCounts()]);
+  const language = await getActiveLanguage();
+  const ts = t(language, "sourcing");
 
   const countsMap = new Map(linkCounts.map((row) => [row.partId, row]));
   const partsWithLinks = parts.map((part) => {
@@ -28,9 +31,9 @@ export default async function PartsPage() {
     <div className="p-4 lg:p-8 bg-muted/40 min-h-full">
       <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-primary font-outfit uppercase">Parts Intelligence</h1>
+          <h1 className="text-4xl font-black tracking-tight text-primary font-outfit uppercase">{ts.partsIntelligence}</h1>
           <p className="text-muted-foreground mt-1 font-medium">
-            Strategic inventory management and market trend analysis.
+            {ts.partsSubtitle}
           </p>
         </div>
         <CreatePartDialog />
@@ -41,7 +44,7 @@ export default async function PartsPage() {
         <div className="rounded-2xl border border-blue-100 bg-blue-50/30 p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-black text-muted-foreground uppercase tracking-wider">Total Inventory</p>
+              <p className="text-xs font-black text-muted-foreground uppercase tracking-wider">{ts.totalInventory}</p>
               <p className="text-3xl font-black text-blue-700">{totalParts}</p>
             </div>
             <div className="bg-blue-100 p-3 rounded-xl border border-blue-200">
@@ -55,7 +58,7 @@ export default async function PartsPage() {
         <div className="rounded-2xl border border-amber-100 bg-amber-50/30 p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-black text-muted-foreground uppercase tracking-wider">Low Stock</p>
+              <p className="text-xs font-black text-muted-foreground uppercase tracking-wider">{ts.lowStock}</p>
               <p className="text-3xl font-black text-amber-600">{lowStock}</p>
             </div>
             <div className="bg-amber-100 p-3 rounded-xl border border-amber-200">
@@ -69,7 +72,7 @@ export default async function PartsPage() {
         <div className="rounded-2xl border border-red-100 bg-red-50/30 p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-black text-muted-foreground uppercase tracking-wider">Critical</p>
+              <p className="text-xs font-black text-muted-foreground uppercase tracking-wider">{ts.critical}</p>
               <p className="text-3xl font-black text-red-600">{criticalStock}</p>
             </div>
             <div className="bg-red-100 p-3 rounded-xl border border-red-200">
@@ -83,7 +86,7 @@ export default async function PartsPage() {
         <div className="rounded-2xl border border-green-100 bg-green-50/30 p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-black text-muted-foreground uppercase tracking-wider">Categories</p>
+              <p className="text-xs font-black text-muted-foreground uppercase tracking-wider">{ts.categories}</p>
               <p className="text-3xl font-black text-green-700">{categoriesCount}</p>
             </div>
             <div className="bg-green-100 p-3 rounded-xl border border-green-200">
@@ -97,21 +100,21 @@ export default async function PartsPage() {
 
       <div className="mb-8 grid gap-6 xl:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
         <div className="bg-card p-6 rounded-2xl border shadow-sm">
-          <p className="text-xs font-black text-muted-foreground uppercase tracking-wider mb-3">Linked Transaction Coverage</p>
+          <p className="text-xs font-black text-muted-foreground uppercase tracking-wider mb-3">{ts.linkedTransactionCoverage}</p>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="rounded-xl border bg-blue-50/40 border-blue-100 p-4">
-              <p className="text-xs text-muted-foreground uppercase font-bold">Order Links</p>
+              <p className="text-xs text-muted-foreground uppercase font-bold">{ts.orderLinks}</p>
               <p className="text-3xl font-black text-blue-700">{totalOrderLinks}</p>
             </div>
             <div className="rounded-xl border bg-amber-50/40 border-amber-100 p-4">
-              <p className="text-xs text-muted-foreground uppercase font-bold">Invoice Links</p>
+              <p className="text-xs text-muted-foreground uppercase font-bold">{ts.invoiceLinks}</p>
               <p className="text-3xl font-black text-amber-700">{totalInvoiceLinks}</p>
             </div>
           </div>
         </div>
 
         <div className="bg-card p-6 rounded-2xl border shadow-sm">
-          <p className="text-xs font-black text-muted-foreground uppercase tracking-wider mb-3">Top Linked Parts</p>
+          <p className="text-xs font-black text-muted-foreground uppercase tracking-wider mb-3">{ts.topLinkedParts}</p>
           <div className="show-scrollbar space-y-3 max-h-64 overflow-auto pr-1">
             {partsWithLinks
               .slice()
@@ -126,9 +129,9 @@ export default async function PartsPage() {
                     <p className="text-xs text-muted-foreground">{part.sku}</p>
                   </div>
                   <div className="flex flex-wrap gap-2 text-xs font-bold">
-                    <span className="px-2 py-1 rounded bg-blue-100 text-blue-700">Orders: {part.orderCount || 0}</span>
-                    <span className="px-2 py-1 rounded bg-amber-100 text-amber-700">Invoices: {part.invoiceCount || 0}</span>
-                    <span className="px-2 py-1 rounded bg-violet-100 text-violet-700">RFQs: {part.rfqCount || 0}</span>
+                    <span className="px-2 py-1 rounded bg-blue-100 text-blue-700">{ts.orders}: {part.orderCount || 0}</span>
+                    <span className="px-2 py-1 rounded bg-amber-100 text-amber-700">{ts.invoices}: {part.invoiceCount || 0}</span>
+                    <span className="px-2 py-1 rounded bg-violet-100 text-violet-700">{ts.rfqs}: {part.rfqCount || 0}</span>
                   </div>
                 </div>
               ))}

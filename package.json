@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "postinstall": "node -e \"const{existsSync:e,copyFileSync:c}=require('fs');if(!e('.env.local')&&e('.env.example')){c('.env.example','.env.local');console.log('\\x1b[32m✔ Created .env.local from .env.example\\x1b[0m')}\"",
     "dev": "next dev -p 3001 -H 0.0.0.0",
     "build": "next build",
     "start": "next start",
@@ -14,10 +16,12 @@
     "smoke:prelive": "node scripts/smoke-prelive.mjs",
     "db:harden:audit": "node scripts/harden-audit-log-worm.mjs",
     "worker:supplier-score": "tsx src/workers/supplier-score-worker.ts",
+    "worker:email": "tsx src/workers/email-worker.ts",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "db:seed": "tsx src/db/seed.ts",
-    "db:seed:demo": "node src/db/seed-demo.ts"
+    "db:seed:demo": "tsx src/db/seed-demo.ts",
+    "db:seed:suppliers": "tsx src/db/seed-suppliers.ts"
   },
   "dependencies": {
     "@azure/storage-blob": "^12.28.0",
@@ -33,7 +37,9 @@
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-slider": "^1.3.6",
     "@radix-ui/react-slot": "^1.2.4",
+    "@tanstack/react-virtual": "^3.14.10",
     "@types/bcryptjs": "^2.4.6",
+    "@types/handlebars": "^4.0.40",
     "@types/qrcode": "^1.5.6",
     "bcryptjs": "^3.0.3",
     "bullmq": "^5.61.0",
@@ -43,6 +49,7 @@
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.45.1",
     "framer-motion": "^12.23.26",
+    "handlebars": "^4.7.9",
     "ioredis": "^5.8.1",
     "jszip": "^3.10.1",
     "lucide-react": "^0.562.0",
@@ -61,6 +68,7 @@
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^13.0.0",
+    "xlsx": "^0.18.5",
     "zod": "^4.2.1"
   },
   "devDependencies": {
@@ -77,5 +85,8 @@
   },
   "overrides": {
     "nodemailer": "^8.0.4"
+  },
+  "allowScripts": {
+    "node-pty@1.1.0": true
   }
 }

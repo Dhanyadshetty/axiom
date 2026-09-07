@@ -2,6 +2,7 @@ import { Activity, Mail, ShieldCheck } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getActiveLanguage, t } from "@/lib/i18n";
 
 type TimelineEntry = {
     id: string;
@@ -30,26 +31,30 @@ function getBadgeVariant(action: string) {
     return 'outline' as const;
 }
 
-export function TimelineList({
+export async function TimelineList({
     entries,
-    title = "Operational Timeline",
-    description = "Every major system event tied to this record is stamped with who changed it and when.",
+    title,
+    description,
 }: {
     entries: TimelineEntry[];
     title?: string;
     description?: string;
 }) {
+    const language = await getActiveLanguage();
+    const tc = t(language, "common");
+    const resolvedTitle = title ?? tc.operationalTimeline;
+    const resolvedDescription = description ?? tc.timelineDesc;
     return (
         <Card>
             <CardHeader>
-                <CardTitle>{title}</CardTitle>
-                <CardDescription>{description}</CardDescription>
+                <CardTitle>{resolvedTitle}</CardTitle>
+                <CardDescription>{resolvedDescription}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                 {entries.length === 0 ? (
-                    <p className="py-6 text-center text-sm text-muted-foreground">
-                        No timeline events logged yet.
-                    </p>
+                         <p className="py-6 text-center text-sm text-muted-foreground">
+                         {tc.noTimelineEvents}
+                     </p>
                 ) : (
                     entries.map((entry) => {
                         const Icon = getTimelineIcon(entry.action);
@@ -63,7 +68,7 @@ export function TimelineList({
                                     <div className="flex flex-wrap items-center gap-2">
                                         <Badge variant={getBadgeVariant(entry.action)}>{entry.action}</Badge>
                                         <span className="text-xs font-medium text-muted-foreground">
-                                            {entry.createdAt ? new Date(entry.createdAt).toLocaleString() : 'Just now'}
+                                             {entry.createdAt ? new Date(entry.createdAt).toLocaleString() : tc.justNow}
                                         </span>
                                     </div>
                                     <p className="text-sm font-semibold text-foreground">{entry.userName || 'Axiom'}</p>

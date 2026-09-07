@@ -23,9 +23,14 @@ export const authConfig = {
             const isOnRegisterPage = nextUrl.pathname === '/portal/register';
             const isOnAdminPage = nextUrl.pathname.startsWith('/admin');
             const isOnPortalPage = nextUrl.pathname.startsWith('/portal');
+            const isOnOnboardingPage = nextUrl.pathname === '/onboarding';
+            const isOnExternalPage = nextUrl.pathname.startsWith('/external/');
 
             // Allow public access to supplier registration
             if (isOnRegisterPage) return true;
+
+            // Allow public access to external assessment links (magic token flow)
+            if (isOnExternalPage) return true;
 
             if (isOnLoginPage) {
                 if (isLoggedIn) {
@@ -40,6 +45,18 @@ export const authConfig = {
             if (!isLoggedIn) {
                 return Response.redirect(new URL('/login', nextUrl))
             };
+
+            // First-login onboarding redirect: send users who haven't completed
+            // onboarding to the checklist page (skip if already there)
+            const isApiRoute = nextUrl.pathname.startsWith('/api/');
+            if (!isOnOnboardingPage && !isApiRoute && !auth.user?.onboardingCompleted) {
+                // Only redirect internal users (non-suppliers) — suppliers have
+                // their own portal onboarding handled separately
+                const userRole = auth.user?.role;
+                if (userRole !== 'supplier' && userRole !== 'admin') {
+                    return Response.redirect(new URL('/onboarding', nextUrl));
+                }
+            }
 
             const userRole = auth.user?.role;
 
@@ -84,6 +101,8 @@ export const authConfig = {
                 token.countryScope = user.countryScope;
                 token.regionScope = user.regionScope;
                 token.supplierId = user.supplierId;
+                token.onboardingCompleted = user.onboardingCompleted;
+                token.isTwoFactorEnabled = user.isTwoFactorEnabled;
             }
 
             if (trigger === "update" && session) {
@@ -100,6 +119,8 @@ export const authConfig = {
                 session.user.countryScope = token.countryScope as string | undefined;
                 session.user.regionScope = token.regionScope as string | undefined;
                 session.user.supplierId = token.supplierId as string | undefined;
+                session.user.onboardingCompleted = token.onboardingCompleted as boolean | undefined;
+                session.user.isTwoFactorEnabled = token.isTwoFactorEnabled as boolean | undefined;
             }
             return session;
         },

@@ -25,8 +25,12 @@ import { addPart } from "@/app/actions/parts";
 import { getMarketTrend } from "@/app/actions/intelligence";
 import { toast } from "sonner";
 import { AlertTriangle } from "lucide-react";
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 
 export function CreatePartDialog() {
+    const { language } = useLanguage();
+    const ts = t(language, "sourcing");
     const [open, setOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isFetchingTrend, setIsFetchingTrend] = useState(false);
@@ -39,13 +43,13 @@ export function CreatePartDialog() {
         try {
             const result = await addPart(formData);
             if (result.success) {
-                toast.success("Part added successfully");
+                toast.success(ts.partAdded);
                 setOpen(false);
             } else {
-                toast.error("Failed to add part");
+                toast.error(ts.failedAdd);
             }
         } catch (_error) {
-            toast.error("An error occurred");
+            toast.error(ts.errorOccurred);
         } finally {
             setIsSubmitting(false);
         }
@@ -56,21 +60,21 @@ export function CreatePartDialog() {
             <DialogTrigger asChild>
                 <Button className="bg-amber-600 hover:bg-amber-700 text-white shadow-lg shadow-amber-100">
                     <Plus className="mr-2 h-4 w-4" />
-                    Add Part
+                    {ts.addPartSubmit}
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Add New Part</DialogTitle>
+                    <DialogTitle>{ts.addPartDialogTitle}</DialogTitle>
                     <DialogDescription>
-                        Enter the details of the new part below. Click save when you&apos;re done.
+                        {ts.addPartDialogDesc}
                     </DialogDescription>
                 </DialogHeader>
                 <form action={handleSubmit}>
                     <div className="grid gap-4 py-4">
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="name" className="text-right">
-                                Name
+                                {ts.name}
                             </Label>
                             <Input
                                 id="name"
@@ -82,7 +86,7 @@ export function CreatePartDialog() {
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="sku" className="text-right">
-                                SKU
+                                {ts.sku}
                             </Label>
                             <Input
                                 id="sku"
@@ -94,11 +98,11 @@ export function CreatePartDialog() {
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="category" className="text-right">
-                                Category
+                                {ts.category}
                             </Label>
                             <Select name="category" onValueChange={setSelectedCategory} required>
                                 <SelectTrigger className="col-span-3">
-                                    <SelectValue placeholder="Select category" />
+                                    <SelectValue placeholder={ts.selectCategory} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="Mechanical">Mechanical</SelectItem>
@@ -111,7 +115,7 @@ export function CreatePartDialog() {
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="countryCode" className="text-right text-[10px] font-bold uppercase">
-                                Country
+                                {ts.country}
                             </Label>
                             <Input
                                 id="countryCode"
@@ -121,7 +125,7 @@ export function CreatePartDialog() {
                                 maxLength={2}
                             />
                             <Label htmlFor="region" className="text-right text-[10px] font-bold uppercase">
-                                Region
+                                {ts.region}
                             </Label>
                             <Input
                                 id="region"
@@ -132,7 +136,7 @@ export function CreatePartDialog() {
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="stock" className="text-right">
-                                Stock
+                                {ts.stock}
                             </Label>
                             <Input
                                 id="stock"
@@ -146,7 +150,7 @@ export function CreatePartDialog() {
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="price" className="text-right">
-                                Price (₹)
+                                {ts.price}
                             </Label>
                             <Input
                                 id="price"
@@ -161,11 +165,11 @@ export function CreatePartDialog() {
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="marketTrend" className="text-right">
-                                Trend
+                                {ts.trend}
                             </Label>
                             <Select name="marketTrend" value={marketTrendValue} onValueChange={setMarketTrendValue}>
                                 <SelectTrigger className="col-span-3">
-                                    <SelectValue placeholder="Select trend" />
+                                    <SelectValue placeholder={ts.selectTrend} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="stable">Stable</SelectItem>
@@ -176,7 +180,7 @@ export function CreatePartDialog() {
                             </Select>
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="reorderPoint" className="text-right text-[10px] font-bold uppercase">Reorder</Label>
+                                    <Label htmlFor="reorderPoint" className="text-right text-[10px] font-bold uppercase">{ts.reorder}</Label>
                             <Input
                                 id="reorderPoint"
                                 name="reorderPoint"
@@ -186,7 +190,7 @@ export function CreatePartDialog() {
                                 min="0"
                                 required
                             />
-                            <Label htmlFor="minStockLevel" className="text-right text-[10px] font-bold uppercase">Min</Label>
+                                <Label htmlFor="minStockLevel" className="text-right text-[10px] font-bold uppercase">{ts.min}</Label>
                             <Input
                                 id="minStockLevel"
                                 name="minStockLevel"
@@ -207,17 +211,17 @@ export function CreatePartDialog() {
                                     className="w-full bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 flex items-center gap-2"
                                     onClick={async () => {
                                         const nameInput = (document.getElementById('name') as HTMLInputElement)?.value;
-                                        if (!nameInput) return toast.error("Please enter a part name first");
-                                        if (!selectedCategory) return toast.error("Please select a category first");
+                                        if (!nameInput) return toast.error(ts.pleaseName);
+                                        if (!selectedCategory) return toast.error(ts.pleaseCategory);
 
                                         setIsFetchingTrend(true);
                                         try {
                                             const intelligence = await getMarketTrend(nameInput, selectedCategory);
                                             setMarketTrendValue(intelligence.trend);
                                             setTrendReason(intelligence.reason);
-                                            toast.success("Intelligence fetched for 2026!");
+                                            toast.success(ts.intelligenceFetched);
                                         } catch (_error) {
-                                            toast.error("Failed to fetch market intelligence");
+                                            toast.error(ts.failedFetch);
                                         } finally {
                                             setIsFetchingTrend(false);
                                         }
@@ -225,7 +229,7 @@ export function CreatePartDialog() {
                                     disabled={isFetchingTrend || isSubmitting}
                                 >
                                     {isFetchingTrend ? <Loader2 className="h-3 w-3 animate-spin" /> : <AlertTriangle className="h-3 w-3" />}
-                                    Get Smart Trend
+                                    {ts.getSmartTrend}
                                 </Button>
                                 {trendReason && (
                                     <p className="mt-2 text-[10px] text-muted-foreground leading-tight italic bg-muted/50 p-2 rounded border border-dashed">
@@ -238,7 +242,7 @@ export function CreatePartDialog() {
                     <DialogFooter>
                         <Button type="submit" disabled={isSubmitting}>
                             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Add Part
+                            {ts.addPartSubmit}
                         </Button>
                     </DialogFooter>
                 </form>

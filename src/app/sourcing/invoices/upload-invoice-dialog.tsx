@@ -11,6 +11,8 @@ import {
 import { Upload, FileText, Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
 import { createInvoice } from "@/app/actions/invoices";
 import { toast } from "sonner";
+import { useLanguage } from "@/components/i18n/language-provider";
+import { t } from "@/lib/i18n";
 
 interface OCRData {
     invoiceNumber: string | null;
@@ -67,6 +69,8 @@ function isSupportedInvoiceFile(file: File) {
 }
 
 export function UploadInvoiceDialog({ open, onOpenChange, onSuccess, suppliers }: UploadInvoiceDialogProps) {
+    const { language } = useLanguage();
+    const tc = t(language, "invoices");
     const [step, setStep] = useState<'upload' | 'review' | 'saving'>('upload');
     const [uploading, setUploading] = useState(false);
     const [ocrData, setOcrData] = useState<OCRData | null>(null);
@@ -95,7 +99,7 @@ export function UploadInvoiceDialog({ open, onOpenChange, onSuccess, suppliers }
 
     const prepareReviewState = (data: OCRData, options?: { source?: string; warnings?: string[]; documentUrl?: string | null }) => {
         setOcrData(data);
-        setOcrSource(options?.source || 'Manual Review');
+        setOcrSource(options?.source || tc.manualReview);
         setOcrWarnings(options?.warnings || []);
         setDocumentUrl(options?.documentUrl || null);
         setEditableData({
@@ -123,19 +127,19 @@ export function UploadInvoiceDialog({ open, onOpenChange, onSuccess, suppliers }
 
     const startManualReview = (warning?: string) => {
         prepareReviewState(EMPTY_OCR_DATA, {
-            source: 'Manual Review Workspace',
-            warnings: warning ? [warning] : ['Automatic extraction was skipped. Fill the invoice fields below to continue.'],
+            source: tc.manualReviewWorkspace,
+            warnings: warning ? [warning] : [tc.manualReviewSkipped],
             documentUrl: null,
         });
     };
 
     const handleFileSelect = async (file: File) => {
         if (!isSupportedInvoiceFile(file)) {
-            toast.error("Only PDF and image files are supported");
+            toast.error(tc.onlySupportedFiles);
             return;
         }
         if (file.size > 10 * 1024 * 1024) {
-            toast.error("File must be under 10MB");
+            toast.error(tc.fileUnder10mb);
             return;
         }
 
@@ -149,12 +153,12 @@ export function UploadInvoiceDialog({ open, onOpenChange, onSuccess, suppliers }
             const res = await fetch('/api/invoices/ocr', { method: 'POST', body: formData });
             const json = await res.json().catch((): OCRResponse => ({
                 success: false,
-                error: "OCR service returned an unreadable response",
+                error: tc.ocrUnreadable,
             }));
 
             if (!res.ok || !json.success) {
-                startManualReview(json.error || "Automatic extraction could not complete. Review the invoice manually.");
-                toast.warning(json.error || "OCR extraction needs manual review");
+                startManualReview(json.error || tc.ocrManualReviewNeeded);
+                toast.warning(json.error || tc.ocrNeedsReview);
                 setUploading(false);
                 return;
             }
@@ -167,14 +171,14 @@ export function UploadInvoiceDialog({ open, onOpenChange, onSuccess, suppliers }
             });
 
             if (json.warnings?.length) {
-                toast.warning("Invoice loaded with fields to review");
+                toast.warning(tc.loadedWithReview);
             } else {
-                toast.success("Invoice extracted and ready for review");
+                toast.success(tc.invoiceExtracted);
             }
         } catch (error) {
             console.error("Invoice OCR upload failed:", error);
-            startManualReview("The document could not be auto-extracted this time. Manual review mode is ready.");
-            toast.warning("Document loaded in manual review mode");
+            startManualReview(tc.manualReviewModeReady);
+            toast.warning(tc.documentLoadedManual);
         } finally {
             setUploading(false);
         }
@@ -182,19 +186,19 @@ export function UploadInvoiceDialog({ open, onOpenChange, onSuccess, suppliers }
 
     const handleSave = async () => {
         if (!supplierId) {
-            toast.error("Please select a supplier");
+            toast.error(tc.selectSupplierRequired);
             return;
         }
         if (!editableData.invoiceNumber) {
-            toast.error("Invoice number is required");
+            toast.error(tc.invoiceNumberRequired);
             return;
         }
         if (!editableData.amount || isNaN(Number(editableData.amount))) {
-            toast.error("Valid amount is required");
+            toast.error(tc.validAmountRequired);
             return;
         }
         if (!editableData.currency) {
-            toast.error("Currency is required");
+            toast.error(tc.currencyRequired);
             return;
         }
 
@@ -218,22 +222,22 @@ export function UploadInvoiceDialog({ open, onOpenChange, onSuccess, suppliers }
 
             if (result.success) {
                 if ('warning' in result && result.warning) {
-                    toast.warning(`Invoice ${editableData.invoiceNumber} created with review signals`, {
+                    toast.warning(`${tc.invoiceNumber} ${editableData.invoiceNumber} ${tc.createdWithReview}`, {
                         description: result.warning,
                     });
                 } else {
-                    toast.success(`Invoice ${editableData.invoiceNumber} created successfully`);
+                    toast.success(`${tc.invoiceNumber} ${editableData.invoiceNumber} ${tc.createdSuccess}`);
                 }
                 onSuccess();
                 onOpenChange(false);
                 reset();
             } else {
-                toast.error(result.error || "Failed to create invoice");
+                toast.error(result.error || tc.failedCreate);
                 setStep('review');
             }
         } catch (error) {
             console.error("Invoice save failed:", error);
-            toast.error("Failed to create invoice. Please review the fields and try again.");
+            toast.error(tc.failedCreateRetry);
             setStep('review');
         }
     };
@@ -244,14 +248,14 @@ export function UploadInvoiceDialog({ open, onOpenChange, onSuccess, suppliers }
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <Upload className="h-5 w-5 text-primary" />
-                        {step === 'upload' ? 'Upload Invoice Document' : step === 'review' ? 'Review Extracted Data' : 'Saving...'}
+                        {step === 'upload' ? tc.uploadTitle : step === 'review' ? tc.reviewTitle : tc.savingTitle}
                     </DialogTitle>
                     <DialogDescription>
                         {step === 'upload'
-                            ? 'Upload a PDF or image of an invoice. Axiom AI will extract the data automatically.'
+                            ? tc.uploadDesc
                             : step === 'review'
-                                ? 'Review and correct the extracted fields before saving.'
-                                : 'Creating invoice record...'}
+                                ? tc.reviewDesc
+                                : tc.savingDesc}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -271,14 +275,14 @@ export function UploadInvoiceDialog({ open, onOpenChange, onSuccess, suppliers }
                             {uploading ? (
                                 <div className="flex flex-col items-center gap-3">
                                     <Loader2 className="h-10 w-10 text-primary animate-spin" />
-                                    <p className="font-semibold">Processing with Axiom AI...</p>
-                                    <p className="text-sm text-muted-foreground">Extracting invoice data from {selectedFile?.name}</p>
+                                    <p className="font-semibold">{tc.processing}</p>
+                                    <p className="text-sm text-muted-foreground">{tc.extractingFrom} {selectedFile?.name}</p>
                                 </div>
                             ) : (
                                 <div className="flex flex-col items-center gap-3">
                                     <FileText className="h-10 w-10 text-muted-foreground" />
-                                    <p className="font-semibold">Drop invoice here or click to browse</p>
-                                    <p className="text-sm text-muted-foreground">Supports PDF and image files (max 10MB)</p>
+                                    <p className="font-semibold">{tc.dropHere}</p>
+                                    <p className="text-sm text-muted-foreground">{tc.supportsFiles}</p>
                                 </div>
                             )}
                         </div>
@@ -294,7 +298,7 @@ export function UploadInvoiceDialog({ open, onOpenChange, onSuccess, suppliers }
                         />
                         <div className="flex justify-end">
                             <Button type="button" variant="outline" onClick={() => startManualReview()}>
-                                Enter Manually Instead
+                                {tc.enterManually}
                             </Button>
                         </div>
                     </div>
@@ -308,11 +312,11 @@ export function UploadInvoiceDialog({ open, onOpenChange, onSuccess, suppliers }
                                     <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300">
                                         <AlertTriangle className="h-4 w-4" />
                                         <span className="font-semibold">
-                                            Review needed for {selectedFile?.name || 'manual invoice entry'}
+                                            {tc.reviewNeededFor} {selectedFile?.name || tc.manualEntry}
                                         </span>
                                     </div>
                                     <p className="text-xs text-amber-700/90 dark:text-amber-200/90">
-                                        Source: {ocrSource}
+                                        {tc.source}: {ocrSource}
                                     </p>
                                     <div className="space-y-1 text-xs text-amber-700/90 dark:text-amber-200/90">
                                         {ocrWarnings.map((warning) => (
@@ -326,7 +330,7 @@ export function UploadInvoiceDialog({ open, onOpenChange, onSuccess, suppliers }
                                 <CardContent className="py-3 px-4 flex items-center gap-2 text-sm">
                                     <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                                     <span className="font-medium text-emerald-700 dark:text-emerald-400">
-                                        Data prepared from {selectedFile?.name || 'manual invoice entry'} via {ocrSource || 'Axiom OCR'}
+                                        {tc.dataPreparedFrom} {selectedFile?.name || tc.manualEntry} {tc.viaAxiomOcr}
                                     </span>
                                 </CardContent>
                             </Card>
@@ -334,13 +338,13 @@ export function UploadInvoiceDialog({ open, onOpenChange, onSuccess, suppliers }
 
                         <div className="grid grid-cols-2 gap-3">
                             <div className="space-y-1">
-                                <Label className="text-xs font-semibold">Supplier *</Label>
+                                <Label className="text-xs font-semibold">{tc.supplier}</Label>
                                 <select
                                     value={supplierId}
                                     onChange={(e) => setSupplierId(e.target.value)}
                                     className="h-9 w-full rounded-md border bg-background px-3 text-sm"
                                 >
-                                    <option value="">Select supplier...</option>
+                                    <option value="">{tc.selectSupplier}</option>
                                     {suppliers.map(s => (
                                         <option key={s.id} value={s.id}>{s.name}</option>
                                     ))}
@@ -348,12 +352,12 @@ export function UploadInvoiceDialog({ open, onOpenChange, onSuccess, suppliers }
                                 {ocrData.supplierName && !supplierId && (
                                     <p className="text-xs text-amber-600 flex items-center gap-1">
                                         <AlertTriangle className="h-3 w-3" />
-                                        Detected: &quot;{ocrData.supplierName}&quot; - select matching supplier
+                                        {tc.detectedSelect.replace("{name}", ocrData.supplierName)}
                                     </p>
                                 )}
                             </div>
                             <div className="space-y-1">
-                                <Label className="text-xs font-semibold">Invoice Number *</Label>
+                                <Label className="text-xs font-semibold">{tc.invoiceNumber}</Label>
                                 <Input
                                     value={editableData.invoiceNumber}
                                     onChange={(e) => setEditableData(d => ({ ...d, invoiceNumber: e.target.value }))}
@@ -361,7 +365,7 @@ export function UploadInvoiceDialog({ open, onOpenChange, onSuccess, suppliers }
                                 />
                             </div>
                             <div className="space-y-1">
-                                <Label className="text-xs font-semibold">Amount *</Label>
+                                <Label className="text-xs font-semibold">{tc.amount}</Label>
                                 <Input
                                     type="number"
                                     step="0.01"
@@ -371,7 +375,7 @@ export function UploadInvoiceDialog({ open, onOpenChange, onSuccess, suppliers }
                                 />
                             </div>
                             <div className="space-y-1">
-                                <Label className="text-xs font-semibold">Currency</Label>
+                                <Label className="text-xs font-semibold">{tc.currency}</Label>
                                 <Input
                                     value={editableData.currency}
                                     onChange={(e) => setEditableData(d => ({ ...d, currency: e.target.value }))}
@@ -379,7 +383,7 @@ export function UploadInvoiceDialog({ open, onOpenChange, onSuccess, suppliers }
                                 />
                             </div>
                             <div className="space-y-1">
-                                <Label className="text-xs font-semibold">Invoice Date</Label>
+                                <Label className="text-xs font-semibold">{tc.invoiceDate}</Label>
                                 <Input
                                     type="date"
                                     value={editableData.invoiceDate}
@@ -388,7 +392,7 @@ export function UploadInvoiceDialog({ open, onOpenChange, onSuccess, suppliers }
                                 />
                             </div>
                             <div className="space-y-1">
-                                <Label className="text-xs font-semibold">Due Date</Label>
+                                <Label className="text-xs font-semibold">{tc.dueDate}</Label>
                                 <Input
                                     type="date"
                                     value={editableData.dueDate}
@@ -397,7 +401,7 @@ export function UploadInvoiceDialog({ open, onOpenChange, onSuccess, suppliers }
                                 />
                             </div>
                             <div className="space-y-1">
-                                <Label className="text-xs font-semibold">Subtotal</Label>
+                                <Label className="text-xs font-semibold">{tc.subtotal}</Label>
                                 <Input
                                     type="number"
                                     step="0.01"
@@ -407,7 +411,7 @@ export function UploadInvoiceDialog({ open, onOpenChange, onSuccess, suppliers }
                                 />
                             </div>
                             <div className="space-y-1">
-                                <Label className="text-xs font-semibold">Tax Amount</Label>
+                                <Label className="text-xs font-semibold">{tc.taxAmount}</Label>
                                 <Input
                                     type="number"
                                     step="0.01"
@@ -417,7 +421,7 @@ export function UploadInvoiceDialog({ open, onOpenChange, onSuccess, suppliers }
                                 />
                             </div>
                             <div className="space-y-1">
-                                <Label className="text-xs font-semibold">Payment Terms</Label>
+                                <Label className="text-xs font-semibold">{tc.paymentTerms}</Label>
                                 <Input
                                     value={editableData.paymentTerms}
                                     onChange={(e) => setEditableData(d => ({ ...d, paymentTerms: e.target.value }))}
@@ -425,7 +429,7 @@ export function UploadInvoiceDialog({ open, onOpenChange, onSuccess, suppliers }
                                 />
                             </div>
                             <div className="space-y-1">
-                                <Label className="text-xs font-semibold">PO Reference</Label>
+                                <Label className="text-xs font-semibold">{tc.poReference}</Label>
                                 <Input
                                     value={editableData.purchaseOrderRef}
                                     onChange={(e) => setEditableData(d => ({ ...d, purchaseOrderRef: e.target.value }))}
@@ -436,15 +440,15 @@ export function UploadInvoiceDialog({ open, onOpenChange, onSuccess, suppliers }
 
                         {ocrData.lineItems && ocrData.lineItems.length > 0 && (
                             <div className="space-y-2">
-                                <Label className="text-xs font-semibold">Line Items ({ocrData.lineItems.length})</Label>
+                                <Label className="text-xs font-semibold">{tc.lineItems.replace("{count}", String(ocrData.lineItems.length))}</Label>
                                 <div className="rounded-md border text-xs">
                                     <table className="w-full">
                                         <thead>
                                             <tr className="border-b bg-muted/50">
-                                                <th className="px-3 py-2 text-left font-semibold">Description</th>
-                                                <th className="px-3 py-2 text-right font-semibold">Qty</th>
-                                                <th className="px-3 py-2 text-right font-semibold">Unit Price</th>
-                                                <th className="px-3 py-2 text-right font-semibold">Total</th>
+                                                <th className="px-3 py-2 text-left font-semibold">{tc.description}</th>
+                                                <th className="px-3 py-2 text-right font-semibold">{tc.qty}</th>
+                                                <th className="px-3 py-2 text-right font-semibold">{tc.unitPrice}</th>
+                                                <th className="px-3 py-2 text-right font-semibold">{tc.total}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -463,10 +467,10 @@ export function UploadInvoiceDialog({ open, onOpenChange, onSuccess, suppliers }
                         )}
 
                         <DialogFooter className="gap-2">
-                            <Button variant="outline" onClick={() => { reset(); }}>Cancel</Button>
+                            <Button variant="outline" onClick={() => { reset(); }}>{tc.cancel}</Button>
                             <Button onClick={handleSave} className="gap-2">
                                 <CheckCircle2 className="h-4 w-4" />
-                                Save Invoice
+                                {tc.saveInvoice}
                             </Button>
                         </DialogFooter>
                     </div>
@@ -475,7 +479,7 @@ export function UploadInvoiceDialog({ open, onOpenChange, onSuccess, suppliers }
                 {step === 'saving' && (
                     <div className="flex flex-col items-center py-12 gap-3">
                         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                        <p className="font-medium">Creating invoice record...</p>
+                        <p className="font-medium">{tc.savingDesc}</p>
                     </div>
                 )}
             </DialogContent>
