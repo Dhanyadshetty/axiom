@@ -4,7 +4,7 @@ import { Pool } from "pg";
 import * as schema from "./schema";
 import dotenv from "dotenv";
 
-dotenv.config({ path: ".env.local" });
+dotenv.config({ path: ".env.local", override: true });
 
 function numberFromEnv(name: string, fallback: number) {
     const value = Number(process.env[name]);

@@ -2,31 +2,49 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
     Plus,
     Search,
     ChevronDown,
+    ChevronUp,
+    Check,
     MoreHorizontal,
+    MoreVertical,
+    UserX,
     Pencil,
     Trash2,
     Archive,
     PowerOff,
-    Mail,
     Phone,
-    Settings2,
     X,
+    Building2,
+    Languages,
+    Info,
+    RotateCcw,
+    UserPlus,
+    Upload,
+    Send,
+    Handshake,
+    Download,
+    FilePlus2,
+    FileText,
+    FileSpreadsheet,
+    Command,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
     DropdownMenuSeparator,
-    DropdownMenuCheckboxItem,
-    DropdownMenuLabel,
+    DropdownMenuSub,
+    DropdownMenuSubTrigger,
+    DropdownMenuSubContent,
 } from '@/components/ui/dropdown-menu';
 import {
     AlertDialog,
@@ -47,10 +65,17 @@ import {
 import {
     listContacts,
     deleteContact,
+    bulkDeleteContacts,
     updateContactStatus,
     type ContactRow,
 } from '@/app/actions/contacts-detail';
 import { AddContactModal } from '@/components/contacts/add-contact-modal';
+import { ContactsImportModal } from '@/components/contacts/contacts-import-modal';
+import {
+    AddFilterPopover,
+    FilterChipView,
+    type FilterChipData,
+} from '@/components/contacts/add-filter-popover';
 
 export interface ContactsTableProps {
     supplierId?: string;
@@ -58,26 +83,20 @@ export interface ContactsTableProps {
     supplierNumber?: string;
     showSupplierColumn?: boolean;
     scopeAll?: boolean;
-}
-
-interface FilterChip {
-    id: string;
-    field: ContactColumnKey;
-    operator: 'is_one_of' | 'is_none_of' | 'contains' | 'does_not_contain' | 'is' | 'is_not' | 'is_blank' | 'is_not_blank';
-    values: string[];
+    showPageTitle?: boolean;
 }
 
 const STATUS_COLORS: Record<ContactStatus, string> = {
     active: 'bg-emerald-500',
     inactive: 'bg-slate-400',
-    on_hold: 'bg-rose-500',
+    on_hold: 'bg-amber-500',
 };
 
-function defaultFilters(): FilterChip[] {
-    return [
-        { id: 'default-status', field: 'status', operator: 'is_one_of', values: ['active'] },
-    ];
-}
+const STATUS_LABELS: Record<ContactStatus, string> = {
+    active: 'Active',
+    inactive: 'Deactivated',
+    on_hold: 'On Hold',
+};
 
 export function ContactsTable({
     supplierId,
@@ -85,13 +104,15 @@ export function ContactsTable({
     supplierNumber,
     showSupplierColumn,
     scopeAll = false,
+    showPageTitle = true,
 }: ContactsTableProps) {
-    // router reference available if you need to push from this table
+    const router = useRouter();
     const [rows, setRows] = React.useState<ContactRow[]>([]);
     const [loading, setLoading] = React.useState(true);
     const [total, setTotal] = React.useState(0);
     const [search, setSearch] = React.useState('');
-    const [filters, setFilters] = React.useState<FilterChip[]>(defaultFilters);
+    const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
+    const [filters, setFilters] = React.useState<FilterChipData[]>([]);
     const [visibleColumns, setVisibleColumns] = React.useState<Set<ContactColumnKey>>(
         () => new Set<ContactColumnKey>([
             'name', 'email', 'phone',
@@ -100,8 +121,10 @@ export function ContactsTable({
         ]),
     );
     const [addOpen, setAddOpen] = React.useState(false);
+    const [importOpen, setImportOpen] = React.useState(false);
     const [editing, setEditing] = React.useState<ContactRow | null>(null);
     const [deletingId, setDeletingId] = React.useState<string | null>(null);
+    const [bulkDeleting, setBulkDeleting] = React.useState(false);
     const [columnWidths, setColumnWidths] = React.useState<Record<ContactColumnKey, number>>(() => {
         const out = {} as Record<ContactColumnKey, number>;
         CONTACT_COLUMNS.forEach((c) => { out[c.key] = c.defaultWidth; });
@@ -116,16 +139,11 @@ export function ContactsTable({
 
     const refresh = React.useCallback(async () => {
         setLoading(true);
-        const statusValues = filters.find((f) => f.field === 'status')?.values as ContactStatus[] | undefined;
-        const languageValues = filters.find((f) => f.field === 'language')?.values;
-        const departmentValues = filters.find((f) => f.field === 'department')?.values;
         const result = await listContacts({
             supplierId: scopeAll ? undefined : supplierId,
-            status: statusValues,
-            language: languageValues,
-            department: departmentValues,
+            advancedFilters: filters,
             search: search.trim() || undefined,
-            limit: 500,
+            limit: 2000,
         });
         setRows(result.rows);
         setTotal(result.total);
@@ -137,13 +155,19 @@ export function ContactsTable({
         return () => clearTimeout(t);
     }, [refresh]);
 
-    const addFilter = (chip: Omit<FilterChip, 'id'>) => {
+    const handleReset = () => {
+        setSearch('');
+        setFilters([]);
+        setSelectedIds(new Set());
+    };
+
+    const addFilter = (chip: Omit<FilterChipData, 'id'>) => {
         setFilters((prev) => [...prev, { ...chip, id: `${chip.field}-${Date.now()}` }]);
     };
 
     const removeFilter = (id: string) => setFilters((prev) => prev.filter((f) => f.id !== id));
 
-    const updateFilter = (id: string, patch: Partial<FilterChip>) => {
+    const updateFilter = (id: string, patch: Partial<FilterChipData>) => {
         setFilters((prev) => prev.map((f) => (f.id === id ? { ...f, ...patch } : f)));
     };
 
@@ -169,6 +193,59 @@ export function ContactsTable({
         }
     };
 
+    const handleBulkDelete = async () => {
+        const ids = Array.from(selectedIds);
+        if (!ids.length) return;
+        const result = await bulkDeleteContacts(ids);
+        if (result.success) {
+            toast.success(`Deleted ${result.count} contacts`);
+            setSelectedIds(new Set());
+            setBulkDeleting(false);
+            refresh();
+        } else {
+            toast.error(result.error);
+        }
+    };
+
+    const handleExport = (format: 'csv' | 'xlsx') => {
+        const selectedRows = rows.filter((r) => selectedIds.has(r.id));
+        const exportData = (selectedRows.length > 0 ? selectedRows : rows).map((r) => ({
+            'Contact': r.name,
+            'Email': r.email,
+            'Phone number': r.phone || '',
+            'Supplier': r.supplierName || r.supplierNumber || '',
+            'Language': r.language || '',
+            'Department': r.department || '',
+            'Position': r.position || '',
+            'Responsibility': r.responsibility || '',
+            'Status': STATUS_LABELS[r.status] || r.status,
+        }));
+
+        if (format === 'csv') {
+            const headers = Object.keys(exportData[0] || {});
+            const csvRows = [headers.join(',')];
+            for (const row of exportData) {
+                csvRows.push(headers.map((h) => `"${(row[h as keyof typeof row] || '').replace(/"/g, '""')}"`).join(','));
+            }
+            const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `contacts_export_${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            toast.success(`Exported ${exportData.length} contacts as CSV`);
+        } else {
+            import('xlsx').then((XLSX) => {
+                const ws = XLSX.utils.json_to_sheet(exportData);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Contacts');
+                XLSX.writeFile(wb, `contacts_export_${new Date().toISOString().slice(0, 10)}.xlsx`);
+                toast.success(`Exported ${exportData.length} contacts as Excel`);
+            });
+        }
+    };
+
     const toggleColumn = (key: ContactColumnKey) => {
         setVisibleColumns((prev) => {
             const next = new Set(prev);
@@ -178,16 +255,40 @@ export function ContactsTable({
         });
     };
 
+    const handleSelectAllColumns = () => {
+        setVisibleColumns(new Set(allColumns.map((c) => c.key)));
+    };
+
+    const handleDeselectAllColumns = () => {
+        const frozenKeys = allColumns.filter((c) => c.frozen).map((c) => c.key);
+        setVisibleColumns(new Set(frozenKeys));
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedIds.size === rows.length && rows.length > 0) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(rows.map((r) => r.id)));
+        }
+    };
+
+    const toggleSelectRow = (id: string) => {
+        setSelectedIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+        });
+    };
+
     const allColumns = CONTACT_COLUMNS.filter((c) => showSupplierColumn || c.key !== 'supplier');
     const visibleColDefs = allColumns.filter((c) => visibleColumns.has(c.key));
     const visibleCount = visibleColDefs.length;
-    const ROW_HEIGHT = 46;
-    const ROW_ACTIONS_WIDTH = 40;
+    const ROW_HEIGHT = 44;
+    const CHECKBOX_WIDTH = 44;
 
-    // Frozen column stacking offsets: frozen columns stick on the left in the
-    // order they appear, each one offset by the sum of preceding frozen widths.
     const frozenOffsets: Partial<Record<ContactColumnKey, number>> = {};
-    let frozenRunning = 0;
+    let frozenRunning = CHECKBOX_WIDTH;
     let lastFrozenKey: ContactColumnKey | null = null;
     for (const col of visibleColDefs) {
         if (col.frozen) {
@@ -196,7 +297,7 @@ export function ContactsTable({
             lastFrozenKey = col.key;
         }
     }
-    const totalTableWidth = visibleColDefs.reduce((w, c) => w + columnWidths[c.key], 0) + ROW_ACTIONS_WIDTH;
+    const totalTableWidth = CHECKBOX_WIDTH + visibleColDefs.reduce((w, c) => w + columnWidths[c.key], 0);
 
     const startResizeFor = (key: ContactColumnKey, current: number) => {
         return (e: React.MouseEvent) => {
@@ -205,7 +306,7 @@ export function ContactsTable({
             const startX = e.clientX;
             const startW = current;
             const onMove = (ev: MouseEvent) => {
-                const next = Math.max(60, startW + (ev.clientX - startX));
+                const next = Math.max(80, startW + (ev.clientX - startX));
                 setColumnWidths((prev) => ({ ...prev, [key]: next }));
             };
             const onUp = () => {
@@ -222,168 +323,309 @@ export function ContactsTable({
     };
 
     return (
-        <div className="space-y-3">
-            {/* Filter chips + actions row */}
-            <div className="flex flex-wrap items-center gap-2">
-                {filters.map((f) => (
-                    <FilterChipView
-                        key={f.id}
-                        chip={f}
-                        onChange={(patch) => updateFilter(f.id, patch)}
-                        onRemove={() => removeFilter(f.id)}
-                    />
-                ))}
-                <AddFilterMenu onAdd={addFilter} existing={filters.map((f) => f.field)} />
-                <div className="ml-auto flex items-center gap-2">
-                    <div className="relative w-64">
+        <div className="flex flex-col h-full space-y-4 relative">
+            {/* Title */}
+            {showPageTitle && (
+                <div className="flex items-center justify-between">
+                    <h1 className="text-xl font-bold tracking-tight text-slate-900">Contacts</h1>
+                </div>
+            )}
+
+            {/* Top Controls: Left (Add filter, Reset, Chips), Right (Search, Columns, + Add new) */}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-2">
+                    <AddFilterPopover onAddFilter={addFilter} />
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleReset}
+                        className="h-9 px-2.5 text-xs text-slate-500 hover:text-slate-900 hover:bg-slate-100 gap-1.5"
+                    >
+                        <RotateCcw className="h-3.5 w-3.5 text-slate-400" />
+                        Reset
+                    </Button>
+                    {filters.map((f) => (
+                        <FilterChipView
+                            key={f.id}
+                            chip={f}
+                            onChange={(patch) => updateFilter(f.id, patch)}
+                            onRemove={() => removeFilter(f.id)}
+                        />
+                    ))}
+                </div>
+
+                <div className="flex items-center gap-2.5 ml-auto">
+                    {/* Search Input */}
+                    <div className="relative w-56 sm:w-64">
                         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                         <Input
                             placeholder="Search..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="pl-9 h-9"
+                            className="pl-9 h-9 text-xs rounded-md bg-white border-slate-200 placeholder:text-slate-400"
                         />
                     </div>
+
+                    {/* Custom Columns Dropdown matching Tacto screenshot */}
+                    <ColumnsDropdown
+                        allColumns={allColumns}
+                        visibleColumns={visibleColumns}
+                        onToggleColumn={toggleColumn}
+                        onSelectAll={handleSelectAllColumns}
+                        onDeselectAll={handleDeselectAllColumns}
+                    />
+
+                    {/* + Add new Button */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="h-9 gap-2">
-                                <Settings2 className="h-4 w-4" />
-                                Columns {visibleCount}/{allColumns.length}
-                                <ChevronDown className="h-3.5 w-3.5" />
+                            <Button className="h-9 bg-black text-white hover:bg-neutral-800 text-xs font-medium px-3.5 gap-1.5 shadow-sm rounded-md">
+                                <Plus className="h-3.5 w-3.5" />
+                                Add new
+                                <ChevronDown className="h-3 w-3 opacity-70 ml-0.5" />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-56">
-                            <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            {allColumns.map((col) => (
-                                <DropdownMenuCheckboxItem
-                                    key={col.key}
-                                    checked={visibleColumns.has(col.key)}
-                                    onCheckedChange={() => toggleColumn(col.key)}
-                                    onSelect={(e) => e.preventDefault()}
-                                >
-                                    {col.label}
-                                </DropdownMenuCheckboxItem>
-                            ))}
+                        <DropdownMenuContent align="end" className="w-48 p-1">
+                            <DropdownMenuItem onSelect={() => setAddOpen(true)} className="text-xs font-medium cursor-pointer">
+                                <UserPlus className="h-4 w-4 mr-2 text-slate-600" />
+                                Add Contact
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => setImportOpen(true)} className="text-xs font-medium cursor-pointer">
+                                <Upload className="h-4 w-4 mr-2 text-slate-600" />
+                                Contact import
+                            </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
-                    <AddNewSplitButton
-                        supplierId={supplierId}
-                        supplierName={supplierName ?? ''}
-                        supplierNumber={supplierNumber ?? ''}
-                        onAddManual={() => setAddOpen(true)}
-                    />
                 </div>
             </div>
 
-            {/* Scrollable table — fixed-height container, sticky header, frozen leading column */}
-            <div className="flex flex-col rounded-lg border border-slate-200 bg-white shadow-sm" style={{ height: 'calc(100vh - 280px)', minHeight: 420 }}>
-                {/* Inner scroll container — both vertical and horizontal */}
+            {/* Main Table Container */}
+            <div className="flex flex-col flex-1 min-h-0 rounded-lg border border-slate-200/90 bg-white shadow-sm overflow-hidden relative">
                 <div className="relative flex-1 min-h-0">
                     <div
                         ref={scrollRef}
-                        className="relative h-full overflow-auto"
+                        className="relative h-full overflow-auto custom-table-scrollbar"
                         onScroll={handleScroll}
                     >
-                        {hoverLeftShadow ? (
+                        {hoverLeftShadow && (
                             <div
                                 aria-hidden
-                                className="pointer-events-none absolute left-0 top-0 z-40 h-full w-3 bg-gradient-to-r from-slate-400/40 to-transparent"
+                                className="pointer-events-none absolute left-0 top-0 z-40 h-full w-3 bg-gradient-to-r from-slate-400/20 to-transparent"
                             />
-                        ) : null}
-                    {loading ? (
-                        <div className="flex h-full items-center justify-center text-sm text-slate-400">Loading contacts...</div>
-                    ) : rows.length === 0 ? (
-                        <div className="flex h-full items-center justify-center text-sm text-slate-400">No contacts yet.</div>
-                    ) : (
-                        <div style={{ minWidth: totalTableWidth }}>
-                            {/* Sticky header row */}
-                            <div className="sticky top-0 z-20 flex border-b border-slate-200 bg-slate-50">
-                                {visibleColDefs.map((col) => {
-                                    const leftOffset = frozenOffsets[col.key] ?? null;
-                                    return (
-                                        <div
-                                            key={col.key}
-                                            style={{
-                                                width: columnWidths[col.key],
-                                                ...(leftOffset !== null ? { left: leftOffset, position: 'sticky', zIndex: 30 } : {}),
-                                            }}
-                                            className={cn(
-                                                "relative shrink-0 px-3 py-2.5 text-[11px] font-black uppercase tracking-wide text-slate-500",
-                                                col.frozen && "bg-slate-50 border-r border-slate-200",
-                                            )}
-                                            title={col.label}
-                                        >
-                                            <span className="truncate block">{col.label}</span>
-                                            <span
-                                                role="separator"
-                                                aria-orientation="vertical"
-                                                onMouseDown={startResizeFor(col.key, columnWidths[col.key])}
-                                                className="absolute right-0 top-0 z-10 h-full w-1.5 cursor-col-resize hover:bg-emerald-400/60"
-                                            />
-                                        </div>
-                                    );
-                                })}
-                                {/* Row actions column header */}
-                                <div className="w-10 shrink-0 border-l border-slate-200 bg-slate-50" />
-                            </div>
+                        )}
 
-                            {/* Body rows */}
-                            {rows.map((c) => (
-                                <div
-                                    key={c.id}
-                                    className="group flex border-b border-slate-100 text-sm hover:bg-slate-50/60"
-                                    style={{ height: ROW_HEIGHT }}
+                        {loading ? (
+                            <div className="flex h-64 items-center justify-center text-sm text-slate-400">
+                                <div className="flex items-center gap-2">
+                                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />
+                                    <span>Loading contacts...</span>
+                                </div>
+                            </div>
+                        ) : rows.length === 0 ? (
+                            <div className="flex h-64 flex-col items-center justify-center text-sm text-slate-400 gap-2">
+                                <p>No contacts found.</p>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setAddOpen(true)}
+                                    className="h-8 text-xs gap-1.5"
                                 >
+                                    <Plus className="h-3.5 w-3.5" /> Add Contact
+                                </Button>
+                            </div>
+                        ) : (
+                            <div style={{ minWidth: totalTableWidth }}>
+                                {/* Header Row */}
+                                <div className="sticky top-0 z-20 flex border-b border-slate-200 bg-white">
+                                    {/* Select All Checkbox */}
+                                    <div
+                                        style={{ width: CHECKBOX_WIDTH }}
+                                        className="sticky left-0 z-30 flex shrink-0 items-center justify-center bg-white border-r border-slate-100 cursor-pointer"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            toggleSelectAll();
+                                        }}
+                                    >
+                                        <Checkbox
+                                            checked={
+                                                selectedIds.size > 0 && selectedIds.size < rows.length
+                                                    ? 'indeterminate'
+                                                    : selectedIds.size === rows.length && rows.length > 0
+                                            }
+                                            onCheckedChange={toggleSelectAll}
+                                            aria-label="Select all"
+                                        />
+                                    </div>
+
+                                    {/* Column Headers */}
                                     {visibleColDefs.map((col) => {
                                         const leftOffset = frozenOffsets[col.key] ?? null;
-                                        const isLastFrozen = col.key === lastFrozenKey;
-                                        return renderCell(c, col, leftOffset, isLastFrozen);
+                                        return (
+                                            <div
+                                                key={col.key}
+                                                style={{
+                                                    width: columnWidths[col.key],
+                                                    ...(leftOffset !== null ? { left: leftOffset, position: 'sticky', zIndex: 30 } : {}),
+                                                }}
+                                                className={cn(
+                                                    'relative flex shrink-0 items-center px-3 py-2.5 text-xs font-normal text-slate-600 select-none bg-white',
+                                                    col.frozen && 'border-r border-slate-100',
+                                                )}
+                                                title={col.label}
+                                            >
+                                                <div className="flex items-center gap-1.5 truncate">
+                                                    {getHeaderIcon(col.key)}
+                                                    <span className="truncate">{col.label}</span>
+                                                </div>
+                                                <span
+                                                    role="separator"
+                                                    aria-orientation="vertical"
+                                                    onMouseDown={startResizeFor(col.key, columnWidths[col.key])}
+                                                    className="absolute right-0 top-0 z-10 h-full w-1.5 cursor-col-resize hover:bg-slate-300"
+                                                />
+                                            </div>
+                                        );
                                     })}
-                                    <div className="w-10 shrink-0 flex items-center justify-center border-l border-slate-100">
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100">
-                                                    <MoreHorizontal className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="w-44">
-                                                <DropdownMenuItem onSelect={() => setEditing(c)}>
-                                                    <Pencil className="h-4 w-4 mr-2" /> Edit
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onSelect={() => handleStatusChange(c.id, 'active')}>
-                                                    <PowerOff className="h-4 w-4 mr-2" /> Set Active
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onSelect={() => handleStatusChange(c.id, 'inactive')}>
-                                                    <PowerOff className="h-4 w-4 mr-2" /> Deactivate
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onSelect={() => handleStatusChange(c.id, 'on_hold')}>
-                                                    <Archive className="h-4 w-4 mr-2" /> Archive
-                                                </DropdownMenuItem>
-                                                <DropdownMenuSeparator />
-                                                <DropdownMenuItem
-                                                    onSelect={() => setDeletingId(c.id)}
-                                                    className="text-rose-600 focus:text-rose-700"
-                                                >
-                                                    <Trash2 className="h-4 w-4 mr-2" /> Delete
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </div>
                                 </div>
-                            ))}
-                        </div>
-                    )}
+
+                                {/* Body Rows */}
+                                {rows.map((c) => (
+                                    <ContactTableRow
+                                        key={c.id}
+                                        contact={c}
+                                        isSelected={selectedIds.has(c.id)}
+                                        visibleColDefs={visibleColDefs}
+                                        frozenOffsets={frozenOffsets}
+                                        lastFrozenKey={lastFrozenKey}
+                                        columnWidths={columnWidths}
+                                        onToggleSelect={toggleSelectRow}
+                                        onEdit={setEditing}
+                                        onStatusChange={handleStatusChange}
+                                        onDelete={setDeletingId}
+                                    />
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                {/* Persistent footer — total count, unaffected by scroll position */}
-                <div className="flex items-center justify-between border-t border-slate-200 bg-white px-3 py-2 text-xs text-slate-500">
-                    <span>Contacts: <span className="font-semibold text-slate-700">{total.toLocaleString()}</span></span>
-                    <span className="text-slate-400">Showing {rows.length} of {total.toLocaleString()}</span>
+                {/* Bottom Bar matching Tacto screenshot (Rows: X) */}
+                <div className="flex items-center justify-between border-t border-slate-200 bg-white px-4 py-2.5 text-xs text-slate-500">
+                    <div className="flex items-center gap-2">
+                        <span>Rows: <span className="font-normal text-slate-700">{total.toLocaleString()}</span></span>
+                        {selectedIds.size > 0 && (
+                            <span className="text-slate-400">· {selectedIds.size} selected</span>
+                        )}
+                    </div>
                 </div>
             </div>
 
+            {/* Floating Selection & Actions Pill (matches screenshots 1, 2, 3!) */}
+            {selectedIds.size > 0 && (
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 rounded-xl bg-white p-1 shadow-2xl border border-slate-200/90 animate-in fade-in-0 slide-in-from-bottom-3 duration-200">
+                    <div className="flex items-center gap-2 rounded-lg border border-dashed border-slate-300 bg-slate-50/90 px-3 py-1 text-xs font-medium text-slate-800">
+                        <span>{selectedIds.size.toLocaleString()} selected</span>
+                        <button
+                            type="button"
+                            onClick={() => setSelectedIds(new Set())}
+                            className="text-slate-400 hover:text-slate-700 p-0.5 rounded hover:bg-slate-200/70 transition-colors cursor-pointer"
+                            aria-label="Clear selection"
+                        >
+                            <X className="h-3.5 w-3.5" />
+                        </button>
+                    </div>
+
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-8 gap-1.5 rounded-lg text-xs font-semibold text-slate-800 border-slate-200 bg-white hover:bg-slate-50 shadow-xs cursor-pointer"
+                            >
+                                <Command className="h-3.5 w-3.5 text-slate-600" />
+                                Actions
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                            side="top"
+                            align="end"
+                            sideOffset={8}
+                            className="w-56 p-1 rounded-xl shadow-2xl border border-slate-200 bg-white space-y-0.5 text-xs"
+                        >
+                            {/* Request (Submenu) */}
+                            <DropdownMenuSub>
+                                <DropdownMenuSubTrigger className="flex items-center justify-between py-2 px-2.5 rounded-lg text-slate-800 hover:bg-slate-100/80 cursor-pointer">
+                                    <div className="flex items-center gap-2.5">
+                                        <Send className="h-4 w-4 text-slate-600 shrink-0 stroke-[1.75]" />
+                                        <span>Request</span>
+                                    </div>
+                                </DropdownMenuSubTrigger>
+                                <DropdownMenuSubContent className="w-56 p-1 rounded-xl shadow-xl border border-slate-200 bg-white space-y-0.5 text-xs">
+                                    <DropdownMenuItem
+                                        onSelect={() => router.push(`/requests?new=true&contacts=${Array.from(selectedIds).join(',')}`)}
+                                        className="py-2 px-2.5 rounded-lg text-slate-800 hover:bg-slate-100/80 cursor-pointer flex items-center gap-2.5"
+                                    >
+                                        <FilePlus2 className="h-4 w-4 text-slate-600 shrink-0 stroke-[1.75]" />
+                                        <span>Create new Request</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onSelect={() => router.push(`/requests?addTo=true&contacts=${Array.from(selectedIds).join(',')}`)}
+                                        className="py-2 px-2.5 rounded-lg text-slate-800 hover:bg-slate-100/80 cursor-pointer flex items-center gap-2.5"
+                                    >
+                                        <FileText className="h-4 w-4 text-slate-600 shrink-0 stroke-[1.75]" />
+                                        <span>Add to existing Request</span>
+                                    </DropdownMenuItem>
+                                </DropdownMenuSubContent>
+                            </DropdownMenuSub>
+
+                            {/* Create RFQ */}
+                            <DropdownMenuItem
+                                onSelect={() => router.push(`/sourcing/rfqs/new?contacts=${Array.from(selectedIds).join(',')}`)}
+                                className="py-2 px-2.5 rounded-lg text-slate-800 hover:bg-slate-100/80 cursor-pointer flex items-center gap-2.5"
+                            >
+                                <Handshake className="h-4 w-4 text-slate-600 shrink-0 stroke-[1.75]" />
+                                <span>Create RFQ</span>
+                            </DropdownMenuItem>
+
+                            {/* Export (Submenu) */}
+                            <DropdownMenuSub>
+                                <DropdownMenuSubTrigger className="flex items-center justify-between py-2 px-2.5 rounded-lg text-slate-800 hover:bg-slate-100/80 cursor-pointer">
+                                    <div className="flex items-center gap-2.5">
+                                        <Download className="h-4 w-4 text-slate-600 shrink-0 stroke-[1.75]" />
+                                        <span>Export</span>
+                                    </div>
+                                </DropdownMenuSubTrigger>
+                                <DropdownMenuSubContent className="w-56 p-1 rounded-xl shadow-xl border border-slate-200 bg-white space-y-0.5 text-xs">
+                                    <DropdownMenuItem
+                                        onSelect={() => handleExport('csv')}
+                                        className="py-2 px-2.5 rounded-lg text-slate-800 hover:bg-slate-100/80 cursor-pointer flex items-center gap-2.5"
+                                    >
+                                        <FileText className="h-4 w-4 text-slate-600 shrink-0 stroke-[1.75]" />
+                                        <span>CSV</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onSelect={() => handleExport('xlsx')}
+                                        className="py-2 px-2.5 rounded-lg text-slate-800 hover:bg-slate-100/80 cursor-pointer flex items-center gap-2.5"
+                                    >
+                                        <FileSpreadsheet className="h-4 w-4 text-emerald-600 shrink-0 stroke-[1.75]" />
+                                        <span>Microsoft Excel (.xlsx)</span>
+                                    </DropdownMenuItem>
+                                </DropdownMenuSubContent>
+                            </DropdownMenuSub>
+
+                            {/* Delete */}
+                            <DropdownMenuItem
+                                onSelect={() => setBulkDeleting(true)}
+                                className="py-2 px-2.5 rounded-lg text-rose-600 hover:bg-rose-50 hover:text-rose-700 cursor-pointer flex items-center gap-2.5"
+                            >
+                                <Trash2 className="h-4 w-4 text-rose-600 shrink-0 stroke-[1.75]" />
+                                <span>Delete</span>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+            )}
+
+            {/* Modals */}
             <AddContactModal
                 open={addOpen}
                 onOpenChange={setAddOpen}
@@ -413,6 +655,12 @@ export function ContactsTable({
                 } : null}
                 onSuccess={() => { setEditing(null); refresh(); }}
             />
+            <ContactsImportModal
+                open={importOpen}
+                onOpenChange={setImportOpen}
+                supplierId={supplierId}
+                onSuccess={() => { setImportOpen(false); refresh(); }}
+            />
             <AlertDialog open={!!deletingId} onOpenChange={(o) => { if (!o) setDeletingId(null); }}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
@@ -425,239 +673,415 @@ export function ContactsTable({
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+            <AlertDialog open={bulkDeleting} onOpenChange={setBulkDeleting}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete {selectedIds.size} contacts?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete {selectedIds.size} selected contact{selectedIds.size > 1 ? 's' : ''}? This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleBulkDelete} className="bg-rose-600 hover:bg-rose-700">
+                            Delete {selectedIds.size} contacts
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
-
-    // --- Cell renderer (must live inside the component to close over state) ---
-    function renderCell(
-        c: ContactRow,
-        col: typeof visibleColDefs[number],
-        leftOffset: number | null,
-        isLastFrozen: boolean,
-    ) {
-        const w = columnWidths[col.key];
-        const stickyStyle: React.CSSProperties | undefined = leftOffset !== null
-            ? { position: 'sticky', left: leftOffset, zIndex: 10 }
-            : undefined;
-        const frozenClass = col.frozen
-            ? cn('bg-white', !isLastFrozen && 'border-r border-slate-200')
-            : '';
-        const cellInner = (() => {
-            switch (col.key) {
-                case 'name':
-                    return (
-                        <button
-                            onClick={() => setEditing(c)}
-                            className="block w-full truncate text-left font-medium text-slate-900 hover:text-emerald-700"
-                            title={c.name}
-                        >
-                            {c.name}
-                        </button>
-                    );
-                case 'email':
-                    return c.email ? (
-                        <a href={`mailto:${c.email}`} className="block w-full truncate text-blue-600 hover:underline" title={c.email}>
-                            {c.email}
-                        </a>
-                    ) : <DashCell />;
-                case 'phone':
-                    return c.phone ? (
-                        <span className="inline-flex w-full items-center gap-1.5 truncate text-slate-700" title={c.phone}>
-                            <Phone className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-                            <span className="truncate">{c.phone}</span>
-                        </span>
-                    ) : <DashCell />;
-                case 'supplier':
-                    return c.supplierId ? (
-                        <Link
-                            href={`/suppliers/${c.supplierNumber || c.supplierId}/overview`}
-                            className="inline-flex max-w-full items-center rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100"
-                            title={c.supplierName || c.supplierNumber || c.supplierId}
-                        >
-                            <span className="truncate">{c.supplierName || c.supplierNumber || c.supplierId.slice(0, 8)}</span>
-                        </Link>
-                    ) : <DashCell />;
-                case 'language':
-                    return <PlainCell value={c.language} title={c.language ?? ''} />;
-                case 'department':
-                    return c.department ? (
-                        <span className="inline-flex max-w-full items-center truncate rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700" title={c.department}>
-                            <span className="truncate">{c.department}</span>
-                        </span>
-                    ) : <DashCell />;
-                case 'position':
-                    return <PlainCell value={c.position} title={c.position ?? ''} />;
-                case 'responsibility':
-                    if (!c.responsibility) return <DashCell />;
-                    const tags = c.responsibility.split(/[,;|]/).map((t) => t.trim()).filter(Boolean);
-                    const joined = tags.join(' • ');
-                    return (
-                        <span className="block w-full truncate text-slate-700" title={joined}>
-                            {tags[0]}
-                            {tags.length > 1 ? <span className="text-slate-400"> +{tags.length - 1}</span> : null}
-                        </span>
-                    );
-                case 'status':
-                    return (
-                        <span className="inline-flex items-center gap-1.5 text-xs">
-                            <span className={cn('h-2 w-2 rounded-full shrink-0', STATUS_COLORS[c.status])} />
-                            <span className="capitalize text-slate-700 truncate">{c.status.replace('_', ' ')}</span>
-                        </span>
-                    );
-                default:
-                    return null;
-            }
-        })();
-        return (
-            <div
-                key={col.key}
-                style={{ width: w, height: ROW_HEIGHT, ...(stickyStyle ?? {}) }}
-                className={cn(
-                    'flex shrink-0 items-center px-3 text-sm',
-                    frozenClass,
-                )}
-            >
-                <div className="w-full min-w-0 truncate">{cellInner}</div>
-            </div>
-        );
-    }
 }
 
-function PlainCell({ value, title }: { value: string | null | undefined; title: string }) {
-    if (!value) return <DashCell />;
-    return <span className="block w-full truncate text-slate-700" title={title}>{value}</span>;
+interface ContactTableRowProps {
+    contact: ContactRow;
+    isSelected: boolean;
+    visibleColDefs: typeof CONTACT_COLUMNS;
+    frozenOffsets: Partial<Record<ContactColumnKey, number>>;
+    lastFrozenKey: ContactColumnKey | null;
+    columnWidths: Record<ContactColumnKey, number>;
+    onToggleSelect: (id: string) => void;
+    onEdit: (c: ContactRow) => void;
+    onStatusChange: (id: string, status: ContactStatus) => void;
+    onDelete: (id: string) => void;
 }
 
-function DashCell() {
-    return <span className="text-slate-300">—</span>;
-}
+const ContactTableRow = React.memo(function ContactTableRow({
+    contact: c,
+    isSelected,
+    visibleColDefs,
+    frozenOffsets,
+    lastFrozenKey,
+    columnWidths,
+    onToggleSelect,
+    onEdit,
+    onStatusChange,
+    onDelete,
+}: ContactTableRowProps) {
+    const CHECKBOX_WIDTH = 44;
+    const ROW_HEIGHT = 44;
 
-function AddNewSplitButton({
-    supplierId,
-    supplierName,
-    supplierNumber,
-    onAddManual,
-}: {
-    supplierId?: string;
-    supplierName: string;
-    supplierNumber: string;
-    onAddManual: () => void;
-}) {
-    const importHref = supplierId
-        ? `/contacts/import?supplierId=${encodeURIComponent(supplierId)}&supplierNumber=${encodeURIComponent(supplierNumber)}&supplierName=${encodeURIComponent(supplierName)}`
-        : '/contacts/import';
     return (
-        <div className="inline-flex">
-            <Button onClick={onAddManual} className="h-9 rounded-r-none gap-2">
-                <Plus className="h-4 w-4" /> Add new
-            </Button>
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button className="h-9 rounded-l-none px-2 border-l border-emerald-700/30">
-                        <ChevronDown className="h-3.5 w-3.5" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem onSelect={onAddManual}>
-                        <Plus className="h-4 w-4 mr-2" /> Add Contact
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                        <Link href={importHref}>
-                            <span className="inline-flex items-center">
-                                <Mail className="h-4 w-4 mr-2" /> Contact Import
-                            </span>
-                        </Link>
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
+        <div
+            onClick={() => onToggleSelect(c.id)}
+            className={cn(
+                'group flex border-b border-slate-100 text-xs transition-colors hover:bg-slate-50/70 cursor-pointer select-none',
+                isSelected && 'bg-sky-50/70 font-medium',
+            )}
+            style={{ height: ROW_HEIGHT }}
+        >
+            {/* Row Selection Checkbox */}
+            <div
+                style={{ width: CHECKBOX_WIDTH }}
+                className={cn(
+                    'sticky left-0 z-10 flex shrink-0 items-center justify-center border-r border-slate-100 transition-colors cursor-pointer',
+                    isSelected ? 'bg-sky-50/70' : 'bg-white group-hover:bg-slate-50/70'
+                )}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleSelect(c.id);
+                }}
+            >
+                <Checkbox
+                    checked={isSelected}
+                    onCheckedChange={() => onToggleSelect(c.id)}
+                    aria-label={`Select ${c.name}`}
+                />
+            </div>
+
+            {/* Cells */}
+            {visibleColDefs.map((col) => {
+                const leftOffset = frozenOffsets[col.key] ?? null;
+                const isLastFrozen = col.key === lastFrozenKey;
+                const w = columnWidths[col.key];
+                const stickyStyle: React.CSSProperties | undefined = leftOffset !== null
+                    ? { position: 'sticky', left: leftOffset, zIndex: 10 }
+                    : undefined;
+                const frozenClass = col.frozen
+                    ? cn(isSelected ? 'bg-sky-50/70' : 'bg-white group-hover:bg-slate-50/70', !isLastFrozen && 'border-r border-slate-100')
+                    : '';
+
+                return (
+                    <div
+                        key={col.key}
+                        style={{ width: w, height: ROW_HEIGHT, ...(stickyStyle ?? {}) }}
+                        className={cn('flex shrink-0 items-center px-3 text-xs', frozenClass)}
+                    >
+                        <div className="w-full min-w-0 truncate">
+                            {renderCellContent(c, col.key, onEdit, onStatusChange, onDelete)}
+                        </div>
+                    </div>
+                );
+            })}
         </div>
     );
-}
+});
 
-function AddFilterMenu({ onAdd, existing }: { onAdd: (c: Omit<FilterChip, 'id'>) => void; existing: ContactColumnKey[] }) {
-    const enumFields: ContactColumnKey[] = ['status', 'language', 'department'];
-    const textFields: ContactColumnKey[] = ['name', 'email', 'position', 'responsibility'];
+const RowActionsMenu = React.memo(function RowActionsMenu({
+    contact: c,
+    onStatusChange,
+    onDelete,
+}: {
+    contact: ContactRow;
+    onStatusChange: (id: string, status: ContactStatus) => void;
+    onDelete: (id: string) => void;
+}) {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-9 gap-1.5">
-                    <Plus className="h-3.5 w-3.5" /> Add filter
-                </Button>
+                <button
+                    type="button"
+                    aria-label="Contact actions"
+                    className="h-6 w-6 shrink-0 flex items-center justify-center rounded-md border border-slate-200 bg-white hover:bg-slate-50 opacity-0 group-hover/name:opacity-100 group-hover:opacity-100 data-[state=open]:opacity-100 transition-opacity shadow-2xs cursor-pointer"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <MoreVertical className="h-3.5 w-3.5 text-slate-700" />
+                </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56 p-1">
-                {[...enumFields, ...textFields].filter((f) => !existing.includes(f)).map((f) => {
-                    const col = CONTACT_COLUMNS.find((c) => c.key === f)!;
-                    return (
-                        <DropdownMenuItem
-                            key={f}
-                            onSelect={() => {
-                                if (enumFields.includes(f)) {
-                                    onAdd({ field: f, operator: 'is_one_of', values: [] });
-                                } else {
-                                    onAdd({ field: f, operator: 'contains', values: [] });
-                                }
-                            }}
-                        >
-                            {col.label}
-                        </DropdownMenuItem>
-                    );
-                })}
+            <DropdownMenuContent align="start" sideOffset={4} className="w-48 p-1 rounded-xl shadow-lg border border-slate-200/90 bg-white space-y-0.5">
+                <DropdownMenuItem
+                    onSelect={() => onStatusChange(c.id, c.status === 'inactive' ? 'active' : 'inactive')}
+                    className="text-xs font-normal py-2 px-2.5 rounded-lg text-slate-800 hover:bg-slate-100/80 cursor-pointer flex items-center gap-2.5"
+                >
+                    <UserX className="h-4 w-4 text-slate-700 shrink-0 stroke-[1.75]" />
+                    <span>{c.status === 'inactive' ? 'Activate Contact' : 'Deactivate Contact'}</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                    onSelect={() => onDelete(c.id)}
+                    className="text-xs font-normal py-2 px-2.5 rounded-lg text-rose-600 hover:bg-rose-50 hover:text-rose-700 cursor-pointer flex items-center gap-2.5"
+                >
+                    <Trash2 className="h-4 w-4 text-rose-600 shrink-0 stroke-[1.75]" />
+                    <span>Delete Contact</span>
+                </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
     );
+});
+
+function renderCellContent(
+    c: ContactRow,
+    key: ContactColumnKey,
+    onEdit: (c: ContactRow) => void,
+    onStatusChange: (id: string, status: ContactStatus) => void,
+    onDelete: (id: string) => void,
+) {
+    switch (key) {
+        case 'name':
+            return (
+                <div className="group/name relative flex items-center justify-between w-full min-w-0 pr-1">
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onEdit(c);
+                        }}
+                        className="truncate text-left font-normal text-slate-900 hover:underline hover:text-slate-700 mr-1.5 cursor-pointer"
+                        title={c.name}
+                    >
+                        {c.name}
+                    </button>
+                    <RowActionsMenu
+                        contact={c}
+                        onStatusChange={onStatusChange}
+                        onDelete={onDelete}
+                    />
+                </div>
+            );
+        case 'email':
+            return c.email ? (
+                <a
+                    href={`mailto:${c.email}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="block w-full truncate text-slate-800 hover:text-blue-600 hover:underline"
+                    title={c.email}
+                >
+                    {c.email}
+                </a>
+            ) : null;
+        case 'phone':
+            return c.phone ? (
+                <span className="block w-full truncate text-slate-800" title={c.phone}>
+                    {c.phone}
+                </span>
+            ) : null;
+        case 'supplier':
+            return c.supplierId ? (
+                <Link
+                    href={`/suppliers/${c.supplierNumber || c.supplierId}/overview`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex max-w-full items-center gap-1.5 rounded border border-sky-200/90 bg-sky-50 px-2 py-0.5 text-xs font-normal text-sky-700 hover:bg-sky-100 transition-colors"
+                    title={c.supplierName || c.supplierNumber || c.supplierId}
+                >
+                    <Building2 className="h-3 w-3 text-sky-600 shrink-0" />
+                    <span className="truncate">{c.supplierName || c.supplierNumber || c.supplierId.slice(0, 8)}</span>
+                </Link>
+            ) : null;
+        case 'language':
+            return c.language ? (
+                <span className="block w-full truncate text-slate-700" title={c.language}>
+                    {c.language}
+                </span>
+            ) : null;
+        case 'department':
+            if (!c.department) return null;
+            const depts = c.department.split(/[,;|]/).map((d) => d.trim()).filter(Boolean);
+            return (
+                <div className="flex flex-wrap items-center gap-1 max-w-full overflow-hidden">
+                    {depts.map((d, i) => (
+                        <span
+                            key={i}
+                            className="inline-flex max-w-full items-center truncate rounded border border-slate-200/80 bg-slate-100/90 px-2 py-0.5 text-xs font-normal text-slate-700"
+                            title={d}
+                        >
+                            <span className="truncate">{d}</span>
+                        </span>
+                    ))}
+                </div>
+            );
+        case 'position':
+            if (!c.position) return null;
+            return (
+                <span
+                    className="inline-flex max-w-full items-center truncate rounded border border-slate-200/80 bg-slate-100/90 px-2 py-0.5 text-xs font-normal text-slate-700"
+                    title={c.position}
+                >
+                    <span className="truncate">{c.position}</span>
+                </span>
+            );
+        case 'responsibility':
+            if (!c.responsibility) return null;
+            const respTags = c.responsibility.split(/[,;|]/).map((t) => t.trim()).filter(Boolean);
+            return (
+                <span
+                    className="inline-flex max-w-full items-center truncate rounded border border-slate-200/80 bg-slate-100/90 px-2 py-0.5 text-xs font-normal text-slate-700"
+                    title={respTags.join(', ')}
+                >
+                    <span className="truncate">{respTags[0]}</span>
+                    {respTags.length > 1 && (
+                        <span className="ml-1 text-slate-400">+{respTags.length - 1}</span>
+                    )}
+                </span>
+            );
+        case 'status':
+            return (
+                <span className="inline-flex items-center gap-1.5 text-xs text-slate-700">
+                    <span className={cn('h-2 w-2 rounded-full shrink-0', STATUS_COLORS[c.status])} />
+                    <span className="truncate">{STATUS_LABELS[c.status] || c.status}</span>
+                </span>
+            );
+        default:
+            return null;
+    }
 }
 
-function FilterChipView({ chip, onChange, onRemove }: { chip: FilterChip; onChange: (patch: Partial<FilterChip>) => void; onRemove: () => void }) {
-    const col = CONTACT_COLUMNS.find((c) => c.key === chip.field)!;
-    const isEnum = col.kind === 'enum';
-    const options = col.enumValues || [];
-    const operatorLabel = isEnum ? (chip.operator === 'is_one_of' ? 'is one of' : chip.operator === 'is_none_of' ? 'is none of' : 'is blank') : chip.operator.replace(/_/g, ' ');
+function getHeaderIcon(key: ContactColumnKey) {
+    switch (key) {
+        case 'phone':
+            return <Phone className="h-3.5 w-3.5 text-slate-400 shrink-0" />;
+        case 'supplier':
+            return <Building2 className="h-3.5 w-3.5 text-sky-500 shrink-0" />;
+        case 'language':
+            return <Languages className="h-3.5 w-3.5 text-slate-400 shrink-0" />;
+        case 'department':
+        case 'position':
+        case 'responsibility':
+            return <Info className="h-3.5 w-3.5 text-slate-400 shrink-0" />;
+        default:
+            return null;
+    }
+}
+
+function ColumnsDropdown({
+    allColumns,
+    visibleColumns,
+    onToggleColumn,
+    onSelectAll,
+    onDeselectAll,
+}: {
+    allColumns: typeof CONTACT_COLUMNS;
+    visibleColumns: Set<ContactColumnKey>;
+    onToggleColumn: (key: ContactColumnKey) => void;
+    onSelectAll: () => void;
+    onDeselectAll: () => void;
+}) {
+    const [open, setOpen] = React.useState(false);
+    const [searchQuery, setSearchQuery] = React.useState('');
+
+    const visibleCount = visibleColumns.size;
+    const allSelectable = allColumns.filter((c) => !c.frozen);
+    const allSelected = allSelectable.every((c) => visibleColumns.has(c.key));
+    const isIndeterminate = !allSelected && allSelectable.some((c) => visibleColumns.has(c.key));
+
+    const filteredColumns = allColumns.filter((c) =>
+        c.label.toLowerCase().includes(searchQuery.toLowerCase().trim())
+    );
+
+    const columnsWithInfo: ContactColumnKey[] = ['language', 'department', 'position', 'responsibility', 'status'];
 
     return (
-        <div className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-xs">
-            <span className="font-semibold text-slate-700">{col.label}</span>
-            <span className="text-slate-500">{operatorLabel}</span>
-            {isEnum && chip.operator !== 'is_blank' && chip.operator !== 'is_not_blank' ? (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <button className="rounded bg-white px-1.5 py-0.5 border border-slate-200 hover:bg-slate-50">
-                            {chip.values.length ? chip.values.join(', ') : 'Select…'}
-                        </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-64 p-1 max-h-72 overflow-y-auto">
-                        {options.map((opt) => (
-                            <DropdownMenuCheckboxItem
-                                key={opt}
-                                checked={chip.values.includes(opt)}
-                                onCheckedChange={(checked) => {
-                                    const next = checked
-                                        ? [...chip.values, opt]
-                                        : chip.values.filter((v) => v !== opt);
-                                    onChange({ values: next });
+        <DropdownMenu open={open} onOpenChange={setOpen}>
+            <DropdownMenuTrigger asChild>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-9 gap-1.5 text-xs font-normal border-slate-200 bg-white hover:bg-slate-50 text-slate-700 shadow-xs"
+                >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-600">
+                        <rect width="18" height="18" x="3" y="3" rx="2" />
+                        <path d="M9 3v18" />
+                        <path d="M15 3v18" />
+                    </svg>
+                    <span>Columns {visibleCount}/{allColumns.length}</span>
+                    {open ? (
+                        <ChevronUp className="h-3.5 w-3.5 text-slate-400 ml-0.5" />
+                    ) : (
+                        <ChevronDown className="h-3.5 w-3.5 text-slate-400 ml-0.5" />
+                    )}
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 p-2 rounded-xl shadow-xl border-slate-200/90 bg-white space-y-1">
+                {/* Search input matching Tacto screenshot */}
+                <div className="relative mb-1">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                    <input
+                        type="text"
+                        placeholder="Search..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full h-8 pl-8 pr-2 text-xs bg-slate-50/90 hover:bg-slate-100/90 focus:bg-white border border-transparent focus:border-slate-300 rounded-md outline-none text-slate-800 placeholder:text-slate-400 transition-colors"
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => e.stopPropagation()}
+                    />
+                </div>
+
+                {/* Select all */}
+                <button
+                    type="button"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        if (allSelected) onDeselectAll();
+                        else onSelectAll();
+                    }}
+                    className="flex items-center w-full gap-2.5 px-2 py-1.5 rounded-md hover:bg-slate-50 text-xs transition-colors cursor-pointer select-none"
+                >
+                    <div className={cn(
+                        "h-4 w-4 rounded flex items-center justify-center transition-colors shrink-0",
+                        allSelected ? "bg-zinc-800 text-white" : isIndeterminate ? "bg-zinc-800 text-white" : "border border-slate-300 bg-white"
+                    )}>
+                        {(allSelected || isIndeterminate) && <Check className="h-3 w-3 stroke-[3]" />}
+                    </div>
+                    <span className="font-medium text-slate-800">Select all</span>
+                </button>
+
+                <div className="h-px bg-slate-100 my-1" />
+
+                {/* Columns List */}
+                <div className="max-h-64 overflow-y-auto space-y-0.5">
+                    {filteredColumns.map((col) => {
+                        const isVisible = visibleColumns.has(col.key);
+                        const isFrozen = col.frozen;
+                        const hasInfo = columnsWithInfo.includes(col.key);
+
+                        return (
+                            <button
+                                key={col.key}
+                                type="button"
+                                disabled={isFrozen}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    if (!isFrozen) onToggleColumn(col.key);
                                 }}
-                                onSelect={(e) => e.preventDefault()}
+                                className={cn(
+                                    "flex items-center justify-between w-full px-2 py-1.5 rounded-md text-xs transition-colors select-none",
+                                    isFrozen ? "opacity-60 cursor-not-allowed" : "hover:bg-slate-50 cursor-pointer text-slate-800"
+                                )}
                             >
-                                {opt}
-                            </DropdownMenuCheckboxItem>
-                        ))}
-                        <div className="flex items-center gap-2 pt-2 mt-1 border-t px-1">
-                            <button onClick={() => onChange({ operator: 'is_one_of' })} className="text-xs text-slate-500 hover:underline">is one of</button>
-                            <button onClick={() => onChange({ operator: 'is_none_of' })} className="text-xs text-slate-500 hover:underline">is none of</button>
-                            <button onClick={() => onChange({ operator: 'is_blank', values: [] })} className="text-xs text-slate-500 hover:underline ml-auto">is blank</button>
-                        </div>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            ) : !isEnum ? (
-                <Input
-                    value={chip.values[0] ?? ''}
-                    onChange={(e) => onChange({ values: [e.target.value] })}
-                    placeholder="value"
-                    className="h-6 w-32 text-xs"
-                />
-            ) : null}
-            <button onClick={onRemove} className="ml-1 rounded-full p-0.5 text-slate-400 hover:bg-slate-200 hover:text-slate-700">
-                <X className="h-3 w-3" />
-            </button>
-        </div>
+                                <div className="flex items-center gap-2.5 truncate">
+                                    <div className={cn(
+                                        "h-4 w-4 rounded flex items-center justify-center transition-colors shrink-0",
+                                        isFrozen
+                                            ? "bg-slate-400 text-white"
+                                            : isVisible
+                                                ? "bg-zinc-800 text-white"
+                                                : "border border-slate-300 bg-white"
+                                    )}>
+                                        {(isVisible || isFrozen) && <Check className="h-3 w-3 stroke-[3]" />}
+                                    </div>
+                                    <span className={cn(
+                                        "truncate",
+                                        isFrozen ? "text-slate-400 font-normal" : isVisible ? "text-slate-800 font-normal" : "text-slate-600 font-normal"
+                                    )}>
+                                        {col.label}
+                                    </span>
+                                </div>
+                                {hasInfo && (
+                                    <Info className="h-3.5 w-3.5 text-slate-400/80 shrink-0 ml-1.5" />
+                                )}
+                            </button>
+                        );
+                    })}
+                </div>
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 }

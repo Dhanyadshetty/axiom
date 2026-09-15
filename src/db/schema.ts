@@ -293,6 +293,22 @@ export const users = pgTable('users', {
     countryScopeIdx: index('user_country_scope_idx').on(table.countryScope),
 }));
 
+export const trustedDevices = pgTable('trusted_devices', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+    tokenHash: text('token_hash').notNull().unique(),
+    deviceName: text('device_name').notNull(),
+    userAgent: text('user_agent'),
+    ipAddress: text('ip_address'),
+    lastUsedAt: timestamp('last_used_at').defaultNow(),
+    expiresAt: timestamp('expires_at').notNull(),
+    createdAt: timestamp('created_at').defaultNow(),
+}, (table: any) => ({
+    trustedDeviceUserIdx: index('trusted_device_user_idx').on(table.userId),
+    trustedDeviceTokenHashIdx: uniqueIndex('trusted_device_token_hash_idx').on(table.tokenHash),
+    trustedDeviceExpiresIdx: index('trusted_device_expires_idx').on(table.expiresAt),
+}));
+
 export const suppliers = pgTable('suppliers', {
     id: uuid('id').defaultRandom().primaryKey(),
     name: text('name').notNull(),
@@ -1002,6 +1018,28 @@ export const contacts = pgTable('contacts', {
     contactSupplierEmailIdx: index('contact_supplier_email_idx').on(table.supplierId, table.email),
 }));
 
+export const articles = pgTable('articles', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    articleNumber: text('article_number').notNull(),
+    description: text('description'),
+    longText: text('long_text'),
+    cnCode: text('cn_code'),
+    category: text('category'),
+    netWeight: decimal('net_weight', { precision: 12, scale: 4 }),
+    netWeightUnit: text('net_weight_unit'),
+    budgetPrice: decimal('budget_price', { precision: 12, scale: 2 }),
+    costModel: text('cost_model'),
+    currency: text('currency').default('EUR'),
+    supplierId: uuid('supplier_id').references(() => suppliers.id),
+    createdBy: uuid('created_by').references(() => users.id),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+}, (table: any) => ({
+    articleNumberIdx: index('article_number_idx').on(table.articleNumber),
+    articleCategoryIdx: index('article_category_idx').on(table.category),
+    articleSupplierIdx: index('article_supplier_idx').on(table.supplierId),
+}));
+
 export const supportTicketStatusEnum = pgEnum('support_ticket_status', ['open', 'in_progress', 'resolved', 'closed']);
 export const supportTicketPriorityEnum = pgEnum('support_ticket_priority', ['low', 'medium', 'high', 'critical']);
 
@@ -1607,3 +1645,4 @@ export type EmailSendLog = typeof emailSendLog.$inferSelect;
 
 export type SupplierEvaluationTemplate = typeof supplierEvaluationTemplates.$inferSelect;
 export type SupplierEvaluation = typeof supplierEvaluations.$inferSelect;
+export type TrustedDevice = typeof trustedDevices.$inferSelect;

@@ -35,7 +35,6 @@ export const authConfig = {
             if (isOnLoginPage) {
                 if (isLoggedIn) {
                     const role = auth?.user?.role;
-                    if (role === 'admin') return Response.redirect(new URL('/admin', nextUrl));
                     if (role === 'supplier') return Response.redirect(new URL('/portal', nextUrl));
                     return Response.redirect(new URL('/', nextUrl));
                 }

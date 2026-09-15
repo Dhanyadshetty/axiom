@@ -4,12 +4,12 @@ import * as React from 'react';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const ContactsTable = dynamic(
-    () => import('@/components/contacts/contacts-table').then((m) => m.ContactsTable),
+const ArticlesTable = dynamic(
+    () => import('@/components/articles/articles-table').then((m) => m.ArticlesTable),
     {
         ssr: false,
         loading: () => (
-            <div className="flex h-full flex-col space-y-4 p-4 lg:p-6 bg-slate-50/50">
+            <div className="flex h-full flex-col space-y-4 p-4 lg:p-6 bg-white">
                 <div className="flex items-center justify-between">
                     <Skeleton className="h-7 w-32" />
                     <div className="flex gap-2">
@@ -24,14 +24,10 @@ const ContactsTable = dynamic(
     },
 );
 
-export default function ContactsPage() {
+export default function ArticlesPage() {
     return (
-        <div className="flex h-[calc(100vh-3.5rem)] min-h-0 flex-col overflow-hidden bg-slate-50/60 p-4 lg:p-6">
-            <ContactsTable
-                scopeAll={true}
-                showSupplierColumn={true}
-                showPageTitle={true}
-            />
+        <div className="flex h-[calc(100vh-3.5rem)] min-h-0 flex-col overflow-hidden bg-white">
+            <ArticlesTable />
         </div>
     );
 }

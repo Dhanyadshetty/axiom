@@ -39,15 +39,18 @@ export const DEFAULT_COLUMN_WIDTHS: Record<ContactColumnKey, number> = {
 export const NAME_COLUMN_WIDTH = DEFAULT_COLUMN_WIDTHS.name;
 
 export const DEFAULT_DEPARTMENT_OPTIONS = [
-    'Purchasing/Procurement',
     'Sales',
+    'Purchasing/Procurement',
+    'Executive Management',
     'Engineering',
-    'Quality',
-    'Logistics',
+    'Quality Management',
+    'Logistics/Supply Chain',
+    'Product Management',
+    'Research & Development',
+    'Marketing',
     'Finance',
     'IT',
     'HR',
-    'Management',
 ] as const;
 
 export const DEFAULT_LANGUAGE_OPTIONS = [
@@ -64,7 +67,7 @@ export const DEFAULT_LANGUAGE_OPTIONS = [
 ] as const;
 
 export const CONTACT_COLUMNS: ContactColumnDef[] = [
-    { key: 'name', label: 'Name', required: true, kind: 'text', defaultWidth: DEFAULT_COLUMN_WIDTHS.name, frozen: true },
+    { key: 'name', label: 'Contact', required: true, kind: 'text', defaultWidth: DEFAULT_COLUMN_WIDTHS.name, frozen: true },
     { key: 'email', label: 'Email', required: true, kind: 'text', defaultWidth: DEFAULT_COLUMN_WIDTHS.email },
     { key: 'phone', label: 'Phone number', required: false, kind: 'text', defaultWidth: DEFAULT_COLUMN_WIDTHS.phone },
     { key: 'supplier', label: 'Supplier', required: false, kind: 'supplier', defaultWidth: DEFAULT_COLUMN_WIDTHS.supplier },
@@ -78,15 +81,15 @@ export const CONTACT_COLUMNS: ContactColumnDef[] = [
 export const IGNORE_COLUMN = '__ignore__';
 
 export const FUZZY_MAP: Array<{ key: ContactColumnKey; patterns: RegExp[] }> = [
-    { key: 'name', patterns: [/^name$/i, /full\s*name/i, /kontakt/i, /^contact$/i] },
-    { key: 'email', patterns: [/e-?mail/i, /email/i] },
-    { key: 'phone', patterns: [/phone/i, /tel(efon|ephone)?/i, /mobile/i, /handy/i] },
-    { key: 'supplier', patterns: [/supplier/i, /vendor/i, /lieferant/i, /company/i] },
-    { key: 'language', patterns: [/language/i, /sprache/i] },
-    { key: 'department', patterns: [/department/i, /abteilung/i] },
-    { key: 'position', patterns: [/position/i, /role/i, /title/i, /job\s*title/i, /funktion/i] },
-    { key: 'responsibility', patterns: [/responsibility|responsibilities/i, /verantwortung/i] },
-    { key: 'status', patterns: [/^status$/i] },
+    { key: 'name', patterns: [/^name$/i, /full\s*name/i, /first\s*name/i, /last\s*name/i, /kontakt/i, /^contact$/i, /ansprechpartner/i, /person/i, /vorname/i, /nachname/i] },
+    { key: 'email', patterns: [/e-?mail/i, /email/i, /mail/i, /e_mail/i, /adresse/i] },
+    { key: 'phone', patterns: [/phone/i, /tel(efon|ephone)?/i, /mobile/i, /mobil/i, /handy/i, /cell/i, /rufnummer/i] },
+    { key: 'supplier', patterns: [/supplier/i, /vendor/i, /lieferant/i, /company/i, /firma/i, /kreditor/i, /creditor/i] },
+    { key: 'language', patterns: [/language/i, /sprache/i, /^lang$/i] },
+    { key: 'department', patterns: [/department/i, /abteilung/i, /bereich/i, /^dept$/i] },
+    { key: 'position', patterns: [/position/i, /role/i, /title/i, /job\s*title/i, /funktion/i, /beruf/i] },
+    { key: 'responsibility', patterns: [/responsibility|responsibilities/i, /verantwortung/i, /zuständigkeit/i, /scope/i] },
+    { key: 'status', patterns: [/^status$/i, /zustand/i] },
 ];
 
 export function suggestMapping(header: string): ContactColumnKey | '__ignore__' {

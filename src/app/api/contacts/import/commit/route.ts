@@ -8,6 +8,8 @@ const rowSchema = z.object({
     name: z.string().optional().default(''),
     email: z.string().optional().default(''),
     phone: z.string().optional().nullable(),
+    supplierId: z.string().optional().nullable(),
+    supplier: z.string().optional().nullable(),
     language: z.string().optional().nullable(),
     department: z.string().optional().nullable(),
     position: z.string().optional().nullable(),
@@ -16,7 +18,7 @@ const rowSchema = z.object({
 });
 
 const bodySchema = z.object({
-    supplierId: z.string().trim().min(1).nullable(),
+    supplierId: z.string().trim().nullable().optional(),
     rows: z.array(rowSchema),
     dryRun: z.boolean().optional(),
 });
@@ -31,9 +33,9 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Invalid body', details: parsed.error.issues }, { status: 400 });
     }
 
-    const { supplierId, rows, dryRun } = parsed.data;
+    const { supplierId = null, rows, dryRun } = parsed.data;
 
-    const review = await prepareContactImport({ supplierId, rows: rows as unknown as Array<Record<string, string>> });
+    const review = await prepareContactImport({ supplierId: supplierId || null, rows: rows as unknown as Array<Record<string, string>> });
 
     if (dryRun) {
         return NextResponse.json({
@@ -49,6 +51,8 @@ export async function POST(req: Request) {
         name: (r.name || '').trim(),
         email: (r.email || '').trim(),
         phone: r.phone || null,
+        supplierId: r.supplierId || null,
+        supplier: r.supplier || null,
         language: r.language || null,
         department: r.department || null,
         position: r.position || null,
@@ -56,7 +60,7 @@ export async function POST(req: Request) {
         status: (r.status || 'active') as any,
     })).filter((r) => r.name && isValidEmail(r.email));
 
-    const result = await commitContactImport({ supplierId, rows: accepted });
+    const result = await commitContactImport({ supplierId: supplierId || null, rows: accepted });
     return NextResponse.json({
         success: result.success,
         imported: result.imported,

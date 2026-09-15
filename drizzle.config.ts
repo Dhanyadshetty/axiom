@@ -3,8 +3,8 @@ import { defineConfig } from "drizzle-kit";
 import dotenv from "dotenv";
 
 import { existsSync } from "fs";
-if (existsSync(".env.local")) dotenv.config({ path: ".env.local" });
-else dotenv.config();
+if (existsSync(".env.local")) dotenv.config({ path: ".env.local", override: true });
+else dotenv.config({ override: true });
 
 export default defineConfig({
     schema: "./src/db/schema.ts",

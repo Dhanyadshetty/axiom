@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { User, Shield, Loader, Eye, EyeOff, Fingerprint } from "lucide-react";
 import { changePassword, updateProfile } from "@/app/actions/auth";
 import { TwoFactorSetup } from "@/components/admin/two-factor-setup";
+import { TrustedDevicesCard } from "@/components/admin/trusted-devices-card";
 import { useLanguage } from "@/components/i18n/language-provider";
 import { t } from "@/lib/i18n";
 
@@ -259,6 +260,9 @@ export default function ProfileClient({ user }: ProfileClientProps) {
                         />
                     </CardContent>
                 </Card>
+
+                {/* Trusted Devices (30-day MFA bypass) */}
+                <TrustedDevicesCard />
             </div>
         </div>
     );

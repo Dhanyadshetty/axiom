@@ -20,6 +20,7 @@ import { TelemetryService } from "./lib/telemetry"
 import { TotpService } from "@/lib/totp";
 import crypto from "node:crypto";
 import { normalizeIdentifier, verifyPassword } from "./lib/auth-credentials";
+import { validateAndTouchTrustedDevice } from "@/lib/trusted-device";
 
 function identifierHash(identifier: string) {
     return crypto.createHash("sha256").update(normalizeIdentifier(identifier)).digest("hex").slice(0, 16);
@@ -69,6 +70,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                 identifier: { label: "Identifier", type: "text" },
                 password: { label: "Password", type: "password" },
                 code: { label: "2FA Code", type: "text" },
+                trustedDeviceToken: { label: "Trusted Device Token", type: "text" },
             },
             async authorize(credentials) {
                 const requestedIdentifier = String(credentials?.identifier || "");
@@ -79,6 +81,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                     const identifier = normalizeIdentifier(requestedIdentifier);
                     const password = String(credentials?.password || "");
                     const code = String(credentials?.code || "");
+                    const trustedDeviceToken = String(credentials?.trustedDeviceToken || "");
 
                     if (!identifier || !password) {
                         console.log("[AUTH] Missing identifier or password");
@@ -112,20 +115,34 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
 
                         // Check for 2FA
                         if (user.isTwoFactorEnabled && user.twoFactorSecret) {
-                            // 2FA is fully enabled — require a valid code
-                            if (!code || code === 'undefined' || code === 'null' || code === '') {
-                                console.log(`[AUTH] 2FA_REQUIRED | user: ${user.email}`);
-                                throw new RequireTwoFactorError();
+                            let isTrustedDevice = false;
+                            if (trustedDeviceToken && trustedDeviceToken !== 'undefined' && trustedDeviceToken !== 'null') {
+                                isTrustedDevice = await validateAndTouchTrustedDevice(user.id, trustedDeviceToken);
+                                if (isTrustedDevice) {
+                                    console.log(`[AUTH] 2FA_BYPASSED_TRUSTED_DEVICE | user: ${user.email}`);
+                                    await TelemetryService.trackEvent("Security", "mfa_bypassed_trusted_device", {
+                                        userId: user.id,
+                                        email: user.email,
+                                    });
+                                }
                             }
 
-                            const isValidToken = TotpService.verifyToken(user.twoFactorSecret, code);
-                            if (!isValidToken) {
-                                console.warn(`[AUTH] 2FA_FAILED | user: ${user.email}`);
-                                await TelemetryService.trackEvent("Security", "login_failed_invalid_2fa", {
-                                    userId: user.id,
-                                    identifierHash: identifierHash(identifier),
-                                });
-                                return null;
+                            if (!isTrustedDevice) {
+                                // 2FA is fully enabled — require a valid code
+                                if (!code || code === 'undefined' || code === 'null' || code === '') {
+                                    console.log(`[AUTH] 2FA_REQUIRED | user: ${user.email}`);
+                                    throw new RequireTwoFactorError();
+                                }
+
+                                const isValidToken = TotpService.verifyToken(user.twoFactorSecret, code);
+                                if (!isValidToken) {
+                                    console.warn(`[AUTH] 2FA_FAILED | user: ${user.email}`);
+                                    await TelemetryService.trackEvent("Security", "login_failed_invalid_2fa", {
+                                        userId: user.id,
+                                        identifierHash: identifierHash(identifier),
+                                    });
+                                    return null;
+                                }
                             }
                         } else if (!user.isTwoFactorEnabled) {
                             // 2FA not yet enabled — user must complete setup before logging in
