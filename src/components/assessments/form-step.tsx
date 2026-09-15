@@ -86,6 +86,30 @@ export function FormStep({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [canManage, registerSave, messageDraft]);
 
+    React.useEffect(() => {
+        if (!canManage || !detail.id) return;
+        const interval = window.setInterval(() => {
+            try {
+                localStorage.setItem(`axiom:form-message:${detail.id}`, JSON.stringify({ messageDraft }));
+            } catch { /* ignore */ }
+        }, 4000);
+        return () => window.clearInterval(interval);
+    }, [canManage, detail.id, messageDraft]);
+
+    React.useEffect(() => {
+        if (!canManage || !detail.id) return;
+        try {
+            const stored = localStorage.getItem(`axiom:form-message:${detail.id}`);
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                if (parsed?.messageDraft && !messageDraft) {
+                    setMessageDraft(parsed.messageDraft);
+                }
+            }
+        } catch { /* ignore */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     // Initialize active group to first group
     React.useEffect(() => {
         if (detail.documentRequestGroups.length > 0 && !activeGroupId) {

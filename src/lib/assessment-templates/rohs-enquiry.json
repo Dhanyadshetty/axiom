@@ -60,11 +60,13 @@
       "blocks": [
         {
           "key": "rohs_status",
-          "title": "RoHS status",
-          "titleDe": "RoHS-Status",
+          "title": "Assessment of RoHS Relevance for Your Supplied Products",
+          "titleDe": "Bewertung der RoHS-Relevanz Ihrer gelieferten Produkte",
           "icon": "alert-triangle",
+          "message": "Products are considered RoHS-affected if they are electrical or electronic equipment (EEE) or their components/assemblies and at least one of the following limits is exceeded in homogeneous material:\n\n• They contain Cadmium (Cd) > 0.01% (w/w) in the homogeneous material.\n• They contain Lead (Pb), Mercury (Hg), Hexavalent Chromium (Cr VI), PBB, or PBDE > 0.1% (w/w).\n• They contain one of the four plasticizers DEHP, BBP, DBP, or DIBP > 0.1% (w/w).\n\nDepending on whether and to what extent your products are affected by RoHS, we kindly ask you to provide appropriate supporting documents, such as:\n\n• Declarations of Conformity\n• Test / Laboratory Reports (e.g. IEC 62321 series)\n• Material / Component Declarations (IPC-1752A, XML)\n\nEven in the case of non-applicability, a corresponding confirmation letter is required as proof.",
+          "messageDe": "Produkte gelten als RoHS-betroffen, wenn sie elektrische oder elektronische Geräte (EEG) oder deren Komponenten/Baugruppen sind und mindestens eine der folgenden Grenzwerte in homogenem Material überschritten wird:\n\n• Sie enthalten Cadmium (Cd) > 0,01 % (m/m) im homogenen Material.\n• Sie enthalten Blei (Pb), Quecksilber (Hg), sechswertiges Chrom (Cr VI), PBB oder PBDE > 0,1 % (m/m).\n• Sie enthalten einen der vier Weichmacher DEHP, BBP, DBP oder DIBP > 0,1 % (m/m).\n\nJe nachdem, ob und inwieweit Ihre Produkte von RoHS betroffen sind, bitten wir Sie höflich, geeignete Nachweise bereitzustellen, zum Beispiel:\n\n• Konformitätserklärungen\n• Prüf-/Laborberichte (z. B. IEC-62321-Serie)\n• Material-/Komponentenerklärungen (IPC-1752A, XML)\n\nAuch im Fall der Nichtanwendbarkeit ist ein entsprechender Bestätigungsschreiben als Nachweis erforderlich.",
           "fields": [
-            { "key": "rohs_aware", "label": "We are aware of RoHS obligations (Directive 2011/65/EU)", "labelDe": "Wir kennen die RoHS-Verpflichtungen (Richtlinie 2011/65/EU)", "type": "yes_no_confirm", "required": true },
+            { "key": "rohs_affected", "label": "Are the products you supplied affected by RoHS?", "labelDe": "Sind die gelieferten Produkte von RoHS betroffen?", "type": "select_single", "required": true, "options": [{ "value": "some_items", "label": "Yes, some items affected" }, { "value": "none", "label": "No, none affected" }] },
             { "key": "rohs_substances_under_limits", "label": "Restricted substances are below legal thresholds", "labelDe": "Beschränkte Stoffe liegen unter den gesetzlichen Grenzwerten", "type": "yes_no_confirm", "required": true },
             { "key": "rohs_testing_performed", "label": "Material testing is performed to verify RoHS compliance", "labelDe": "Materialprüfungen werden zur RoHS-Compliance durchgeführt", "type": "yes_no_confirm", "required": true },
             { "key": "rohs_comments", "label": "Comments / evidence", "labelDe": "Kommentare / Nachweise", "type": "long_text_rich", "required": false }
@@ -72,12 +74,13 @@
         },
         {
           "key": "rohs_documents",
-          "title": "RoHS documentation",
-          "titleDe": "RoHS-Dokumentation",
+          "title": "Upload of RoHS Compliance Documents",
+          "titleDe": "Hochladen von RoHS-Konformitätsdokumenten",
           "icon": "file-text",
+          "message": "Depending on whether and to what extent your products are affected by RoHS, we kindly ask you to provide appropriate supporting documents, such as:\n\n• Declarations of Conformity\n• Test / Laboratory Reports (e.g. IEC 62321 series)\n• Material / Component Declarations (IPC-1752A, XML)\n\nEven in the case of non-applicability, a corresponding confirmation letter is required as proof.",
+          "messageDe": "Je nachdem, ob und inwieweit Ihre Produkte von RoHS betroffen sind, bitten wir Sie höflich, geeignete Nachweise bereitzustellen, zum Beispiel:\n\n• Konformitätserklärungen\n• Prüf-/Laborberichte (z. B. IEC-62321-Serie)\n• Material-/Komponentenerklärungen (IPC-1752A, XML)\n\nAuch im Fall der Nichtanwendbarkeit ist ein entsprechender Bestätigungsschreiben als Nachweis erforderlich.",
           "fields": [
-            { "key": "rohs_declaration", "label": "RoHS compliance declaration", "labelDe": "RoHS-Compliance-Erklärung", "type": "document_upload", "required": false },
-            { "key": "material_test_report", "label": "Material test report", "labelDe": "Materialprüfbericht", "type": "document_upload", "required": false }
+            { "key": "rohs_compliance_documents", "label": "Upload of RoHS Compliance Documents", "labelDe": "RoHS-Konformitätsdokumente", "type": "document_upload", "required": false, "modalUpload": true }
           ]
         }
       ]

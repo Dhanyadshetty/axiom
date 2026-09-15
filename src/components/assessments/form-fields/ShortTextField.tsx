@@ -52,11 +52,13 @@ export function ShortTextField({
   };
 
   return (
-    <div className="space-y-1.5">
-      <Label className="text-sm font-medium text-slate-800 flex items-center gap-1.5">
-        {label}
-        {required && <span className="text-rose-500" aria-hidden="true">*</span>}
-      </Label>
+    <div className={label ? "space-y-1.5" : "space-y-0 w-full"}>
+      {label ? (
+        <Label className="text-sm font-medium text-slate-800 flex items-center gap-1.5">
+          {label}
+          {required && <span className="text-rose-600 font-bold" aria-hidden="true">*</span>}
+        </Label>
+      ) : null}
       <Input
         id={`field-${fieldKey}`}
         value={value}

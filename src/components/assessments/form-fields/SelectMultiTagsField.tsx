@@ -20,6 +20,9 @@ interface SelectMultiTagsFieldProps {
   disabled?: boolean;
   options: SelectOption[];
   placeholder?: string;
+  triggerClassName?: string;
+  contentClassName?: string;
+  compact?: boolean;
 }
 
 export function SelectMultiTagsField({
@@ -31,6 +34,9 @@ export function SelectMultiTagsField({
   disabled,
   options = [],
   placeholder,
+  triggerClassName,
+  contentClassName,
+  compact = false,
 }: SelectMultiTagsFieldProps) {
   const [open, setOpen] = React.useState(false);
 
@@ -43,13 +49,15 @@ export function SelectMultiTagsField({
   };
 
   return (
-    <div className="space-y-1.5">
-      <Label className="text-sm font-medium text-slate-800 flex items-center gap-1.5">
-        {label}
-        {required && <span className="text-rose-500" aria-hidden="true">*</span>}
-      </Label>
+    <div className={cn("w-full", compact ? "space-y-0" : "space-y-1.5")}>
+      {label && (
+        <Label className="text-sm font-medium text-slate-800 flex items-center gap-1.5">
+          {label}
+          {required && <span className="text-rose-600 font-bold" aria-hidden="true">*</span>}
+        </Label>
+      )}
 
-      <div className="flex flex-wrap gap-1.5 min-h-[42px]">
+      <div className={cn("flex flex-wrap gap-1.5", compact ? "min-h-[2rem]" : "min-h-[42px]")}>
         {value.map((v) => {
           const opt = options.find((o) => o.value === v);
           return (
@@ -75,10 +83,17 @@ export function SelectMultiTagsField({
           );
         })}
         <Select open={open} onOpenChange={setOpen} disabled={disabled}>
-          <SelectTrigger className="h-9 min-w-[150px]" onClick={() => setOpen(!open)}>
+          <SelectTrigger
+            className={cn(
+              "h-9 min-w-[150px] rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm transition-colors hover:border-slate-300 focus:ring-0 focus-visible:ring-0 data-[placeholder]:text-slate-400",
+              compact && "h-8 min-h-[2rem] py-1.5",
+              triggerClassName
+            )}
+            onClick={() => setOpen(!open)}
+          >
             <SelectValue placeholder={placeholder || "Select..."} />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className={cn("rounded-xl border border-slate-200 bg-white shadow-lg", contentClassName)}>
             {options.map((opt) => (
               <SelectItem
                 key={opt.value}

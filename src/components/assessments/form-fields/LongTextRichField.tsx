@@ -106,7 +106,7 @@ export function LongTextRichField({
     <div className="space-y-1.5">
       <Label className="text-sm font-medium text-slate-800 flex items-center gap-1.5">
         {label}
-        {required && <span className="text-rose-500" aria-hidden="true">*</span>}
+        {required && <span className="text-rose-600 font-bold" aria-hidden="true">*</span>}
       </Label>
 
       {!disabled && (

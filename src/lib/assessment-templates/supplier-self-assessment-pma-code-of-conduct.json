@@ -47,7 +47,7 @@
           "fields": [
             { "key": "legal_form", "label": "Legal form", "labelDe": "Rechtsform", "type": "short_text", "required": false },
             { "key": "parent_company", "label": "Parent company", "labelDe": "Muttergesellschaft", "type": "short_text", "required": false },
-            { "key": "tax_id", "label": "Tax ID", "labelDe": "Steuernummer", "type" marriage conflict another server one minute arrival check inbrella feature supply and study even default market default market default model default main mark nodolla default full request new pool request features in that stood that we can do some more changes the world is that it's going to replace the code right now so what we did in the process was senior processes in thoughts and follows here you can see a supplier code of JSON this file I will change some: "short_text", "required": false },
+            { "key": "tax_id", "label": "Tax ID", "labelDe": "Steuernummer", "type": "short_text", "required": false },
             { "key": "vat_id", "label": "VAT ID", "labelDe": "USt-IdNr.", "type": "short_text", "required": true },
             { "key": "foundation_year", "label": "Foundation year", "labelDe": "Gründungsjahr", "type": "number", "required": false, "min": 1800, "max": 2100 }
           ]
@@ -134,7 +134,25 @@
                 "emptyState": "No production or sales sites have been provided yet.",
                 "emptyStateDe": "Es wurden noch keine Produktions- oder Vertriebsstandorte angegeben.",
                 "addButtonLabel": "+ Add site",
-                "addButtonLabelDe": "+ Standort hinzufügen"
+                "addButtonLabelDe": "+ Standort hinzufügen",
+                "addRowModalTitle": "Add production and sales site",
+                "addRowModalSubtitle": "Enter the site information.",
+                "addRowPrimaryButtonLabel": "Add",
+                "addRowCancelButtonLabel": "Cancel",
+                "addRowModalFields": [
+                  { "key": "site", "label": "Site", "labelDe": "Standort", "type": "short_text", "required": true, "placeholder": "Enter site name" },
+                  { "key": "divisions", "label": "Divisions", "labelDe": "Sparten", "type": "select_multi_tags", "required": false, "options": [
+                    { "value": "sales", "label": "Sales", "labelDe": "Vertrieb" },
+                    { "value": "production", "label": "Production", "labelDe": "Produktion" }
+                  ] },
+                  { "key": "shifts", "label": "Shifts", "labelDe": "Schichten", "type": "select_multi_tags", "required": false, "options": [
+                    { "value": "0", "label": "0", "labelDe": "0" },
+                    { "value": "1", "label": "1", "labelDe": "1" },
+                    { "value": "2", "label": "2", "labelDe": "2" },
+                    { "value": "3", "label": "3", "labelDe": "3" },
+                    { "value": "4", "label": "4", "labelDe": "4" }
+                  ] }
+                ]
               }
             ],
             "subBlocks": [
@@ -214,15 +232,26 @@
                     { "value": "executive_management", "label": "Executive Management", "labelDe": "Geschäftsleitung" },
                     { "value": "complaints", "label": "Complaints", "labelDe": "Beschwerden" },
                     { "value": "engineering", "label": "Engineering", "labelDe": "Konstruktion" }
+                  ]},
+                  { "key": "responsibility", "label": "Responsibility", "labelDe": "Verantwortung", "type": "select_multi_tags", "required": false, "options": [
+                    { "value": "price_inquiries_for_articles", "label": "Price Inquiries for Articles", "labelDe": "Preisprüfungen für Artikel" },
+                    { "value": "information_requests_about_articles", "label": "Information Requests about Articles", "labelDe": "Informationsanfragen zu Artikeln" },
+                    { "value": "information_requests_about_supplier_organization", "label": "Information Requests about Supplier Organization", "labelDe": "Informationsanfragen zur Lieferantenorganisation" },
+                    { "value": "automated_document_requests", "label": "Automated Document Requests", "labelDe": "Automatisierte Dokumentenanforderungen" },
+                    { "value": "compliance_queries", "label": "Compliance Queries", "labelDe": "Compliance-Abfragen" }
                   ]}
                 ],
                 "addButtonLabel": "+ Add Contact",
                 "addButtonLabelDe": "+ Kontakt hinzufügen",
+                "modalTitle": "Add Contact",
+                "modalSubtitle": "Enter the Contact's information.",
+                "modalPrimaryButtonLabel": "Create",
+                "modalCancelButtonLabel": "Cancel",
                 "modalFields": [
-                  { "key": "first_name", "label": "First name", "labelDe": "Vorname", "type": "short_text", "required": false },
-                  { "key": "last_name", "label": "Last name", "labelDe": "Nachname", "type": "short_text", "required": false },
-                  { "key": "email", "label": "Email", "labelDe": "E-Mail", "type": "short_text", "required": true },
-                  { "key": "phone", "label": "Phone", "labelDe": "Telefon", "type": "short_text", "required": false },
+                  { "key": "first_name", "label": "First name", "labelDe": "Vorname", "type": "short_text", "required": false, "placeholder": "Enter first name" },
+                  { "key": "last_name", "label": "Last name", "labelDe": "Nachname", "type": "short_text", "required": false, "placeholder": "Enter last name" },
+                  { "key": "email", "label": "Email", "labelDe": "E-Mail", "type": "short_text", "required": true, "placeholder": "Enter business email" },
+                  { "key": "phone", "label": "Phone", "labelDe": "Telefon", "type": "short_text", "required": false, "placeholder": "Add phone numbers" },
                   { "key": "language", "label": "Language", "labelDe": "Sprache", "type": "select_single", "required": false, "options": [
                     { "value": "de", "label": "German", "labelDe": "Deutsch" },
                     { "value": "en", "label": "English", "labelDe": "Englisch" },
@@ -250,7 +279,7 @@
                     { "value": "complaints", "label": "Complaints", "labelDe": "Beschwerden" },
                     { "value": "engineering", "label": "Engineering", "labelDe": "Konstruktion" }
                   ]},
-                  { "key": "responsibility", "label": "Responsibility", "labelDe": "Verantwortung", "type": "select_single", "required": false, "options": [
+                  { "key": "responsibility", "label": "Responsibility", "labelDe": "Verantwortung", "type": "select_multi_tags", "required": false, "options": [
                     { "value": "price_inquiries_articles", "label": "Price Inquiries for Articles", "labelDe": "Preisanfragen für Artikel" },
                     { "value": "info_requests_articles", "label": "Information Requests about Articles", "labelDe": "Informationsanfragen zu Artikeln" },
                     { "value": "info_requests_supplier_org", "label": "Information Requests about Supplier Organization", "labelDe": "Informationsanfragen zur Lieferantenorganisation" },
@@ -542,8 +571,8 @@
               "helperText": "Please review and confirm · N templates provided",
               "helperTextDe": "Bitte durchsehen und bestätigen · N Vorlagen bereitgestellt",
               "templates": [
-                { "id": "coc_1", "name": "Supplier Code of Conduct v2.1", "nameDe": "Lieferantenverhaltenskodex v2.1", "url": "/documents/supplier-code-of-conduct-v2.1.pdf" },
-                { "id": "coc_2", "name": "Anti-Corruption Policy", "nameDe": "Antikorruptionsrichtlinie", "url": "/documents/anti-corruption-policy.pdf" }
+                { "id": "coc_3", "name": "2023-02-01-prettl-code-of-conduct.pdf", "nameDe": "2023-02-01-prettl-code-of-conduct.pdf", "url": "/documents/2023-02-01-prettl-code-of-conduct.pdf" },
+                { "id": "coc_4", "name": "2023-30-06-code-of-conduct-pma-english.pdf", "nameDe": "2023-30-06-code-of-conduct-pma-english.pdf", "url": "/documents/2023-30-06-code-of-conduct-pma-english.pdf" }
               ]
             },
             {

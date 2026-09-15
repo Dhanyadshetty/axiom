@@ -58,6 +58,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { FieldRenderer } from "./form-fields/FieldRenderer";
+import { resolveAssessmentTemplateSchema } from "@/lib/assessment-templates";
 import type { AssessmentTemplateSchema, FormAnswer, Section, Block, Field, TableRowsField } from "@/lib/assessment-templates/types";
 import { getSupplierResponse } from "@/app/actions/assessments";
 import { ShareRequestClient } from "./share-request-client";
@@ -137,15 +138,14 @@ export function SchemaBasedFormStep({
   const readOnly = status === "submitted" || status === "rejected" || !canManage;
 
   React.useEffect(() => {
-    if (detail.template?.config) {
-      try {
-        const parsed = JSON.parse(detail.template.config) as AssessmentTemplateSchema;
-        setSchema(parsed);
-      } catch (e) {
-        console.error("Failed to parse template config:", e);
-      }
+    const resolvedSchema = resolveAssessmentTemplateSchema(
+      detail.template?.category ?? null,
+      detail.template?.config ?? null
+    );
+    if (resolvedSchema) {
+      setSchema(resolvedSchema);
     }
-  }, [detail.template?.config]);
+  }, [detail.template?.category, detail.template?.config]);
 
   React.useEffect(() => {
     const loadResponse = async () => {
@@ -460,7 +460,7 @@ export function SchemaBasedFormStep({
                             <CardTitle className="text-base font-semibold text-slate-900">{block.title}</CardTitle>
                           </div>
                           {block.fields.some(f => f.required) && (
-                            <span className="text-rose-500 text-sm">*</span>
+                            <span className="text-rose-600 font-bold text-sm">*</span>
                           )}
                         </div>
                         {block.message && (
@@ -538,11 +538,11 @@ export function SchemaBasedFormStep({
                 </div>
                 <div>
                   <p className="text-slate-400">Sent on</p>
-                  <p className="text-slate-700">{detail.createdAt ? new Date(detail.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—"}</p>
+                  <p className="text-slate-700">{detail.createdAt ? new Date(detail.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "UTC" }) : "—"}</p>
                 </div>
                 <div>
                   <p className="text-slate-400">Due on</p>
-                  <p className="text-slate-700">{detail.dueDate ? new Date(detail.dueDate).toLocaleDateString("en-GB") : "—"}</p>
+                  <p className="text-slate-700">{detail.dueDate ? new Date(detail.dueDate).toLocaleDateString("en-GB", { timeZone: "UTC" }) : "—"}</p>
                 </div>
               </CardContent>
             </Card>

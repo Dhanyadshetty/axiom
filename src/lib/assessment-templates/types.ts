@@ -10,7 +10,8 @@ export type FieldType =
   | "document_upload"
   | "document_review_confirm"
   | "contact_table"
-  | "location_lookup";
+  | "location_lookup"
+  | "date";
 
 export interface SelectOption {
   value: string;
@@ -41,6 +42,8 @@ export interface ModalField {
   options?: SelectOption[];
   min?: number;
   max?: number;
+  placeholder?: string;
+  placeholderDe?: string;
 }
 
 export interface BaseField {
@@ -71,6 +74,11 @@ export interface TableRowsField extends BaseField {
   addButtonLabel?: string;
   addButtonLabelDe?: string;
   subBlocks?: SubBlock[];
+  addRowModalTitle?: string;
+  addRowModalSubtitle?: string;
+  addRowModalFields?: ModalField[];
+  addRowPrimaryButtonLabel?: string;
+  addRowCancelButtonLabel?: string;
 }
 
 export interface ContactTableField extends BaseField {
@@ -78,7 +86,11 @@ export interface ContactTableField extends BaseField {
   columns: TableColumn[];
   addButtonLabel?: string;
   addButtonLabelDe?: string;
+  modalTitle?: string;
+  modalSubtitle?: string;
   modalFields?: ModalField[];
+  modalPrimaryButtonLabel?: string;
+  modalCancelButtonLabel?: string;
 }
 
 export interface DocumentReviewConfirmField extends BaseField {
@@ -150,7 +162,7 @@ export type FormFieldValue =
   | DocumentUploadData;
 
 export interface TableRowData {
-  [columnKey: string]: string | number | boolean;
+  [columnKey: string]: string | number | boolean | string[];
 }
 
 export interface ContactRowData {
@@ -160,6 +172,8 @@ export interface ContactRowData {
   department?: string[];
   firstName?: string;
   lastName?: string;
+  first_name?: string;
+  last_name?: string;
   phone?: string;
   responsibility?: string;
   position?: string;
@@ -174,6 +188,7 @@ export interface FileUploadData {
 
 export interface DocumentReviewData {
   confirmed: boolean;
+  notApplicable?: boolean;
   templateId?: string;
   confirmedAt?: string;
   decision?: "accepted" | "declined" | "";

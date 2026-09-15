@@ -105,16 +105,31 @@ function initials(name: string | null) {
     return name.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
 }
 
+export function filterAssessmentRowsForTab<T extends { createdById?: string | null; responsibleId?: string | null; status?: string }>(
+    rows: T[],
+    tab: "all" | "my",
+    currentUserId: string | null,
+): T[] {
+    if (tab !== "my" || !currentUserId) return rows;
+    return rows.filter((row) => {
+        const createdBy = row.createdById ?? null;
+        const responsible = row.responsibleId ?? null;
+        return createdBy === currentUserId || responsible === currentUserId;
+    });
+}
+
 export function AssessmentsWorkspace({
     initialRows,
     templates,
     canManage,
+    currentUserId,
     defaultTab,
     defaultCreateOpen,
 }: {
     initialRows: AssessmentListRow[];
     templates: AssessmentTemplate[];
     canManage: boolean;
+    currentUserId: string | null;
     defaultTab: "all" | "my";
     defaultCreateOpen?: boolean;
 }) {
@@ -130,8 +145,8 @@ export function AssessmentsWorkspace({
     const [createOpen, setCreateOpen] = React.useState(defaultCreateOpen ?? false);
 
     const tabRows = React.useMemo(
-        () => (tab === "my" ? rows.filter((r) => r.status !== "closed" || true) : rows),
-        [rows, tab]
+        () => filterAssessmentRowsForTab(rows, tab, currentUserId),
+        [rows, tab, currentUserId]
     );
 
     const requestOptions = React.useMemo(() => {
@@ -159,6 +174,7 @@ export function AssessmentsWorkspace({
             bySearch,
             filters,
             (row, key) => getRowFilterValue(row, key as FilterFieldKey) as RawValue,
+            REQUEST_FILTER_FIELDS.map((field) => field.key),
         );
     }, [tabRows, search, filters]);
 
@@ -180,7 +196,7 @@ export function AssessmentsWorkspace({
     const columnCount = visibleColumns.size;
 
     return (
-        <div className="p-4 lg:p-8 space-y-6 min-h-full bg-background">
+        <div className="flex min-h-full flex-col space-y-6 bg-background p-4 lg:p-8">
             {/* Header */}
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                 <div>
@@ -253,10 +269,10 @@ export function AssessmentsWorkspace({
             </div>
 
             {/* Table card */}
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <div className="overflow-x-auto">
-                    <table className="w-full min-w-[1100px] text-sm">
-                        <thead className="bg-slate-50 text-xs font-black uppercase tracking-[0.12em] text-slate-500">
+            <div className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div className="requests-table-scroll max-h-[calc(100vh-280px)] w-full overflow-x-auto overflow-y-auto">
+                    <table className="w-full min-w-[1200px] border-separate border-spacing-0 text-sm">
+                        <thead className="sticky top-0 z-10 bg-slate-50 text-xs font-black uppercase tracking-[0.12em] text-slate-500">
                             <tr className="border-b border-slate-200">
                                 <th className="w-10 px-4 py-3 text-left">
                                     <input
