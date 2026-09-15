@@ -40,3 +40,24 @@ export function getBundledTemplateSchema(
     if (!category) return null;
     return REGISTRY[category] ?? null;
 }
+
+export function resolveAssessmentTemplateSchema(
+    category: string | null,
+    storedConfig?: string | null
+): AssessmentTemplateSchema | null {
+    const bundled = getBundledTemplateSchema(category);
+    if (bundled) return bundled;
+
+    if (!storedConfig) return null;
+
+    try {
+        const parsed = JSON.parse(storedConfig);
+        if (parsed && Array.isArray(parsed.sections)) {
+            return parsed as AssessmentTemplateSchema;
+        }
+    } catch {
+        // Ignore malformed config and return null.
+    }
+
+    return null;
+}

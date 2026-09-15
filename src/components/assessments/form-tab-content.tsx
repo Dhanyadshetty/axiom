@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { AssessmentDetail } from "@/lib/assessment-types";
 import { SetupStep } from "./setup-step";
 import { FormStep } from "./form-step";
-import { getBundledTemplateSchema } from "@/lib/assessment-templates";
+import { getBundledTemplateSchema, resolveAssessmentTemplateSchema } from "@/lib/assessment-templates";
 import { ParticipantsStep } from "./participants-step";
 import { RequestPreviewDialog } from "./request-preview-dialog";
 import { FormRenderer } from "./FormRenderer";
@@ -97,16 +97,6 @@ export function FormTabContent({
 }) {
     const isPublished = detail.status === "published";
     const isClosed = detail.status === "closed";
-    // Use the schema-driven renderer for any category with a bundled JSON
-    // schema. Historically only PMA had a schema, so the legacy document-
-    // group UI (`FormStep`) was used for everything else — and prefill was
-    // never wired into `FormStep`. Now that all 9 categories have bundled
-    // schemas, route every template with a bundled schema through
-    // `SchemaFormStep` so prefill works uniformly.
-    const hasSchemaTemplate =
-            !!detail.template &&
-            getBundledTemplateSchema(detail.template.category) !== null;
-
     const router = useRouter();
     const [previewOpen, setPreviewOpen] = React.useState(false);
     const goToStep = (id: "general" | "form" | "participants") => {
@@ -155,14 +145,7 @@ export function FormTabContent({
                 {step === "general" ? (
                     <SetupStep detail={detail} canManage={canManage} userOptions={userOptions} registerSave={registerSave} currentUserId={currentUserId} />
                 ) : null}
-                {step === "form" && hasSchemaTemplate ? (
-                    <SchemaFormStep
-                        detail={detail}
-                        canManage={canManage}
-                        onMutated={onMutated}
-                        registerSave={registerSave}
-                    />
-                ) : step === "form" ? (
+                {step === "form" ? (
                     <FormStep detail={detail} canManage={canManage} onMutated={onMutated} registerSave={registerSave} />
                 ) : null}
                 {step === "participants" ? (
@@ -265,12 +248,17 @@ function SchemaFormStep({
     const lang: "en" | "de" = "en";
     const localizedSchema = React.useMemo(() => {
         try {
-            const schema = JSON.parse(detail.template?.config ?? "{}");
+            const schema = resolveAssessmentTemplateSchema(
+                detail.template?.category ?? null,
+                detail.template?.config ?? null
+            );
+            if (!schema || !Array.isArray(schema.sections)) return null;
             return localizeSchema(schema, lang);
         } catch {
-            return null;
+            const bundledSchema = getBundledTemplateSchema(detail.template?.category ?? null);
+            return bundledSchema ? localizeSchema(bundledSchema, lang) : null;
         }
-    }, [detail.template?.config, lang]);
+    }, [detail.template?.category, detail.template?.config, lang]);
 
     const [answers, setAnswers] = React.useState<any>({});
     const [status] = React.useState<"draft" | "submitted">("draft");
@@ -325,6 +313,30 @@ function SchemaFormStep({
         };
     }, [detail.id, participantKey]);
 
+    React.useEffect(() => {
+        if (!canManage || !detail.id) return;
+        const interval = window.setInterval(() => {
+            try {
+                localStorage.setItem(`axiom:form:${detail.id}`, JSON.stringify(answers));
+            } catch { /* ignore */ }
+        }, 4000);
+        return () => window.clearInterval(interval);
+    }, [canManage, detail.id, answers]);
+
+    React.useEffect(() => {
+        if (!canManage || !detail.id) return;
+        try {
+            const stored = localStorage.getItem(`axiom:form:${detail.id}`);
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                if (parsed && typeof parsed === "object" && Object.keys(parsed).length > 0) {
+                    setAnswers((prev: any) => ({ ...prev, ...parsed }));
+                }
+            }
+        } catch { /* ignore */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     const handleSaveDraft = React.useCallback(async () => {
         startTransition(async () => {
             const result = await saveAssessmentMessage(detail.id, messageDraft);
@@ -341,6 +353,30 @@ function SchemaFormStep({
         registerSave(() => handleSaveDraft());
         return () => registerSave(null);
     }, [canManage, registerSave, handleSaveDraft]);
+
+    React.useEffect(() => {
+        if (!canManage || !detail.id) return;
+        const interval = window.setInterval(() => {
+            try {
+                localStorage.setItem(`axiom:message:${detail.id}`, JSON.stringify({ messageDraft }));
+            } catch { /* ignore */ }
+        }, 4000);
+        return () => window.clearInterval(interval);
+    }, [canManage, detail.id, messageDraft]);
+
+    React.useEffect(() => {
+        if (!canManage || !detail.id) return;
+        try {
+            const stored = localStorage.getItem(`axiom:message:${detail.id}`);
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                if (parsed?.messageDraft && !messageDraft) {
+                    setMessageDraft(parsed.messageDraft);
+                }
+            }
+        } catch { /* ignore */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // Scrollspy: observe each section within the center scroll container.
     React.useEffect(() => {
@@ -363,7 +399,7 @@ function SchemaFormStep({
 
         elements.forEach((el) => observer.observe(el));
         return () => observer.disconnect();
-    }, [localizedSchema?.sections.length]);
+    }, [localizedSchema]);
 
     // Update validation errors when form changes or on submit attempt
     React.useEffect(() => {
@@ -512,11 +548,11 @@ function SchemaFormStep({
                                 </div>
                                 <div>
                                     <dt className="text-slate-500 text-xs">Sent on</dt>
-                                    <dd className="text-slate-800">{detail.createdAt ? new Date(detail.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—"}</dd>
+                                    <dd className="text-slate-800">{detail.createdAt ? new Date(detail.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "UTC" }) : "—"}</dd>
                                 </div>
                                 <div>
                                     <dt className="text-slate-500 text-xs">Due on</dt>
-                                    <dd className="text-slate-800">{detail.dueDate ? new Date(detail.dueDate).toLocaleDateString("en-GB") : "—"}</dd>
+                                    <dd className="text-slate-800">{detail.dueDate ? new Date(detail.dueDate).toLocaleDateString("en-GB", { timeZone: "UTC" }) : "—"}</dd>
                                 </div>
                             </dl>
                         </section>

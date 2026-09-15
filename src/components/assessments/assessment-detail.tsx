@@ -61,7 +61,7 @@ function initials(name: string | null) {
 function formatDateTime(value: Date | string | null) {
     if (!value) return "—";
     const d = typeof value === "string" ? new Date(value) : value;
-    return d.toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+    return d.toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "UTC" });
 }
 
 export function AssessmentDetailClient({

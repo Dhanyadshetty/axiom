@@ -20,11 +20,13 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico, manifest.json (static assets)
-     * - external/ (public supplier assessment pages)
+    * - external/ (public supplier assessment pages)
+    * - uploads/ (public uploaded documents)
+    * - documents/ (public assessment templates)
      * - api/external (public supplier magic-link + assessment APIs)
      * - login, portal/register (public auth pages)
      * - onboarding (public onboarding page)
      */
-    "/((?!api/auth|api/external|_next/static|_next/image|favicon.ico|manifest.json|external|login|portal/register|onboarding).*)",
+    "/((?!api/auth|api/external|_next/static|_next/image|favicon.ico|manifest.json|external|uploads|documents|login|portal/register|onboarding).*)",
   ],
 };

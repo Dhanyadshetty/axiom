@@ -5,13 +5,23 @@ import type { AppliedFilter } from "./field-filter-engine";
 
 function readFromUrl(param: string): AppliedFilter[] {
     if (typeof window === "undefined") return [];
-    try {
-        const raw = new URLSearchParams(window.location.search).get(param);
-        if (!raw) return [];
-        const parsed = JSON.parse(decodeURIComponent(raw));
-        if (Array.isArray(parsed)) return parsed as AppliedFilter[];
-    } catch {
-        // ignore malformed state
+    const params = [param, "filters"]; // keep legacy URL state compatible with older requests views
+    for (const key of params) {
+        const raw = new URLSearchParams(window.location.search).get(key);
+        if (!raw) continue;
+        try {
+            const parsed = JSON.parse(decodeURIComponent(raw));
+            if (!Array.isArray(parsed)) return [];
+            return (parsed as AppliedFilter[]).filter(
+                (filter): filter is AppliedFilter =>
+                    !!filter &&
+                    typeof filter === "object" &&
+                    typeof filter.fieldKey === "string" &&
+                    filter.fieldKey.trim().length > 0,
+            );
+        } catch {
+            // ignore malformed state
+        }
     }
     return [];
 }
@@ -19,8 +29,15 @@ function readFromUrl(param: string): AppliedFilter[] {
 function writeToUrl(param: string, filters: AppliedFilter[]) {
     if (typeof window === "undefined") return;
     const url = new URL(window.location.href);
-    if (filters.length === 0) url.searchParams.delete(param);
-    else url.searchParams.set(param, encodeURIComponent(JSON.stringify(filters)));
+
+    if (filters.length === 0) {
+        url.searchParams.delete(param);
+        url.searchParams.delete("filters");
+    } else {
+        url.searchParams.set(param, encodeURIComponent(JSON.stringify(filters)));
+        url.searchParams.delete("filters");
+    }
+
     window.history.replaceState(null, "", url.toString());
 }
 

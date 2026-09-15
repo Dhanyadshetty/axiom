@@ -16,58 +16,41 @@
           "title": "Message from the buyer",
           "titleDe": "Nachricht des Käufers",
           "icon": "message-square",
-          "message": "Dear Supplier,\n\nPlease complete this ESG self-assessment regarding environmental responsibility in your operations and supply chain.\n\nKind regards,\n[Buyer Name]\n[Buyer Company]",
-          "messageDe": "Sehr geehrte(r) Lieferant(in),\n\nBitte füllen Sie diese ESG-Selbstauskunft zur Umweltverantwortung in Ihrem Betrieb und Ihrer Lieferkette aus.\n\nMit freundlichen Grüßen,\n[Name des Käufers]\n[Firma des Käufers]",
+          "message": "Dear supplier,\n\nAs part of our efforts to comply with the Supply Chain Due Diligence Act (LkSG), we kindly ask you to complete the following questionnaire. This is based on legal provisions and deals with legal violations and internal processes for human rights and environmental aspects.\n\nThe questions are based on the German Supply Chain Act, which is available at the following link.\nhttps://www.bmas.de/SharedDocs/Downloads/DE/Internationales/act-corporate-due-diligence-obligations-supply-chains.pdf?__blob=publicationFile&v=3\n\nA general introduction regarding LkSG can be found here:\nhttps://www.bmas.de/EN/Europe-and-the-World/International/Supply-Chain-Act/supply-chain-act.html\n\nIf you have any questions, please do not hesitate to contact us at any time.\nWe thank you in advance in the course of our long-term business relationship.",
+          "messageDe": "Sehr geehrte(r) Lieferant(in),\n\nIm Rahmen unserer Bemühungen zur Einhaltung des Lieferkettensorgfaltspflichtengesetzes (LkSG) bitten wir Sie höflich, den folgenden Fragebogen auszufüllen. Dieser basiert auf gesetzlichen Vorschriften und behandelt rechtliche Verstöße sowie interne Prozesse zu Menschenrechten und Umweltaspekten.\n\nDie Fragen basieren auf dem deutschen Lieferkettengesetz, das unter folgendem Link verfügbar ist.\nhttps://www.bmas.de/SharedDocs/Downloads/DE/Internationales/act-corporate-due-diligence-obligations-supply-chains.pdf?__blob=publicationFile&v=3\n\nEine allgemeine Einführung zum LkSG finden Sie hier:\nhttps://www.bmas.de/EN/Europe-and-the-World/International/Supply-Chain-Act/supply-chain-act.html\n\nFalls Sie Fragen haben, zögern Sie bitte nicht, uns jederzeit zu kontaktieren.\nWir danken Ihnen im Voraus im Rahmen unserer langfristigen Geschäftsbeziehung.",
           "fields": []
         }
       ]
     },
     {
-      "key": "supplier_identification",
-      "title": "1. Supplier Identification",
-      "titleDe": "1. Lieferantenidentifikation",
+      "key": "environmental_rights",
+      "title": "Questionnaire on Environmental Rights",
+      "titleDe": "Fragebogen zu Umweltrechten",
       "order": 1,
       "blocks": [
         {
-          "key": "company_address",
-          "title": "Company address",
-          "titleDe": "Unternehmensanschrift",
-          "icon": "building",
-          "fields": [
-            { "key": "supplier_number", "label": "Supplier number", "labelDe": "Lieferantennummer", "type": "short_text", "required": false },
-            { "key": "company_name", "label": "Company name", "labelDe": "Firmenname", "type": "short_text", "required": true },
-            { "key": "address", "label": "Address", "labelDe": "Anschrift", "type": "short_text", "required": true },
-            { "key": "country", "label": "Country", "labelDe": "Land", "type": "short_text", "required": false }
-          ]
+          "key": "message_block",
+          "title": "Message",
+          "titleDe": "Nachricht",
+          "icon": "message-square",
+          "message": "The following section contains questions on compliance with Environmental Rights, the answers to which are mandatory. The questions are based on the German Supply Chain Act, which is available at the following link.\nhttps://www.bmas.de/SharedDocs/Downloads/DE/Internationales/act-corporate-due-diligence-obligations-supply-chains.pdf?__blob=publicationFile&v=3",
+          "messageDe": "Der folgende Abschnitt enthält Fragen zur Einhaltung der Umweltrechte, deren Beantwortung verbindlich ist. Die Fragen basieren auf dem deutschen Lieferkettengesetz, das unter folgendem Link verfügbar ist.\nhttps://www.bmas.de/SharedDocs/Downloads/DE/Internationales/act-corporate-due-diligence-obligations-supply-chains.pdf?__blob=publicationFile&v=3",
+          "fields": []
         },
         {
-          "key": "primary_contact",
-          "title": "Primary contact",
-          "titleDe": "Primärkontakt",
-          "icon": "user",
-          "fields": [
-            { "key": "contact_person_name", "label": "Contact name", "labelDe": "Kontaktname", "type": "short_text", "required": false },
-            { "key": "contact_email", "label": "Contact email", "labelDe": "Kontakt-E-Mail", "type": "short_text", "required": false }
-          ]
-        }
-      ]
-    },
-    {
-      "key": "environmental_rights",
-      "title": "2. Environmental Responsibility",
-      "titleDe": "2. Umweltverantwortung",
-      "order": 2,
-      "blocks": [
-        {
-          "key": "environmental_management",
-          "title": "Environmental management",
-          "titleDe": "Umweltmanagement",
+          "key": "environmental_rights_questions",
+          "title": "Questions",
+          "titleDe": "Fragen",
           "icon": "globe",
           "fields": [
-            { "key": "environmental_management_system", "label": "An environmental management system is in place (e.g. ISO 14001)", "labelDe": "Ein Umweltmanagementsystem ist vorhanden (z. B. ISO 14001)", "type": "yes_no_confirm", "required": true },
-            { "key": "environmental_permits", "label": "Required environmental permits and registrations are valid", "labelDe": "Erforderliche Umweltgenehmigungen und Registrierungen sind gültig", "type": "yes_no_confirm", "required": true },
-            { "key": "waste_management", "label": "Waste is managed in accordance with applicable laws", "labelDe": "Abfall wird gemäß den geltenden Gesetzen behandelt", "type": "yes_no_confirm", "required": true },
-            { "key": "carbon_emissions_tracked", "label": "Carbon emissions (Scope 1 / 2) are tracked and reported", "labelDe": "CO2-Emissionen (Scope 1 / 2) werden erfasst und berichtet", "type": "yes_no_confirm", "required": true },
+            { "key": "mercury_violation", "label": "Does your company violate the requirements regarding the use of mercury as defined by the German Supply Chain Law? (§2 Par. 3 S.1-3)", "labelDe": "Verstößt Ihr Unternehmen gegen die Anforderungen hinsichtlich der Verwendung von Quecksilber gemäß dem deutschen Lieferkettengesetz? (§2 Abs. 3 S.1-3)", "type": "select_single", "required": true, "options": [{ "value": "yes", "label": "Yes" }, { "value": "no", "label": "No" }] },
+            { "key": "mercury_processes", "label": "Does your company have internal processes in place to mitigate the risks associated with handling mercury?", "labelDe": "Hat Ihr Unternehmen interne Prozesse, um die Risiken im Zusammenhang mit der Handhabung von Quecksilber zu mindern?", "type": "select_single", "required": true, "options": [{ "value": "yes", "label": "Yes" }, { "value": "no", "label": "No" }] },
+            { "key": "chemicals_pops_violation", "label": "Does your company violate the requirements regarding the handling of chemicals and persistent organic pollutants as defined by the German Supply Chain Law? (§2 Par. 3 S.4-5)", "labelDe": "Verstößt Ihr Unternehmen gegen die Anforderungen hinsichtlich des Umgangs mit Chemikalien und langlebigen organischen Schadstoffen gemäß dem deutschen Lieferkettengesetz? (§2 Abs. 3 S.4-5)", "type": "select_single", "required": true, "options": [{ "value": "yes", "label": "Yes" }, { "value": "no", "label": "No" }] },
+            { "key": "chemicals_pops_processes", "label": "Does your company have internal processes in place to mitigate the risks associated with handling chemicals containing persistent organic pollutants?", "labelDe": "Hat Ihr Unternehmen interne Prozesse, um die Risiken im Zusammenhang mit der Handhabung von Chemikalien mit langlebigen organischen Schadstoffen zu mindern?", "type": "select_single", "required": true, "options": [{ "value": "yes", "label": "Yes" }, { "value": "no", "label": "No" }] },
+            { "key": "hazardous_waste_violation", "label": "Does your company violate the requirements regarding the handling of hazardous waste as defined by the German Supply Chain Law? (§2 Par. 3 S.6-8)", "labelDe": "Verstößt Ihr Unternehmen gegen die Anforderungen hinsichtlich der Behandlung von Gefahrstoffen gemäß dem deutschen Lieferkettengesetz? (§2 Abs. 3 S.6-8)", "type": "select_single", "required": true, "options": [{ "value": "yes", "label": "Yes" }, { "value": "no", "label": "No" }] },
+            { "key": "hazardous_waste_processes", "label": "Does your company have internal processes in place to mitigate the risks associated with handling hazardous waste?", "labelDe": "Hat Ihr Unternehmen interne Prozesse, um die Risiken im Zusammenhang mit der Handhabung von Gefahrstoffen zu mindern?", "type": "select_single", "required": true, "options": [{ "value": "yes", "label": "Yes" }, { "value": "no", "label": "No" }] },
+            { "key": "soil_water_pollution_violation", "label": "Does your company violate the requirements with regard to soil changes, water and air pollution, harmful noise emissions or excessive water consumption as defined by the German Supply Chain Law? (§2 Par. 3 S. 9)", "labelDe": "Verstößt Ihr Unternehmen gegen die Anforderungen hinsichtlich Bodenveränderungen, Wasser- und Luftverschmutzung, schädlicher Lärmemissionen oder übermäßigen Wasserverbrauchs gemäß dem deutschen Lieferkettengesetz? (§2 Abs. 3 S.9)", "type": "select_single", "required": true, "options": [{ "value": "yes", "label": "Yes" }, { "value": "no", "label": "No" }] },
+            { "key": "soil_water_pollution_processes", "label": "Does your company have internal processes in place to mitigate risks related to soil changes, water and air pollution, harmful noise emissions or excessive water consumption?", "labelDe": "Hat Ihr Unternehmen interne Prozesse, um Risiken im Zusammenhang mit Bodenveränderungen, Wasser- und Luftverschmutzung, schädlichen Lärmemissionen oder übermäßigem Wasserverbrauch zu mindern?", "type": "select_single", "required": true, "options": [{ "value": "yes", "label": "Yes" }, { "value": "no", "label": "No" }] },
             { "key": "environmental_comments", "label": "Comments / evidence", "labelDe": "Kommentare / Nachweise", "type": "long_text_rich", "required": false }
           ]
         }

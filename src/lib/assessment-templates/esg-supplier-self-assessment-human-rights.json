@@ -16,57 +16,43 @@
           "title": "Message from the buyer",
           "titleDe": "Nachricht des Käufers",
           "icon": "message-square",
-          "message": "Dear Supplier,\n\nPlease complete this ESG self-assessment regarding human rights in your operations and supply chain.\n\nKind regards,\n[Buyer Name]\n[Buyer Company]",
-          "messageDe": "Sehr geehrte(r) Lieferant(in),\n\nBitte füllen Sie diese ESG-Selbstauskunft zu Menschenrechten in Ihrem Betrieb und Ihrer Lieferkette aus.\n\nMit freundlichen Grüßen,\n[Name des Käufers]\n[Firma des Käufers]",
+          "message": "Dear supplier,\n\nAs part of our efforts to comply with the Supply Chain Due Diligence Act (LkSG), we kindly ask you to complete the following questionnaire. This is based on legal provisions and deals with legal violations and internal processes for human rights and environmental aspects.\n\nThe questions are based on the German Supply Chain Act, which is available at the following link.\nhttps://www.bmas.de/SharedDocs/Downloads/DE/Internationales/act-corporate-due-diligence-obligations-supply-chains.pdf?__blob=publicationFile&v=3\n\nA general introduction regarding LkSG can be found here:\nhttps://www.bmas.de/EN/Europe-and-the-World/International/Supply-Chain-Act/supply-chain-act.html\n\nIf you have any questions, please do not hesitate to contact us at any time.\nWe thank you in advance in the course of our long-term business relationship.",
+          "messageDe": "Sehr geehrte(r) Lieferant(in),\n\nIm Rahmen unserer Bemühungen zur Einhaltung des Lieferkettensorgfaltspflichtengesetzes (LkSG) bitten wir Sie höflich, den folgenden Fragebogen auszufüllen. Dieser basiert auf gesetzlichen Vorschriften und behandelt rechtliche Verstöße sowie interne Prozesse zu Menschenrechten und Umweltaspekten.\n\nDie Fragen basieren auf dem deutschen Lieferkettengesetz, das unter folgendem Link verfügbar ist.\nhttps://www.bmas.de/SharedDocs/Downloads/DE/Internationales/act-corporate-due-diligence-obligations-supply-chains.pdf?__blob=publicationFile&v=3\n\nEine allgemeine Einführung zum LkSG finden Sie hier:\nhttps://www.bmas.de/EN/Europe-and-the-World/International/Supply-Chain-Act/supply-chain-act.html\n\nFalls Sie Fragen haben, zögern Sie bitte nicht, uns jederzeit zu kontaktieren.\nWir danken Ihnen im Voraus im Rahmen unserer langfristigen Geschäftsbeziehung.",
           "fields": []
         }
       ]
     },
     {
-      "key": "supplier_identification",
-      "title": "1. Supplier Identification",
-      "titleDe": "1. Lieferantenidentifikation",
+      "key": "human_rights",
+      "title": "Questionnaire on Human Rights",
+      "titleDe": "Fragebogen zu Menschenrechten",
       "order": 1,
       "blocks": [
         {
-          "key": "company_address",
-          "title": "Company address",
-          "titleDe": "Unternehmensanschrift",
-          "icon": "building",
-          "fields": [
-            { "key": "supplier_number", "label": "Supplier number", "labelDe": "Lieferantennummer", "type": "short_text", "required": false },
-            { "key": "company_name", "label": "Company name", "labelDe": "Firmenname", "type": "short_text", "required": true },
-            { "key": "address", "label": "Address", "labelDe": "Anschrift", "type": "short_text", "required": true },
-            { "key": "country", "label": "Country", "labelDe": "Land", "type": "short_text", "required": false }
-          ]
+          "key": "message_block",
+          "title": "Message",
+          "titleDe": "Nachricht",
+          "icon": "message-square",
+          "message": "The following section contains questions on compliance with Human Rights, the answers to which are mandatory. The questions are based on the German Supply Chain Act, which is available at the following link.\nhttps://www.bmas.de/SharedDocs/Downloads/DE/Internationales/act-corporate-due-diligence-obligations-supply-chains.pdf?__blob=publicationFile&v=3",
+          "messageDe": "Der folgende Abschnitt enthält Fragen zur Einhaltung der Menschenrechte, deren Beantwortung verbindlich ist. Die Fragen basieren auf dem deutschen Lieferkettengesetz, das unter folgendem Link verfügbar ist.\nhttps://www.bmas.de/SharedDocs/Downloads/DE/Internationales/act-corporate-due-diligence-obligations-supply-chains.pdf?__blob=publicationFile&v=3",
+          "fields": []
         },
         {
-          "key": "primary_contact",
-          "title": "Primary contact",
-          "titleDe": "Primärkontakt",
-          "icon": "user",
-          "fields": [
-            { "key": "contact_person_name", "label": "Contact name", "labelDe": "Kontaktname", "type": "short_text", "required": false },
-            { "key": "contact_email", "label": "Contact email", "labelDe": "Kontakt-E-Mail", "type": "short_text", "required": false }
-          ]
-        }
-      ]
-    },
-    {
-      "key": "human_rights",
-      "title": "2. Human Rights",
-      "titleDe": "2. Menschenrechte",
-      "order": 2,
-      "blocks": [
-        {
-          "key": "human_rights_commitments",
-          "title": "Human rights commitments",
-          "titleDe": "Menschenrechtsverpflichtungen",
+          "key": "human_rights_questions",
+          "title": "Questions",
+          "titleDe": "Fragen",
           "icon": "shield",
           "fields": [
-            { "key": "human_rights_policy", "label": "A human rights policy is in place and communicated", "labelDe": "Eine Menschenrechtsrichtlinie ist vorhanden und wird kommuniziert", "type": "yes_no_confirm", "required": true },
-            { "key": "human_rights_due_diligence", "label": "Human rights due diligence is performed", "labelDe": "Menschenrechts-Sorgfaltspflichten werden durchgeführt", "type": "yes_no_confirm", "required": true },
-            { "key": "grievance_mechanism", "label": "A grievance mechanism is available to workers and stakeholders", "labelDe": "Ein Beschwerdemechanismus steht Mitarbeitern und Stakeholdern zur Verfügung", "type": "yes_no_confirm", "required": true },
+            { "key": "child_labor_violation", "label": "Does your company violate the requirements regarding the prohibition of child labor as defined in the German Supply Chain Act? (§2 Para. 2 S.1-2)", "labelDe": "Verstößt Ihr Unternehmen gegen die Anforderungen hinsichtlich des Verbots der Kinderarbeit gemäß dem deutschen Lieferkettengesetz? (§2 Abs. 2 S.1-2)", "type": "select_single", "required": true, "options": [{ "value": "yes", "label": "Yes" }, { "value": "no", "label": "No" }] },
+            { "key": "child_labor_processes", "label": "Does your company have internal processes in place to mitigate risks related to the prohibition of child labor?", "labelDe": "Hat Ihr Unternehmen interne Prozesse, um Risiken im Zusammenhang mit dem Verbot der Kinderarbeit zu mindern?", "type": "select_single", "required": true, "options": [{ "value": "yes", "label": "Yes" }, { "value": "no", "label": "No" }] },
+            { "key": "forced_labor_violation", "label": "Does your company violate the requirements regarding the prohibition of forced labor as defined in the German Supply Chain Act? (§2 Para. 2 S.3)", "labelDe": "Verstößt Ihr Unternehmen gegen die Anforderungen hinsichtlich des Verbots der Zwangsarbeit gemäß dem deutschen Lieferkettengesetz? (§2 Abs. 2 S.3)", "type": "select_single", "required": true, "options": [{ "value": "yes", "label": "Yes" }, { "value": "no", "label": "No" }] },
+            { "key": "forced_labor_processes", "label": "Does your company have internal processes in place to mitigate risks related to the prohibition of forced labor?", "labelDe": "Hat Ihr Unternehmen interne Prozesse, um Risiken im Zusammenhang mit dem Verbot der Zwangsarbeit zu mindern?", "type": "select_single", "required": true, "options": [{ "value": "yes", "label": "Yes" }, { "value": "no", "label": "No" }] },
+            { "key": "slavery_violation", "label": "Does your company violate the requirements regarding the prohibition of slavery as defined in the German Supply Chain Act? (§2 Para. 2 S.4)", "labelDe": "Verstößt Ihr Unternehmen gegen die Anforderungen hinsichtlich des Verbots der Sklaverei gemäß dem deutschen Lieferkettengesetz? (§2 Abs. 2 S.4)", "type": "select_single", "required": true, "options": [{ "value": "yes", "label": "Yes" }, { "value": "no", "label": "No" }] },
+            { "key": "slavery_processes", "label": "Does your company have internal processes in place to mitigate risks related to the prohibition of slavery?", "labelDe": "Hat Ihr Unternehmen interne Prozesse, um Risiken im Zusammenhang mit dem Verbot der Sklaverei zu mindern?", "type": "select_single", "required": true, "options": [{ "value": "yes", "label": "Yes" }, { "value": "no", "label": "No" }] },
+            { "key": "unlawful_eviction_violation", "label": "Does your company violate the requirements regarding the prohibition of unlawful eviction as defined in the German Supply Chain Act? (§2 Para. 2 S.10)", "labelDe": "Verstößt Ihr Unternehmen gegen die Anforderungen hinsichtlich des Verbots der widerrechtlichen Zwangsräumung gemäß dem deutschen Lieferkettengesetz? (§2 Abs. 2 S.10)", "type": "select_single", "required": true, "options": [{ "value": "yes", "label": "Yes" }, { "value": "no", "label": "No" }] },
+            { "key": "unlawful_eviction_processes", "label": "Does your company have internal processes in place to mitigate risks related to the prohibition of unlawful eviction?", "labelDe": "Hat Ihr Unternehmen interne Prozesse, um Risiken im Zusammenhang mit dem Verbot der widerrechtlichen Zwangsräumung zu mindern?", "type": "select_single", "required": true, "options": [{ "value": "yes", "label": "Yes" }, { "value": "no", "label": "No" }] },
+            { "key": "security_forces_violation", "label": "Does your company violate the requirements regarding the prohibition of engaging or using private or public security forces as defined in the German Supply Chain Act? (§2 Para. 2 S.11)", "labelDe": "Verstößt Ihr Unternehmen gegen die Anforderungen hinsichtlich des Verbots des Einsatzes privater oder öffentlicher Sicherheitskräfte gemäß dem deutschen Lieferkettengesetz? (§2 Abs. 2 S.11)", "type": "select_single", "required": true, "options": [{ "value": "yes", "label": "Yes" }, { "value": "no", "label": "No" }] },
+            { "key": "security_forces_processes", "label": "Does your company have internal processes in place to mitigate risks related to the use of private or public security forces?", "labelDe": "Hat Ihr Unternehmen interne Prozesse, um Risiken im Zusammenhang mit dem Einsatz privater oder öffentlicher Sicherheitskräfte zu mindern?", "type": "select_single", "required": true, "options": [{ "value": "yes", "label": "Yes" }, { "value": "no", "label": "No" }] },
             { "key": "human_rights_comments", "label": "Comments / evidence", "labelDe": "Kommentare / Nachweise", "type": "long_text_rich", "required": false }
           ]
         }

@@ -135,10 +135,22 @@ export function applyFieldFilters<T>(
     rows: T[],
     filters: AppliedFilter[],
     getRaw: (row: T, key: string) => RawValue,
+    validKeys?: Iterable<string>,
 ): T[] {
     if (!filters || filters.length === 0) return rows;
+
+    const allowed = validKeys ? new Set(Array.from(validKeys, (value) => String(value).trim()).filter(Boolean)) : null;
+    const validFilters = filters.filter((filter): filter is AppliedFilter => {
+        if (!filter || typeof filter !== "object") return false;
+        if (typeof filter.fieldKey !== "string" || filter.fieldKey.trim().length === 0) return false;
+        if (!allowed) return true;
+        return allowed.has(filter.fieldKey);
+    });
+
+    if (validFilters.length === 0) return rows;
+
     return rows.filter((row) =>
-        filters.every((filter) => evaluateCondition(filter, getRaw(row, filter.fieldKey))),
+        validFilters.every((filter) => evaluateCondition(filter, getRaw(row, filter.fieldKey))),
     );
 }
 

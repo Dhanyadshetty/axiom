@@ -68,6 +68,7 @@ interface FormRendererProps {
   readOnly?: boolean;
   onValidate?: (answers: FormAnswer) => { valid: boolean; errors: string[] };
   validationErrors?: Record<string, string>;
+  showRequiredHighlights?: boolean;
 }
 
 function getNestedValue(obj: FormAnswer, path: string): any {
@@ -96,6 +97,7 @@ export function FormRenderer({
   readOnly,
   onValidate,
   validationErrors = {},
+  showRequiredHighlights = false,
 }: FormRendererProps) {
   const [touchedFields, setTouchedFields] = React.useState<Set<string>>(new Set());
 
@@ -186,11 +188,11 @@ export function FormRenderer({
                          </div>
                        );
                      })()}
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-slate-800 flex items-center gap-1.5">
                         {block.title}
                         {fields.some((f) => f.required) && (
-                          <span className="text-rose-500" aria-hidden="true">*</span>
+                          <span className="text-rose-600 font-bold" aria-hidden="true">*</span>
                         )}
                       </h3>
 
@@ -207,26 +209,30 @@ export function FormRenderer({
                           const showError = fieldError && (fieldTouched || fieldError.includes("required"));
                           const fieldValue = safeValue(field, getNestedValue(answers, field.key));
                           const hasValue = fieldValue !== undefined && fieldValue !== null && fieldValue !== "" && !(Array.isArray(fieldValue) && fieldValue.length === 0);
+                            const requiredMissing = field.required && !hasValue && !!showRequiredHighlights;
 
                           return (
                             <div
                               key={field.key}
                               className={cn(
-                                "space-y-1.5",
-                                showError && "border-l-2 border-rose-500 pl-3"
+                                "space-y-1.5 rounded-xl border border-transparent p-2 transition-colors",
+                                showError && "border-rose-300 bg-rose-50/40",
+                                requiredMissing && "border-rose-300 bg-rose-50/40 shadow-sm"
                               )}
                             >
-                              <div className="flex items-start gap-2">
-                                <FieldRenderer
-                                  field={field}
-                                  value={fieldValue}
-                                  onChange={(val) => handleFieldChange(field.key, val)}
-                                  disabled={disabled}
-                                  readOnly={readOnly}
-                                  validationErrors={validationErrors}
-                                  blockKey={block.key}
-                                  sectionKey={section.key}
-                                />
+                              <div className="flex w-full min-w-0 items-start gap-2">
+                                <div className="w-full min-w-0 flex-1">
+                                  <FieldRenderer
+                                    field={field}
+                                    value={fieldValue}
+                                    onChange={(val) => handleFieldChange(field.key, val)}
+                                    disabled={disabled}
+                                    readOnly={readOnly}
+                                    validationErrors={validationErrors}
+                                    blockKey={block.key}
+                                    sectionKey={section.key}
+                                  />
+                                </div>
                                 {readOnly && hasValue && (
                                   <button
                                     type="button"
@@ -264,26 +270,30 @@ export function FormRenderer({
                               const showError = fieldError && (fieldTouched || fieldError.includes("required"));
                               const fieldValue = safeValue(field, getNestedValue(answers, field.key));
                               const hasValue = fieldValue !== undefined && fieldValue !== null && fieldValue !== "" && !(Array.isArray(fieldValue) && fieldValue.length === 0);
+                              const requiredMissing = field.required && !hasValue && showRequiredHighlights;
 
                               return (
                                 <div
                                   key={field.key}
                                   className={cn(
-                                    "space-y-1.5",
-                                    showError && "border-l-2 border-rose-500 pl-3"
+                                    "space-y-1.5 rounded-xl border border-transparent p-2 transition-colors",
+                                    showError && "border-rose-300 bg-rose-50/40",
+                                    requiredMissing && "border-rose-300 bg-rose-50/40 shadow-sm"
                                   )}
                                 >
-                                  <div className="flex items-start gap-2">
-                                    <FieldRenderer
-                                      field={field}
-                                      value={fieldValue}
-                                      onChange={(val) => handleFieldChange(field.key, val)}
-                                      disabled={disabled}
-                                      readOnly={readOnly}
-                                      validationErrors={validationErrors}
-                                      blockKey={block.key}
-                                      sectionKey={section.key}
-                                    />
+                                  <div className="flex w-full min-w-0 items-start gap-2">
+                                    <div className="w-full min-w-0 flex-1">
+                                      <FieldRenderer
+                                        field={field}
+                                        value={fieldValue}
+                                        onChange={(val) => handleFieldChange(field.key, val)}
+                                        disabled={disabled}
+                                        readOnly={readOnly}
+                                        validationErrors={validationErrors}
+                                        blockKey={block.key}
+                                        sectionKey={section.key}
+                                      />
+                                    </div>
                                     {readOnly && hasValue && (
                                       <button
                                         type="button"

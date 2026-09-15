@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Users, Inbox, Send, Clock, CheckCircle2, FileText, ChevronDown, AlertCircle, MoreHorizontal, Download, Paperclip, FileUp } from "lucide-react";
+import { Users, Inbox, Send, Clock, CheckCircle2, FileText, ChevronDown, AlertCircle, MoreHorizontal, Download, Paperclip, FileUp, Eye } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { FormRenderer } from "./FormRenderer";
+import { DocumentPreviewModal, type DocumentPreviewItem } from "./DocumentPreviewModal";
 import type { AssessmentDetail } from "@/lib/assessment-types";
 import type { AssessmentTemplateSchema, FormAnswer } from "@/lib/assessment-templates/types";
 import type { SupplierDocumentResponse } from "@/lib/assessment-types";
@@ -41,6 +42,9 @@ export function ResponsesPanelNew({ detail }: { detail: AssessmentDetail }) {
     const [sidebarOpen, setSidebarOpen] = React.useState(true);
     const [responseData, setResponseData] = React.useState<SupplierResponseData>(null);
     const [loadingResponse, setLoadingResponse] = React.useState(false);
+    const [previewOpen, setPreviewOpen] = React.useState(false);
+    const [previewDocument, setPreviewDocument] = React.useState<{ url: string; name: string } | null>(null);
+    const [previewError, setPreviewError] = React.useState(false);
 
     const handleSelectSupplier = async (s: AssessmentDetail["suppliers"][number]) => {
         setSelectedSupplier(s);
@@ -74,6 +78,27 @@ export function ResponsesPanelNew({ detail }: { detail: AssessmentDetail }) {
     const isInProgress = currentSupplier?.status === "in_progress";
     const currentStatus = currentSupplier ? supplierStatusStyles[currentSupplier.status] : { dot: "bg-slate-400", label: "—", badge: "border-slate-200 bg-slate-50 text-slate-600" };
     const hasResponse = responseData && Object.keys(responseData.answers).length > 0;
+
+    const openPreview = (url: string | null, name?: string | null) => {
+        if (!url) return;
+        setPreviewDocument({ url, name: name ?? "Document" });
+        setPreviewOpen(true);
+        setPreviewError(false);
+    };
+
+    const openDocument = (url: string | null, asDownload = false) => {
+        if (!url) return;
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.target = "_blank";
+        anchor.rel = "noopener noreferrer";
+        if (asDownload) {
+            anchor.download = url.split("/").pop() || "supplier-document";
+        }
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+    };
 
     return (
         <div className="space-y-6">
@@ -202,24 +227,42 @@ export function ResponsesPanelNew({ detail }: { detail: AssessmentDetail }) {
                                         </div>
                                         <ul className="space-y-2">
                                             {responseData.documents.map((doc, idx) => (
-                                                <li key={doc.documentRequestId ?? idx}>
-                                                    <a
-                                                        href={doc.documentUrl ?? "#"}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="flex items-center gap-3 rounded-lg border border-slate-200 px-3 py-2 text-sm hover:bg-slate-50"
-                                                    >
+                                                <li key={doc.documentRequestId ?? `${doc.documentUrl ?? "doc"}-${idx}`}>
+                                                    <div className="flex items-center gap-3 rounded-lg border border-slate-200 px-3 py-2 text-sm hover:bg-slate-50">
                                                         <FileUp className="h-4 w-4 text-emerald-600" />
-                                                        <span className="min-w-0 flex-1 truncate font-medium text-slate-800">
-                                                            {doc.documentName ?? doc.documentUrl}
-                                                        </span>
-                                                        {doc.responseText ? (
-                                                            <span className="hidden truncate text-xs text-slate-400 sm:inline max-w-[200px]">
-                                                                {doc.responseText}
-                                                            </span>
-                                                        ) : null}
-                                                        <span className="text-xs text-slate-400">Open</span>
-                                                    </a>
+                                                        <div className="min-w-0 flex-1">
+                                                            <div className="truncate font-medium text-slate-800">
+                                                                {doc.documentName ?? doc.documentUrl}
+                                                            </div>
+                                                            {doc.responseText ? (
+                                                                <div className="truncate text-xs text-slate-400 sm:inline max-w-[200px]">
+                                                                    {doc.responseText}
+                                                                </div>
+                                                            ) : null}
+                                                        </div>
+                                                        <div className="flex items-center gap-1.5">
+                                                            <Button
+                                                                type="button"
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-8 w-8 text-slate-500"
+                                                                aria-label="Preview document"
+                                                                onClick={() => openPreview(doc.documentUrl ?? null, doc.documentName)}
+                                                            >
+                                                                <Eye className="h-4 w-4" />
+                                                            </Button>
+                                                            <Button
+                                                                type="button"
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-8 w-8 text-slate-500"
+                                                                aria-label="Download document"
+                                                                onClick={() => openDocument(doc.documentUrl ?? null, true)}
+                                                            >
+                                                                <Download className="h-4 w-4" />
+                                                            </Button>
+                                                        </div>
+                                                    </div>
                                                 </li>
                                             ))}
                                         </ul>
@@ -243,6 +286,13 @@ export function ResponsesPanelNew({ detail }: { detail: AssessmentDetail }) {
                     </Card>
                 )}
             </div>
+
+            {/* Document Preview Modal */}
+            <DocumentPreviewModal
+                open={previewOpen}
+                onOpenChange={setPreviewOpen}
+                document={previewDocument}
+            />
         </div>
     );
 }
@@ -267,7 +317,7 @@ export function ResponsesSidebar({ detail, currentSupplier }: { detail: Assessme
                 <dt className="text-slate-500">Last edited</dt>
                 <dd className="mt-1 flex items-center gap-1.5 text-slate-900">
                     <Clock className="h-3.5 w-3.5 text-slate-400" />
-                    {formatDateTime(new Date())}
+                    {formatDateTime(detail.createdAt)}
                 </dd>
             </div>
             <div>

@@ -61,7 +61,10 @@ function isEmptyForType(type: Field["type"], value: unknown): { empty: boolean; 
             const du = value as { file?: unknown; notApplicable?: boolean };
             return !du.file && !du.notApplicable ? { empty: true } : { empty: false };
         case "document_review_confirm":
-            return !(value as { confirmed?: boolean } | null)?.confirmed ? { empty: true } : { empty: false };
+            return !(value as { confirmed?: boolean; notApplicable?: boolean } | null)?.confirmed
+                && !(value as { confirmed?: boolean; notApplicable?: boolean } | null)?.notApplicable
+                ? { empty: true }
+                : { empty: false };
         default:
             return value === "" || (Array.isArray(value) && value.length === 0) ? { empty: true } : { empty: false };
     }

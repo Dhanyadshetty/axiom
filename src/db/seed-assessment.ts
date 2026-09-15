@@ -76,17 +76,33 @@ async function run() {
         }
 
         // Backfill `config` for any existing rows that pre-date the bundled
-        // schemas. Existing assessment_templates rows were inserted with an
-        // empty `config`, which made the schema-driven renderer and autofill
-        // silently fall back to the PMA JSON for every category.
-        const allRows = await db
+        // schemas or still hold stale copies of older form text. Existing
+        // assessment_templates rows were inserted with an empty `config`, which
+        // made the renderer and autofill silently fall back to the PMA JSON for
+        // every category. We also refresh rows when the current bundled schema
+        // differs from the stored one so template copy updates (such as new
+        // RoHS/REACH wording) are reflected in live forms without requiring a
+        // manual DB edit.
+        let allRows = await db
             .select({ id: assessmentTemplates.id, category: assessmentTemplates.category, config: assessmentTemplates.config })
             .from(assessmentTemplates);
         let backfilled = 0;
         for (const row of allRows) {
-            if (row.config && row.config.length > 0) continue;
             const schema = getBundledTemplateSchema(row.category);
             if (!schema) continue;
+
+            let storedSchema: unknown = null;
+            if (row.config && row.config.length > 0) {
+                try {
+                    storedSchema = JSON.parse(row.config);
+                } catch {
+                    storedSchema = null;
+                }
+            }
+
+            const shouldRefresh = !row.config || row.config.length === 0 || !storedSchema || JSON.stringify(storedSchema) !== JSON.stringify(schema);
+            if (!shouldRefresh) continue;
+
             await db
                 .update(assessmentTemplates)
                 .set({ config: JSON.stringify(schema), updatedAt: new Date() })
@@ -95,6 +111,58 @@ async function run() {
         }
         if (backfilled > 0) {
             console.log(`Backfilled config JSON for ${backfilled} assessment template(s)`);
+        }
+
+        if (backfilled > 0) {
+            allRows = await db
+                .select({ id: assessmentTemplates.id, category: assessmentTemplates.category, config: assessmentTemplates.config })
+                .from(assessmentTemplates);
+        }
+
+        // Synchronize bundled document templates in existing assessment configs.
+        let appendedTemplates = 0;
+        for (const row of allRows) {
+            const bundledSchema = getBundledTemplateSchema(row.category);
+            if (!bundledSchema || !row.config) continue;
+
+            let storedSchema: any;
+            try {
+                storedSchema = JSON.parse(row.config);
+            } catch {
+                continue;
+            }
+
+            let changed = false;
+            for (const section of bundledSchema.sections) {
+                for (const block of section.blocks) {
+                    for (const bundledField of block.fields) {
+                        if (bundledField.type !== "document_review_confirm" || !bundledField.templates?.length) continue;
+                        const storedField = storedSchema.sections
+                            ?.find((candidate: any) => candidate.key === section.key)?.blocks
+                            ?.find((candidate: any) => candidate.key === block.key)?.fields
+                            ?.find((candidate: any) => candidate.key === bundledField.key);
+                        if (!storedField) continue;
+
+                        const storedTemplates = storedField.templates ?? [];
+                        const templatesChanged = JSON.stringify(storedTemplates) !== JSON.stringify(bundledField.templates);
+                        if (templatesChanged) {
+                            storedField.templates = bundledField.templates;
+                            changed = true;
+                        }
+                    }
+                }
+            }
+
+            if (changed) {
+                await db
+                    .update(assessmentTemplates)
+                    .set({ config: JSON.stringify(storedSchema), updatedAt: new Date() })
+                    .where(eq(assessmentTemplates.id, row.id));
+                appendedTemplates += 1;
+            }
+        }
+        if (appendedTemplates > 0) {
+            console.log(`Appended bundled document templates to ${appendedTemplates} existing assessment template(s)`);
         }
     } catch (error) {
         console.error("Assessment seed failed:", error);

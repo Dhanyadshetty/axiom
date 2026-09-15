@@ -22,6 +22,7 @@ export default async function AssessmentsPage({
             initialRows={initialRows}
             templates={templates}
             canManage={canManage}
+            currentUserId={session?.user?.id ?? null}
             defaultTab={tab}
             defaultCreateOpen={params.action === "new"}
         />

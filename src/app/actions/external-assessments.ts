@@ -7,16 +7,21 @@ import {
     assessmentRequestSupplierContacts,
     assessmentResponses,
     assessmentTemplates,
+    assessmentDocumentRequestGroups,
+    assessmentDocumentRequests,
     suppliers,
     contacts,
     users,
 } from "@/db/schema";
-import { eq, and, isNull, desc } from "drizzle-orm";
+import { eq, and, isNull, isNotNull, desc, asc, inArray } from "drizzle-orm";
 import type { AssessmentTemplateSchema, FormAnswer } from "@/lib/assessment-templates/types";
 import { validateFormAnswers, validateFormAnswersDetailed } from "@/lib/assessment-templates/validate";
 import { autoFillSupplierAnswersForExternal, autoFillSupplierAnswersForExternalOverwrite } from "./assessment-autofill";
 import pmaSchema from "@/lib/assessment-templates/supplier-self-assessment-pma-code-of-conduct.json";
-import { getBundledTemplateSchema } from "@/lib/assessment-templates";
+import { getBundledTemplateSchema, resolveAssessmentTemplateSchema } from "@/lib/assessment-templates";
+import { storeUploadedFile } from "@/lib/file-storage";
+import { createSystemNotification } from "@/app/actions/notifications";
+import { sendEmail } from "@/lib/services/email";
 
 // Normalize schema to ensure all required arrays exist
 function normalizeSchema(schema: AssessmentTemplateSchema): AssessmentTemplateSchema {
@@ -65,11 +70,21 @@ export interface ExternalFormData {
     status: AssessmentStatus;
     schema: AssessmentTemplateSchema;
     answers: FormAnswer;
+    /** Timestamp of the server-side draft used to safely recover local edits. */
+    draftUpdatedAt: string | null;
     contactInformation: ExternalContactInformation;
     requestDetails: ExternalRequestDetails;
     buyerAddress: ExternalBuyerAddress;
     buyerName: string | null;
     buyerEmail: string | null;
+    documentRequests: Array<{
+        id: string;
+        groupLabel: string;
+        name: string;
+        isAnswerRequired: boolean;
+        allowAdditionalAttachments: boolean;
+        documentUrl: string | null;
+    }>;
 }
 
 function mapStatus(participantStatus: string | null): AssessmentStatus {
@@ -184,18 +199,10 @@ export async function getExternalAssessmentForm(
         ? await db.select().from(assessmentTemplates).where(eq(assessmentTemplates.id, request.templateId)).limit(1)
         : [null];
 
-    let schema: AssessmentTemplateSchema;
-    if (template?.config) {
-        try {
-            schema = normalizeSchema(JSON.parse(template.config) as AssessmentTemplateSchema);
-        } catch {
-            schema = schemaForCategory(template?.category ?? null);
-        }
-    } else {
-        schema = schemaForCategory(template?.category ?? null);
-    }
-    // Ensure fallback schema is also normalized
-    schema = normalizeSchema(schema);
+    const schema = normalizeSchema(
+        resolveAssessmentTemplateSchema(template?.category ?? null, template?.config ?? null)
+            ?? schemaForCategory(template?.category ?? null)
+    );
 
     const contactId = await getPrimaryContactId(participant.id, participant.contactId);
     const [contact] = contactId
@@ -234,7 +241,10 @@ export async function getExternalAssessmentForm(
                 .orderBy(desc(assessmentResponses.createdAt))
                 .limit(1);
             const preservedStatuses = new Set(["in_progress", "submitted", "completed", "approved", "rejected"]);
-            const useOverwrite = !existingBefore || existingBefore.status === "draft";
+            // A saved supplier draft must never be treated as untouched
+            // prefill data. Older drafts retain the `draft` response status,
+            // while the participant is moved to `in_progress` on first save.
+            const useOverwrite = !existingBefore || (existingBefore.status === "draft" && participant.status !== "in_progress");
             if (useOverwrite) {
                 await autoFillSupplierAnswersForExternalOverwrite(assessmentId, participant.id, contactId);
             } else if (!preservedStatuses.has(existingBefore.status)) {
@@ -250,7 +260,7 @@ export async function getExternalAssessmentForm(
         : [null];
 
     const existingResponse = await db
-        .select({ answers: assessmentResponses.answers, status: assessmentResponses.status })
+        .select({ answers: assessmentResponses.answers, status: assessmentResponses.status, updatedAt: assessmentResponses.updatedAt })
         .from(assessmentResponses)
         .where(
             and(
@@ -261,6 +271,31 @@ export async function getExternalAssessmentForm(
         )
         .orderBy(desc(assessmentResponses.createdAt))
         .limit(1);
+
+    const documentRequests = await db
+        .select({
+            id: assessmentDocumentRequests.id,
+            groupLabel: assessmentDocumentRequestGroups.label,
+            name: assessmentDocumentRequests.name,
+            isAnswerRequired: assessmentDocumentRequests.isAnswerRequired,
+            allowAdditionalAttachments: assessmentDocumentRequestGroups.allowAdditionalAttachments,
+            documentUrl: assessmentResponses.documentUrl,
+        })
+        .from(assessmentDocumentRequests)
+        .innerJoin(
+            assessmentDocumentRequestGroups,
+            eq(assessmentDocumentRequests.groupId, assessmentDocumentRequestGroups.id)
+        )
+        .leftJoin(
+            assessmentResponses,
+            and(
+                eq(assessmentResponses.documentRequestId, assessmentDocumentRequests.id),
+                eq(assessmentResponses.assessmentRequestId, assessmentId),
+                eq(assessmentResponses.supplierId, participant.supplierId)
+            )
+        )
+        .where(eq(assessmentDocumentRequestGroups.assessmentRequestId, assessmentId))
+        .orderBy(asc(assessmentDocumentRequestGroups.order), asc(assessmentDocumentRequests.order));
 
     const answers: FormAnswer = existingResponse[0]?.answers
         ? (JSON.parse(existingResponse[0].answers) as FormAnswer)
@@ -274,6 +309,7 @@ export async function getExternalAssessmentForm(
         status: mapStatus(participant.status),
         schema,
         answers,
+        draftUpdatedAt: existingResponse[0]?.updatedAt?.toISOString() ?? null,
         contactInformation: {
             organization: supplier?.name ?? "Supplier",
             mainContact: {
@@ -295,7 +331,69 @@ export async function getExternalAssessmentForm(
         },
         buyerName: responsible?.name ?? null,
         buyerEmail: responsible?.email ?? null,
+        documentRequests: documentRequests.map((doc) => ({
+            ...doc,
+            isAnswerRequired: Boolean(doc.isAnswerRequired),
+            allowAdditionalAttachments: Boolean(doc.allowAdditionalAttachments),
+        })),
     };
+}
+
+export async function uploadExternalAssessmentDocument(
+    assessmentId: string,
+    requestId: string,
+    documentRequestId: string | null,
+    file: File
+): Promise<{ ok: boolean; url?: string; error?: string }> {
+    try {
+        const [participant] = await db
+            .select()
+            .from(assessmentRequestSuppliers)
+            .where(and(eq(assessmentRequestSuppliers.id, requestId), eq(assessmentRequestSuppliers.assessmentRequestId, assessmentId)))
+            .limit(1);
+        if (!participant) return { ok: false, error: "Request not found" };
+
+        const [documentRequest] = documentRequestId ? await db
+            .select({ id: assessmentDocumentRequests.id })
+            .from(assessmentDocumentRequests)
+            .innerJoin(assessmentDocumentRequestGroups, eq(assessmentDocumentRequests.groupId, assessmentDocumentRequestGroups.id))
+            .where(and(eq(assessmentDocumentRequests.id, documentRequestId), eq(assessmentDocumentRequestGroups.assessmentRequestId, assessmentId)))
+            .limit(1) : [null];
+        if (documentRequestId && !documentRequest) return { ok: false, error: "Document request not found" };
+        if (!(file instanceof File) || file.size === 0) return { ok: false, error: "Select a document first" };
+
+        const stored = await storeUploadedFile(file);
+        if (!documentRequestId) return { ok: true, url: stored.url };
+
+        const contactId = await getPrimaryContactId(participant.id, participant.contactId);
+        const [existing] = await db
+            .select({ id: assessmentResponses.id })
+            .from(assessmentResponses)
+            .where(and(
+                eq(assessmentResponses.assessmentRequestId, assessmentId),
+                eq(assessmentResponses.supplierId, participant.supplierId),
+                eq(assessmentResponses.documentRequestId, documentRequestId)
+            ))
+            .limit(1);
+
+        if (existing) {
+            await db.update(assessmentResponses).set({ documentUrl: stored.url, updatedAt: new Date() }).where(eq(assessmentResponses.id, existing.id));
+        } else {
+            await db.insert(assessmentResponses).values({
+                assessmentRequestId: assessmentId,
+                supplierId: participant.supplierId,
+                contactId,
+                documentRequestId,
+                documentUrl: stored.url,
+                status: "draft",
+                submittedAt: null,
+            });
+        }
+        return { ok: true, url: stored.url };
+    } catch (err) {
+        console.error("uploadExternalAssessmentDocument failed", err);
+        return { ok: false, error: "Upload failed. Please try again." };
+    }
 }
 
 // Shape expected by the existing ExternalAssessmentLandingClient.
@@ -386,6 +484,8 @@ export async function saveExternalAssessmentDraft(
             supplierId: participant.supplierId,
             contactId,
             answers,
+            // `assessmentResponses` uses draft/submitted/rejected; the
+            // participant row carries the in_progress workflow status.
             status: "draft",
         });
 
@@ -440,9 +540,10 @@ export async function submitExternalAssessment(
 
         let schema: AssessmentTemplateSchema;
         try {
-            schema = template?.config
-                ? normalizeSchema(JSON.parse(template.config) as AssessmentTemplateSchema)
-                : normalizeSchema(schemaForCategory(template?.category ?? null));
+            schema = normalizeSchema(
+                resolveAssessmentTemplateSchema(template?.category ?? null, template?.config ?? null)
+                    ?? schemaForCategory(template?.category ?? null)
+            );
         } catch (parseErr) {
             console.error("submitExternalAssessment: invalid template.config JSON", parseErr);
             return { ok: false, error: "Assessment template is misconfigured. Please contact the requester." };
@@ -476,9 +577,65 @@ export async function submitExternalAssessment(
         });
 
         await db
+            .update(assessmentResponses)
+            .set({ status: "submitted", submittedAt: new Date(), updatedAt: new Date() })
+            .where(and(
+                eq(assessmentResponses.assessmentRequestId, assessmentId),
+                eq(assessmentResponses.supplierId, participant.supplierId),
+                isNotNull(assessmentResponses.documentRequestId)
+            ));
+
+        await db
             .update(assessmentRequestSuppliers)
             .set({ status: "submitted", respondedAt: new Date(), updatedAt: new Date() })
             .where(eq(assessmentRequestSuppliers.id, participant.id));
+
+        try {
+            const [requestRow] = await db
+                .select({
+                    title: assessmentRequests.title,
+                    responsibleId: assessmentRequests.responsibleId,
+                    createdById: assessmentRequests.createdById,
+                })
+                .from(assessmentRequests)
+                .where(eq(assessmentRequests.id, assessmentId))
+                .limit(1);
+
+            const [supplierRow] = await db
+                .select({ name: suppliers.name })
+                .from(suppliers)
+                .where(eq(suppliers.id, participant.supplierId))
+                .limit(1);
+
+            const recipients = Array.from(
+                new Set([requestRow?.responsibleId, requestRow?.createdById].filter((id): id is string => Boolean(id)))
+            );
+
+            if (recipients.length > 0) {
+                const receiverRows = await db
+                    .select({ id: users.id, email: users.email, name: users.name })
+                    .from(users)
+                    .where(inArray(users.id, recipients));
+
+                const supplierName = supplierRow?.name ?? "A supplier";
+                const title = "New supplier response submitted";
+                const message = `${supplierName} has submitted a response for "${requestRow?.title ?? "an assessment request"}". Please review it.`;
+                const link = `/requests/assessments/${assessmentId}?tab=responses`;
+
+                await Promise.all(receiverRows.map(async (user) => {
+                    await createSystemNotification({ userId: user.id, title, message, type: "success", link });
+                    if (user.email) {
+                        await sendEmail({
+                            to: user.email,
+                            subject: `Supplier response submitted: ${requestRow?.title ?? "Assessment request"}`,
+                            body: `${supplierName} has submitted a response for "${requestRow?.title ?? "the assessment request"}".\n\nReview it here: ${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}${link}`,
+                        });
+                    }
+                }));
+            }
+        } catch (notificationError) {
+            console.error("submitExternalAssessment notification failed", notificationError);
+        }
 
         return { ok: true, status: "submitted" };
     } catch (err) {

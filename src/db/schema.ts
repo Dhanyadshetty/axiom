@@ -158,6 +158,7 @@ export const assessmentRequestSuppliers = pgTable('assessment_request_suppliers'
     contactId: uuid('contact_id').references(() => contacts.id),
     status: text('status').default('pending'), // pending, sent, in_progress, submitted, completed
     sentAt: timestamp('sent_at'),
+    lastReminderSentAt: timestamp('last_reminder_sent_at'),
     respondedAt: timestamp('responded_at'),
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),

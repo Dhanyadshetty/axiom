@@ -64,6 +64,8 @@ export type AssessmentDetail = {
         contactName: string | null;
         contactEmail: string | null;
         status: string;
+        sentAt: Date | string | null;
+        lastReminderSentAt: Date | string | null;
         contacts: Array<{
             contactId: string | null;
             contactName: string | null;
