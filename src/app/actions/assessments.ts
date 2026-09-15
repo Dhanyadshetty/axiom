@@ -47,7 +47,7 @@ function getUserContext() {
     return auth();
 }
 
-type AssessmentListRow = { marriage conflict another server one minute arrival check inbrella feature supply and study even default market default market default model default main mark nodolla default full request new pool request features in that stood that we can do some more changes the world is that it's going to replace the code right now so what we did in the process was senior processes in thoughts and follows here you can see a supplier code of JSON this file I will change some date
+type AssessmentListRow = {
     id: string;
     title: string;
     responsibleId: string | null;

@@ -15,7 +15,8 @@ export async function POST(req: Request) {
     }
     const buf = await file.arrayBuffer();
     try {
-        const parsed = parseWorkbook(buf, file.name);
+        const u8 = new Uint8Array(buf);
+        const parsed = parseWorkbook(u8, file.name);
         return NextResponse.json({
             fileName: file.name,
             sheetCount: parsed.sheets.length,
@@ -24,6 +25,7 @@ export async function POST(req: Request) {
                 headers: s.headers,
                 rowCount: s.rows.length,
                 suggestedMapping: s.suggestedMapping,
+                rows: s.rows,
                 preview: s.rows.slice(0, 10),
             })),
         });

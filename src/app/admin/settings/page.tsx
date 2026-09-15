@@ -6,6 +6,7 @@ import { ClearInventoryButton } from "@/components/admin/clear-inventory-button"
 import { ResetDatabaseButton } from "@/components/admin/reset-database-button";
 import { SeedDemoDataButton } from "@/components/admin/seed-demo-data-button";
 import { TwoFactorSetup } from "@/components/admin/two-factor-setup";
+import { TrustedDevicesCard } from "@/components/admin/trusted-devices-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -227,6 +228,9 @@ export default function AdminSettingsPage() {
                         </div>
                     </CardContent>
                 </Card>
+
+                {/* Trusted Devices Management */}
+                <TrustedDevicesCard className="hover:shadow-md transition-shadow" />
 
                 <Card className="hover:shadow-md transition-shadow">
                     <CardHeader>

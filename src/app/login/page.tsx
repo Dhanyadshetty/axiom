@@ -32,6 +32,7 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [displayErrorMessage, setDisplayErrorMessage] = useState('');
     const [loginMode, setLoginMode] = useState<LoginMode>('user');
+    const [rememberDevice, setRememberDevice] = useState(true);
 
     useEffect(() => {
         let processedError = '';
@@ -355,6 +356,30 @@ export default function LoginPage() {
                                             />
                                             <p className="text-center text-[10px] text-muted-foreground">{ta.openAuthenticator}</p>
                                         </div>
+
+                                        <div className="flex items-start gap-2.5 rounded-xl border border-border/80 bg-muted/40 p-3">
+                                            <input
+                                                type="checkbox"
+                                                id="rememberDevice"
+                                                name="rememberDevice"
+                                                value="true"
+                                                checked={rememberDevice}
+                                                onChange={(e) => setRememberDevice(e.target.checked)}
+                                                className="mt-0.5 h-4 w-4 rounded border-border text-primary accent-emerald-600 focus:ring-primary"
+                                            />
+                                            <div className="grid gap-0.5 leading-none">
+                                                <label
+                                                    htmlFor="rememberDevice"
+                                                    className="text-xs font-semibold cursor-pointer select-none text-foreground"
+                                                >
+                                                    {ta.rememberDevice || "Remember this device for 30 days"}
+                                                </label>
+                                                <p className="text-[11px] text-muted-foreground leading-normal mt-0.5">
+                                                    {ta.rememberDeviceDesc || "Skip two-factor prompts on this trusted device for the next 30 days."}
+                                                </p>
+                                            </div>
+                                        </div>
+
                                         <input type="hidden" name="identifier" value={identifier} />
                                         <input type="hidden" name="password" value={password} />
                                     </div>

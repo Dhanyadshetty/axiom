@@ -10,9 +10,18 @@ import { revalidatePath } from "next/cache";
 import { TotpService } from "@/lib/totp";
 import QRCode from "qrcode";
 import { consumeRateLimit } from "@/lib/rate-limit";
-import { headers } from "next/headers";
+import { headers, cookies } from "next/headers";
 import { enforceServerActionRateLimit } from "@/lib/server-action-rate-limit";
 import { normalizeIdentifier as normalizeAuthIdentifier, verifyPassword } from "@/lib/auth-credentials";
+import {
+    registerTrustedDevice,
+    listUserTrustedDevices,
+    revokeTrustedDevice,
+    revokeAllTrustedDevices,
+    TRUSTED_DEVICE_COOKIE_NAME,
+    getTrustedDeviceCookieOptions,
+    type UserTrustedDeviceSummary,
+} from "@/lib/trusted-device";
 
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 
@@ -80,20 +89,56 @@ export async function authenticate(
                 return { status: 'error', message: 'Use the Internal Workspace only with an internal user account.' };
             }
 
-            if (userRecord?.role === 'admin') redirectTo = '/admin';
-            else if (userRecord?.role === 'supplier') redirectTo = '/portal';
-            else if (!userRecord?.onboardingCompleted) redirectTo = '/onboarding';
+            if (userRecord?.role === 'supplier') redirectTo = '/portal';
+            else if (!userRecord?.onboardingCompleted && userRecord?.role !== 'admin') redirectTo = '/onboarding';
+            else redirectTo = '/';
         } catch { /* fallback to '/' */ }
+
+        const rememberDevice = formData.get('rememberDevice') === 'true' ||
+            formData.get('rememberDevice') === 'on' ||
+            formData.get('rememberDevice') === '1';
+
+        const cookieStore = await cookies();
+        const trustedDeviceToken =
+            cookieStore.get('__Secure-axiom.trusted-device')?.value ||
+            cookieStore.get('axiom.trusted-device')?.value || '';
 
         const redirectUrl = await signIn('credentials', {
             identifier,
             password,
             code,
+            trustedDeviceToken,
             redirect: false,
             redirectTo,
         });
 
         if (typeof redirectUrl === 'string') {
+            // If the user submitted a 2FA code and requested "Remember this device"
+            if (code && rememberDevice) {
+                try {
+                    const [userRecord] = await db
+                        .select({ id: users.id })
+                        .from(users)
+                        .where(emailEquals(identifier))
+                        .limit(1);
+
+                    if (userRecord?.id) {
+                        const headerList = await headers();
+                        const userAgent = headerList.get('user-agent');
+                        const registered = await registerTrustedDevice(userRecord.id, userAgent, clientIp);
+                        if (registered) {
+                            cookieStore.set(
+                                TRUSTED_DEVICE_COOKIE_NAME,
+                                registered.rawToken,
+                                getTrustedDeviceCookieOptions(registered.expiresAt)
+                            );
+                        }
+                    }
+                } catch (deviceErr) {
+                    console.error('[AUTH] Failed to persist trusted device:', deviceErr);
+                }
+            }
+
             return { status: 'success', redirectUrl };
         }
 
@@ -469,5 +514,72 @@ export async function updateProfile(formData: FormData) {
     } catch (error) {
         console.error("Failed to update profile:", error);
         return { success: false, error: "Failed to update profile" };
+    }
+}
+
+export async function getTrustedDevices(): Promise<{
+    success: boolean;
+    devices: UserTrustedDeviceSummary[];
+    error?: string;
+}> {
+    const session = await auth();
+    if (!session?.user?.id) {
+        return { success: false, error: "Not authenticated", devices: [] };
+    }
+
+    try {
+        const cookieStore = await cookies();
+        const currentToken =
+            cookieStore.get('__Secure-axiom.trusted-device')?.value ||
+            cookieStore.get('axiom.trusted-device')?.value || null;
+
+        const devices = await listUserTrustedDevices(session.user.id, currentToken);
+        return { success: true, devices };
+    } catch (error) {
+        console.error("Failed to retrieve trusted devices:", error);
+        return { success: false, error: "Failed to retrieve trusted devices", devices: [] };
+    }
+}
+
+export async function revokeTrustedDeviceAction(deviceId: string) {
+    const session = await auth();
+    if (!session?.user?.id) {
+        return { success: false, error: "Not authenticated" };
+    }
+
+    try {
+        const success = await revokeTrustedDevice(session.user.id, deviceId);
+        revalidatePath("/profile");
+        revalidatePath("/admin/settings");
+        return {
+            success,
+            message: success ? "Device removed from trusted devices" : "Failed to remove trusted device",
+        };
+    } catch (error) {
+        console.error("Failed to revoke trusted device:", error);
+        return { success: false, error: "Failed to remove trusted device" };
+    }
+}
+
+export async function revokeAllTrustedDevicesAction() {
+    const session = await auth();
+    if (!session?.user?.id) {
+        return { success: false, error: "Not authenticated" };
+    }
+
+    try {
+        const success = await revokeAllTrustedDevices(session.user.id);
+        const cookieStore = await cookies();
+        cookieStore.delete('__Secure-axiom.trusted-device');
+        cookieStore.delete('axiom.trusted-device');
+        revalidatePath("/profile");
+        revalidatePath("/admin/settings");
+        return {
+            success,
+            message: success ? "All trusted devices have been revoked" : "Failed to revoke trusted devices",
+        };
+    } catch (error) {
+        console.error("Failed to revoke all trusted devices:", error);
+        return { success: false, error: "Failed to revoke trusted devices" };
     }
 }

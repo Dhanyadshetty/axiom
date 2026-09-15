@@ -77,34 +77,53 @@ export function getNavigationSections(user: NavigationRole): NavigationSection[]
             id: 'primary',
             links: [
                 { label: workspaceLabel,    icon: LayoutDashboard, href: role === 'supplier' ? '/portal' : '/' },
-                ...(role !== 'supplier' ? [{ label: 'Suppliers',        icon: Users,       href: '/suppliers'   }] : []),
-                // NEW: Analytics Studio — the selling-point visualization section
-                ...(role !== 'supplier' ? [{ label: 'Analytics Studio', icon: LineChart,   href: '/analytics'   }] : []),
                 ...(role !== 'supplier' ? [{ label: 'Axiom Copilot',    icon: Sparkles,    href: '/copilot', emphasis: 'copilot' as const }] : []),
                 ...(role === 'admin' && canAccessAIFleet(user) ? [{ label: 'AI Agents', icon: Sparkles, href: '/admin/agents', emphasis: 'agents' as const }] : []),
             ],
         },
         ...(role !== 'supplier'
-            ? [{
-                id: 'sourcing',
-                title: 'Sourcing',
-                links: [
-                    { label: 'Parts Catalog',        icon: Package,       href: '/sourcing/parts'          },
-                    { label: 'Sourcing Requests',    icon: FileText,      href: '/sourcing/rfqs'           },
-                    { label: 'Requests',             icon: ClipboardList, href: '/requests'                },
-                    { label: 'Requisitions',         icon: ShoppingCart,  href: '/sourcing/requisitions'   },
-                    { label: 'Orders',               icon: ShoppingCart,  href: '/sourcing/orders'         },
-                    { label: 'Goods Receipts',       icon: Truck,         href: '/sourcing/goods-receipts' },
-                    { label: 'Exception Management', icon: AlertTriangle, href: '/sourcing/exceptions'     },
-                    { label: 'Invoice Records',      icon: FileText,      href: '/sourcing/invoices'       },
-                    { label: 'Agreements',           icon: FileText,      href: '/sourcing/contracts'      },
-                    // NEW: Inventory (was a hidden route, now surfaced in nav)
-                    { label: 'Inventory',            icon: Warehouse,     href: '/inventory'               },
-                    { label: 'Transactions',         icon: ArrowRightLeft, href: '/transactions'           },
-                    { label: 'Contacts',             icon: ContactRound,  href: '/contacts'                },
-                    { label: 'Savings',              icon: PiggyBank,     href: '/savings'                 },
-                ],
-            }]
+            ? [
+                {
+                    id: 'supply-chain-data',
+                    title: 'Supply Chain Data',
+                    links: [
+                        { label: 'Suppliers',        icon: Users,        href: '/suppliers'   },
+                        { label: 'Contacts',         icon: ContactRound, href: '/contacts'    },
+                        { label: 'Articles',         icon: Package,      href: '/articles'    },
+                    ],
+                },
+                {
+                    id: 'transactions',
+                    title: 'Transactions',
+                    links: [
+                        { label: 'Orders',               icon: ShoppingCart,  href: '/sourcing/orders'         },
+                        { label: 'Goods Receipts',       icon: Truck,         href: '/sourcing/goods-receipts' },
+                        { label: 'Invoices',             icon: FileText,      href: '/sourcing/invoices'       },
+                        { label: 'Quantity Contracts',   icon: FileText,      href: '/sourcing/contracts'      },
+                    ],
+                },
+                {
+                    id: 'sourcing',
+                    title: 'Sourcing & Operations',
+                    links: [
+                        { label: 'Parts Catalog',        icon: Package,       href: '/sourcing/parts'          },
+                        { label: 'Sourcing Requests',    icon: FileText,      href: '/sourcing/rfqs'           },
+                        { label: 'Requests',             icon: ClipboardList, href: '/requests'                },
+                        { label: 'Requisitions',         icon: ShoppingCart,  href: '/sourcing/requisitions'   },
+                        { label: 'Exception Management', icon: AlertTriangle, href: '/sourcing/exceptions'     },
+                    ],
+                },
+                {
+                    id: 'tools',
+                    title: 'Tools',
+                    links: [
+                        { label: 'Analytics Studio',     icon: LineChart,     href: '/analytics'               },
+                        { label: 'Savings',              icon: PiggyBank,     href: '/savings'                 },
+                        { label: 'Inventory',            icon: Warehouse,     href: '/inventory'               },
+                        { label: 'Transactions History', icon: ArrowRightLeft, href: '/transactions'           },
+                    ],
+                },
+            ]
             : [{
                 id: 'vendor-portal',
                 title: 'Vendor Portal',

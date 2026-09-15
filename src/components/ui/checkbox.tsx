@@ -11,7 +11,7 @@ export interface CheckboxProps {
     id?: string;
 }
 
-export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(function Checkbox(
+export const Checkbox = React.forwardRef<HTMLButtonElement, CheckboxProps>(function Checkbox(
     { checked = false, onCheckedChange, disabled, className, ...props },
     ref,
 ) {
@@ -19,20 +19,27 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(functi
     const isIndeterminate = checked === "indeterminate";
 
     return (
-        <span className={`relative inline-flex h-4 w-4 items-center justify-center ${className ?? ""}`}>
-            <input
-                ref={ref}
-                type="checkbox"
-                checked={isChecked}
-                disabled={disabled}
-                onChange={(event) => onCheckedChange?.(event.target.checked)}
-                className="peer h-4 w-4 cursor-pointer appearance-none rounded-[5px] border border-slate-300 bg-white transition-colors checked:border-primary checked:bg-primary hover:border-primary disabled:cursor-not-allowed disabled:opacity-50"
-                {...props}
-            />
+        <button
+            ref={ref}
+            type="button"
+            role="checkbox"
+            aria-checked={isIndeterminate ? "mixed" : isChecked}
+            disabled={disabled}
+            onClick={(e) => {
+                e.stopPropagation();
+                if (!disabled) onCheckedChange?.(!isChecked);
+            }}
+            className={`relative inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-[4px] border transition-colors cursor-pointer select-none focus:outline-none focus:ring-1 focus:ring-slate-400 ${
+                isChecked || isIndeterminate
+                    ? "border-slate-900 bg-slate-900 text-white shadow-2xs"
+                    : "border-slate-300 bg-white hover:border-slate-400 hover:bg-slate-50"
+            } ${disabled ? "cursor-not-allowed opacity-50" : ""} ${className ?? ""}`}
+            {...(props as any)}
+        >
             {isChecked ? (
                 <svg
                     viewBox="0 0 24 24"
-                    className="pointer-events-none absolute h-3 w-3 text-white"
+                    className="pointer-events-none h-3 w-3 text-white"
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="3.5"
@@ -40,8 +47,8 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(functi
                     <path d="m5 13 4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
             ) : isIndeterminate ? (
-                <span className="pointer-events-none absolute h-0.5 w-2 rounded bg-primary" />
+                <span className="pointer-events-none h-0.5 w-2 rounded-full bg-white" />
             ) : null}
-        </span>
+        </button>
     );
 });
