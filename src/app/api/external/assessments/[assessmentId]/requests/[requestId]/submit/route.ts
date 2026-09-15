@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateMagicToken } from '@/lib/services/magic-tokens';
 import { db } from '@/db';
-import { assessmentRequestSuppliers, assessmentRequests, assessmentResponses, assessmentDocumentRequests, suppliers } from '@/db/schema';
+import { assessmentRequestSuppliers, assessmentRequests, assessmentResponses, assessmentDocumentRequests, suppliers, users } from '@/db/schema';
 import { eq, and, inArray } from 'drizzle-orm';
 import { enqueueAssessmentEmail } from '@/lib/queue/email-queue';
 import { createSystemNotification } from '@/app/actions/notifications';
+import { sendEmail } from '@/lib/services/email';
 
 export const dynamic = 'force-dynamic';
 
@@ -125,8 +126,23 @@ export async function POST(
             const recipients = Array.from(
                 new Set([ar?.responsibleId, ar?.createdById].filter((id): id is string => Boolean(id)))
             );
-            for (const userId of recipients) {
-                await createSystemNotification({ userId, title, message, type: 'success', link });
+
+            if (recipients.length > 0) {
+                const recipientUsers = await db
+                    .select({ id: users.id, email: users.email, name: users.name })
+                    .from(users)
+                    .where(inArray(users.id, recipients));
+
+                for (const user of recipientUsers) {
+                    await createSystemNotification({ userId: user.id, title, message, type: 'success', link });
+                    if (user.email) {
+                        await sendEmail({
+                            to: user.email,
+                            subject: `Assessment response submitted: ${ar?.title ?? 'Supplier assessment'}`,
+                            body: `${supplierName} has submitted an assessment response for "${ar?.title ?? 'the request'}".\n\nReview it here: ${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}${link}`,
+                        });
+                    }
+                }
             }
         } catch (notifError) {
             console.error('Failed to create submission notification:', notifError);

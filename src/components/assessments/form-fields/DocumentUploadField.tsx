@@ -17,8 +17,10 @@ import {
     FileText,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { DocumentPreviewModal } from "../DocumentPreviewModal";
 import { Input } from "@/components/ui/input";
 import type { DocumentUploadData, FileUploadData } from "@/lib/assessment-templates/types";
+import { uploadFormFile } from "@/lib/client/upload";
 
 interface DocumentUploadFieldProps {
     value: DocumentUploadData | null;
@@ -30,9 +32,37 @@ interface DocumentUploadFieldProps {
     helperText?: string;
 }
 
+function parseDateString(dateStr?: string): Date | null {
+    if (!dateStr) return null;
+    const trimmed = dateStr.trim();
+    if (!trimmed) return null;
+
+    const parts = trimmed.split("/");
+    if (parts.length !== 3) return null;
+
+    const [first, second, third] = parts.map((part) => Number(part));
+    if ([first, second, third].some((num) => !Number.isFinite(num))) return null;
+
+    const day = first > 12 && second <= 12 ? first : first <= 31 && second <= 12 ? first : null;
+    const month = day === null ? null : second;
+    const year = third;
+
+    if (day === null || month === null || !year) return null;
+    const parsed = new Date(year, month - 1, day);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
 function formatDateDisplay(dateStr?: string): string {
     if (!dateStr) return "";
     return dateStr;
+}
+
+function isImageFile(file: FileUploadData | null): boolean {
+    return Boolean(file && (file.type.startsWith("image/") || /\.(png|jpe?g|gif|webp)$/i.test(file.name)));
+}
+
+function isPdfFile(file: FileUploadData | null): boolean {
+    return Boolean(file && (file.type === "application/pdf" || /\.pdf$/i.test(file.name)));
 }
 
 export function DocumentUploadField({
@@ -54,15 +84,18 @@ export function DocumentUploadField({
     const [validUntil, setValidUntil] = React.useState("");
     const [naReason, setNaReason] = React.useState("");
     const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const [previewOpen, setPreviewOpen] = React.useState(false);
+    const [previewFile, setPreviewFile] = React.useState<FileUploadData | null>(null);
+    const [previewError, setPreviewError] = React.useState(false);
+    const [uploadError, setUploadError] = React.useState<string | null>(null);
 
     const hasFile = !!value?.file;
     const isNa = !!value?.notApplicable;
 
     function isExpired(dateStr: string): boolean {
-        const parts = dateStr.split("/");
-        if (parts.length !== 3) return false;
-        const d = new Date(Number(parts[2]), Number(parts[0]) - 1, Number(parts[1]));
-        return d.getTime() < Date.now();
+        const parsed = parseDateString(dateStr);
+        if (!parsed) return false;
+        return parsed.getTime() < Date.now();
     }
 
     const registerFile = (file: FileUploadData) => {
@@ -90,20 +123,20 @@ export function DocumentUploadField({
         return null;
     }, [isNa, hasFile, value]);
 
-    const handleFiles = (fileList: FileList | null) => {
+    const handleFiles = async (fileList: FileList | null) => {
         if (!fileList || fileList.length === 0) return;
         const file = fileList[0];
-        const data: FileUploadData = {
-            name: file.name,
-            url: URL.createObjectURL(file),
-            size: file.size,
-            type: file.type,
-        };
-        setPendingFile(data);
-        setValidFrom("");
-        setValidUntil("");
-        setUploadModalOpen(false);
-        setNaModalOpen(false);
+        try {
+            const data = await uploadFormFile(file);
+            setUploadError(null);
+            setPendingFile(data);
+            setValidFrom("");
+            setValidUntil("");
+            setUploadModalOpen(false);
+            setNaModalOpen(false);
+        } catch (error) {
+            setUploadError(error instanceof Error ? error.message : "Upload failed. Please try again.");
+        }
     };
 
     const handleUseSharedFile = (file: FileUploadData) => {
@@ -127,6 +160,31 @@ export function DocumentUploadField({
         setPendingFile(null);
     };
 
+    const openPreview = (file: FileUploadData | null | undefined) => {
+        if (!file?.url) return;
+        setPreviewFile(file);
+        setPreviewOpen(true);
+        setPreviewError(false);
+    };
+
+    const openFileAction = (file: FileUploadData | null | undefined, asDownload = false) => {
+        if (!file?.url) return;
+        if (file.url.startsWith("blob:")) {
+            setUploadError("This older browser-only upload is no longer available. Please remove it and upload the file again.");
+            return;
+        }
+        const anchor = document.createElement("a");
+        anchor.href = file.url;
+        anchor.target = "_blank";
+        anchor.rel = "noopener noreferrer";
+        if (asDownload) {
+            anchor.download = file.name || "document";
+        }
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+    };
+
     const confirmNa = () => {
         if (!naReason.trim()) return;
         onChange({ file: null, notApplicable: true, naReason: naReason.trim(), validFrom: undefined, validUntil: undefined });
@@ -145,7 +203,7 @@ export function DocumentUploadField({
             <div className="flex items-start justify-between gap-3">
                 <Label className="text-sm font-medium text-slate-800 flex items-center gap-1.5 pt-0.5">
                     {label}
-                    {required && <span className="text-rose-500" aria-hidden="true">*</span>}
+                    {required && <span className="text-rose-600 font-bold" aria-hidden="true">*</span>}
                 </Label>
                 <div className="relative">
                     <Button
@@ -215,10 +273,24 @@ export function DocumentUploadField({
                             </p>
                         </div>
                         <div className="flex items-center gap-1">
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500" aria-label="Preview" disabled={disabled}>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-slate-500"
+                                aria-label="Preview"
+                                disabled={!value?.file?.url}
+                                onClick={() => openPreview(value?.file)}
+                            >
                                 <Eye className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500" aria-label="Download" disabled={disabled}>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-slate-500"
+                                aria-label="Download"
+                                disabled={!value?.file?.url}
+                                onClick={() => openFileAction(value?.file, true)}
+                            >
                                 <Download className="h-4 w-4" />
                             </Button>
                             <Button
@@ -239,7 +311,7 @@ export function DocumentUploadField({
                             <Label className="text-xs font-medium text-slate-600">Validity start (optional)</Label>
                             <Input
                                 type="text"
-                                placeholder="mm/dd/yyyy"
+                                placeholder="dd/mm/yyyy"
                                 value={value?.validFrom ?? ""}
                                 disabled={disabled}
                                 onChange={(e) => onChange({ ...value!, validFrom: e.target.value })}
@@ -252,7 +324,7 @@ export function DocumentUploadField({
                             </Label>
                             <Input
                                 type="text"
-                                placeholder="mm/dd/yyyy"
+                                placeholder="dd/mm/yyyy"
                                 value={value?.validUntil ?? ""}
                                 disabled={disabled}
                                 onChange={(e) => onChange({ ...value!, validUntil: e.target.value })}
@@ -266,7 +338,13 @@ export function DocumentUploadField({
             {/* Small scan/preview + View upload */}
             {hasFile && (
                 <div className="flex items-center gap-3">
-                    <Button variant="ghost" size="sm" className="gap-1.5 text-slate-500 px-0" disabled={disabled}>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="gap-1.5 text-slate-500 px-0"
+                        disabled={!value?.file?.url}
+                        onClick={() => openPreview(value?.file)}
+                    >
                         <ScanLine className="h-4 w-4" />
                         View upload
                     </Button>
@@ -275,6 +353,7 @@ export function DocumentUploadField({
 
             {help && <p className="text-xs text-slate-500">{help}</p>}
             {helperText && !help && <p className="text-xs text-slate-500">{helperText}</p>}
+            {uploadError && <p className="text-xs text-rose-600">{uploadError}</p>}
 
             {/* Upload modal */}
             <Dialog open={uploadModalOpen} onOpenChange={setUploadModalOpen}>
@@ -346,10 +425,24 @@ export function DocumentUploadField({
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-medium text-slate-900 truncate">{pendingFile.name}</p>
                                 </div>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500" aria-label="Preview">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-slate-500"
+                                    aria-label="Preview"
+                                    disabled={!pendingFile?.url}
+                                    onClick={() => openPreview(pendingFile)}
+                                >
                                     <Eye className="h-4 w-4" />
                                 </Button>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500" aria-label="Download">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-slate-500"
+                                    aria-label="Download"
+                                    disabled={!pendingFile?.url}
+                                    onClick={() => openFileAction(pendingFile, true)}
+                                >
                                     <Download className="h-4 w-4" />
                                 </Button>
                                 <Button variant="ghost" size="icon" onClick={() => setPendingFile(null)} className="h-8 w-8 text-slate-500" aria-label="Remove">
@@ -359,13 +452,13 @@ export function DocumentUploadField({
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div className="space-y-1">
                                     <Label className="text-xs font-medium text-slate-600">Validity start (optional)</Label>
-                                    <Input type="text" placeholder="mm/dd/yyyy" value={validFrom} onChange={(e) => setValidFrom(e.target.value)} />
+                                    <Input type="text" placeholder="dd/mm/yyyy" value={validFrom} onChange={(e) => setValidFrom(e.target.value)} />
                                 </div>
                                 <div className="space-y-1">
                                     <Label className="text-xs font-medium text-slate-600">
                                         Expiration date <span className="text-rose-500">*</span>
                                     </Label>
-                                    <Input type="text" placeholder="mm/dd/yyyy" value={validUntil} onChange={(e) => setValidUntil(e.target.value)} />
+                                    <Input type="text" placeholder="dd/mm/yyyy" value={validUntil} onChange={(e) => setValidUntil(e.target.value)} />
                                 </div>
                             </div>
                         </div>
@@ -403,6 +496,13 @@ export function DocumentUploadField({
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {/* Preview modal */}
+            <DocumentPreviewModal
+                open={previewOpen}
+                onOpenChange={setPreviewOpen}
+                document={previewFile}
+            />
         </div>
     );
 }

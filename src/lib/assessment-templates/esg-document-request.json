@@ -63,11 +63,16 @@
           "titleDe": "Dokumente",
           "icon": "file-text",
           "fields": [
-            { "key": "sustainability_policy", "label": "Sustainability / ESG Policy", "labelDe": "Nachhaltigkeits- / ESG-Richtlinie", "type": "document_upload", "required": false },
-            { "key": "code_of_conduct_doc", "label": "Code of Conduct", "labelDe": "Verhaltenskodex", "type": "document_upload", "required": false },
-            { "key": "environmental_certificate", "label": "Environmental Management Certificate (e.g. ISO 14001)", "labelDe": "Umweltmanagement-Zertifikat (z. B. ISO 14001)", "type": "document_upload", "required": false },
-            { "key": "social_certificate", "label": "Social Compliance Certificate (e.g. SA8000, SMETA)", "labelDe": "Sozial-Compliance-Zertifikat (z. B. SA8000, SMETA)", "type": "document_upload", "required": false },
-            { "key": "carbon_footprint_statement", "label": "Carbon Footprint Statement", "labelDe": "CO2-Fußabdruck-Erklärung", "type": "document_upload", "required": false },
+            { "key": "amfori_bsci", "label": "amfori BSCI", "labelDe": "amfori BSCI", "type": "document_upload", "required": true },
+            { "key": "emas", "label": "EMAS", "labelDe": "EMAS", "type": "document_upload", "required": true },
+            { "key": "iatf_16949", "label": "IATF 16949", "labelDe": "IATF 16949", "type": "document_upload", "required": true },
+            { "key": "iso_14001", "label": "ISO 14001", "labelDe": "ISO 14001", "type": "document_upload", "required": true },
+            { "key": "iso_9001", "label": "ISO 9001", "labelDe": "ISO 9001", "type": "document_upload", "required": true },
+            { "key": "sa_8000", "label": "SA 8000", "labelDe": "SA 8000", "type": "document_upload", "required": true },
+            { "key": "sedex_smeta", "label": "SEDEX/SMETA", "labelDe": "SEDEX/SMETA", "type": "document_upload", "required": true },
+            { "key": "iso_45001", "label": "ISO 45001", "labelDe": "ISO 45001", "type": "document_upload", "required": true },
+            { "key": "iso_37001", "label": "ISO 37001", "labelDe": "ISO 37001", "type": "document_upload", "required": true },
+            { "key": "code_of_conduct_doc", "label": "Verhaltenskodex (Code of Conduct)", "labelDe": "Verhaltenskodex", "type": "document_review_confirm", "required": true, "templates": [{ "id": "coc_3", "name": "2023-02-01-prettl-code-of-conduct.pdf", "nameDe": "2023-02-01-prettl-code-of-conduct.pdf", "url": "/documents/2023-02-01-prettl-code-of-conduct.pdf" }, { "id": "coc_4", "name": "2023-30-06-code-of-conduct-pma-english.pdf", "nameDe": "2023-30-06-code-of-conduct-pma-english.pdf", "url": "/documents/2023-30-06-code-of-conduct-pma-english.pdf" }] },
             { "key": "comments", "label": "Additional comments", "labelDe": "Zusätzliche Kommentare", "type": "long_text_rich", "required": false }
           ]
         }

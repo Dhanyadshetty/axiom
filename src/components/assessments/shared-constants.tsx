@@ -32,13 +32,13 @@ export function initials(name: string | null) {
 export function formatDate(value: Date | string | null) {
     if (!value) return "—";
     const d = typeof value === "string" ? new Date(value) : value;
-    return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+    return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" });
 }
 
 export function formatDateTime(value: Date | string | null) {
     if (!value) return "—";
     const d = typeof value === "string" ? new Date(value) : value;
-    return d.toLocaleString("en-US", { month: "2-digit", day: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true });
+    return d.toLocaleString("en-US", { month: "2-digit", day: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "UTC" });
 }
 
 export function truncate(str: string | null, max: number) {

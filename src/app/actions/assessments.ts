@@ -39,7 +39,8 @@ import { auth } from "@/auth";
 import { enqueueAssessmentEmail } from "@/lib/queue/email-queue";
 import type { AssessmentTemplateSchema, FormAnswer } from "@/lib/assessment-templates/types";
 import pmaSchema from "@/lib/assessment-templates/supplier-self-assessment-pma-code-of-conduct.json";
-import { getBundledTemplateSchema } from "@/lib/assessment-templates";
+import { getBundledTemplateSchema, resolveAssessmentTemplateSchema } from "@/lib/assessment-templates";
+import { collectUploadedDocumentsFromAnswers } from "@/lib/assessment-upload-documents";
 
 const ASSESSMENT_PAGE = "/requests/assessments";
 
@@ -47,7 +48,7 @@ function getUserContext() {
     return auth();
 }
 
-type AssessmentListRow = { marriage conflict another server one minute arrival check inbrella feature supply and study even default market default market default model default main mark nodolla default full request new pool request features in that stood that we can do some more changes the world is that it's going to replace the code right now so what we did in the process was senior processes in thoughts and follows here you can see a supplier code of JSON this file I will change some date
+type AssessmentListRow = {
     id: string;
     title: string;
     responsibleId: string | null;
@@ -210,6 +211,8 @@ type AssessmentDetail = AssessmentRequest & {
         contactId: string | null;
         contactName: string | null;
         status: string;
+        sentAt: Date | string | null;
+        lastReminderSentAt: Date | string | null;
     }>;
     responseCount: number;
 };
@@ -244,6 +247,8 @@ export async function getAssessmentRequestById(id: string): Promise<AssessmentDe
                 supplierId: assessmentRequestSuppliers.supplierId,
                 contactId: assessmentRequestSuppliers.contactId,
                 status: assessmentRequestSuppliers.status,
+                sentAt: assessmentRequestSuppliers.sentAt,
+                lastReminderSentAt: assessmentRequestSuppliers.lastReminderSentAt,
                 supplierName: suppliers.name,
                 contactName: contacts.name,
                 contactEmail: contacts.email,
@@ -300,6 +305,8 @@ export async function getAssessmentRequestById(id: string): Promise<AssessmentDe
                 contactName: s.contactName,
                 contactEmail: s.contactEmail,
                 status: s.status,
+                sentAt: s.sentAt,
+                lastReminderSentAt: s.lastReminderSentAt,
                 contacts: contactLinks
                     .filter((l) => l.arsId === s.id)
                     .map((l) => ({ contactId: l.contactId, contactName: l.contactName, contactEmail: l.contactEmail })),
@@ -349,6 +356,7 @@ export async function createAssessmentRequest(templateId: string, title?: string
             `Assessment request '${created.title}' created from template ${template?.name ?? "none"}`
         );
 
+        revalidatePath("/requests");
         revalidatePath(ASSESSMENT_PAGE);
         return { success: true, id: created.id };
     } catch (error) {
@@ -373,6 +381,7 @@ export async function updateAssessmentSetup(
 
         await db.update(assessmentRequests).set(values).where(eq(assessmentRequests.id, id));
         await logActivity("UPDATE", "assessment_request", id, "Updated general information");
+        revalidatePath("/requests");
         revalidatePath(`${ASSESSMENT_PAGE}/${id}`);
         revalidatePath(ASSESSMENT_PAGE);
         return { success: true };
@@ -657,7 +666,7 @@ export async function publishAssessment(id: string, notify: boolean) {
         if (notify) {
             // Update status to sent and queue emails for each participant
             await db.update(assessmentRequestSuppliers)
-                .set({ status: "sent", sentAt: new Date() })
+                .set({ status: "sent", sentAt: new Date(), lastReminderSentAt: new Date() })
                 .where(eq(assessmentRequestSuppliers.assessmentRequestId, id));
 
             // Get every (participant, contact) link so multi-contact
@@ -842,8 +851,9 @@ export async function resendInvitation(assessmentRequestSupplierId: string) {
         );
 
         if (result.success) {
+            const reminderSentAt = new Date();
             await db.update(assessmentRequestSuppliers)
-                .set({ status: 'sent', sentAt: new Date() })
+                .set({ status: 'sent', sentAt: participant.sentAt ?? reminderSentAt, lastReminderSentAt: reminderSentAt })
                 .where(eq(assessmentRequestSuppliers.id, assessmentRequestSupplierId));
         }
 
@@ -976,7 +986,7 @@ export async function shareAssessmentRequest(assessmentRequestId: string, emails
 
 function schemaForCategory(category: string | null): AssessmentTemplateSchema {
     return (
-        getBundledTemplateSchema(category) ??
+        resolveAssessmentTemplateSchema(category, null) ??
         (pmaSchema as unknown as AssessmentTemplateSchema)
     );
 }
@@ -1001,16 +1011,10 @@ export async function getSupplierResponse(
             ? await db.select().from(assessmentTemplates).where(eq(assessmentTemplates.id, request.templateId)).limit(1)
             : [null];
 
-        let schema: AssessmentTemplateSchema;
-        if (template?.config) {
-            try {
-                schema = JSON.parse(template.config) as AssessmentTemplateSchema;
-            } catch {
-                schema = schemaForCategory(template?.category ?? null);
-            }
-        } else {
-            schema = schemaForCategory(template?.category ?? null);
-        }
+        const schema = resolveAssessmentTemplateSchema(
+            template?.category ?? null,
+            template?.config ?? null
+        ) ?? schemaForCategory(template?.category ?? null);
 
         const existingResponse = await db
             .select({ answers: assessmentResponses.answers, status: assessmentResponses.status })
@@ -1047,7 +1051,7 @@ export async function getSupplierResponse(
                 )
             );
 
-        const documents: SupplierDocumentResponse[] = documentRows
+        const documentsFromRows: SupplierDocumentResponse[] = documentRows
             .filter((r) => r.documentUrl)
             .map((r) => ({
                 documentRequestId: r.documentRequestId,
@@ -1056,6 +1060,18 @@ export async function getSupplierResponse(
                 documentName: r.documentName ?? fileNameFromUrl(r.documentUrl),
                 submittedAt: r.submittedAt,
             }));
+
+        const nestedDocuments = collectUploadedDocumentsFromAnswers(answers)
+            .filter((row) => row.documentUrl)
+            .map((row) => ({
+                documentRequestId: null,
+                documentUrl: row.documentUrl,
+                responseText: row.responseText,
+                documentName: row.documentName ?? fileNameFromUrl(row.documentUrl),
+                submittedAt: row.submittedAt,
+            }));
+
+        const documents = [...documentsFromRows, ...nestedDocuments].filter((doc, index, arr) => arr.findIndex((candidate) => candidate.documentUrl === doc.documentUrl) === index);
 
         return {
             answers,

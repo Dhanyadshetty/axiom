@@ -65,9 +65,8 @@
           "titleDe": "Bestätigung",
           "icon": "check-square",
           "fields": [
-            { "key": "coc_read_and_understood", "label": "We have read and understood the Code of Conduct", "labelDe": "Wir haben den Verhaltenskodex gelesen und verstanden", "type": "yes_no_confirm", "required": true },
-            { "key": "coc_commit_to_comply", "label": "We commit to comply with the Code of Conduct", "labelDe": "Wir verpflichten uns zur Einhaltung des Verhaltenskodex", "type": "yes_no_confirm", "required": true },
-            { "key": "coc_communicate_to_employees", "label": "We will communicate the Code of Conduct to our employees and subcontractors", "labelDe": "Wir werden den Verhaltenskodex unseren Mitarbeitern und Subunternehmern mitteilen", "type": "yes_no_confirm", "required": true },
+            { "key": "code_of_conduct_review", "label": "Verhaltenskodex (Code of Conduct)", "labelDe": "Verhaltenskodex", "type": "document_review_confirm", "required": true, "templates": [{ "id": "coc_3", "name": "2023-02-01-prettl-code-of-conduct.pdf", "nameDe": "2023-02-01-prettl-code-of-conduct.pdf", "url": "/documents/2023-02-01-prettl-code-of-conduct.pdf" }, { "id": "coc_4", "name": "2023-30-06-code-of-conduct-pma-english.pdf", "nameDe": "2023-30-06-code-of-conduct-pma-english.pdf", "url": "/documents/2023-30-06-code-of-conduct-pma-english.pdf" }] },
+            { "key": "additional_documents", "label": "Additional documents", "labelDe": "Zusätzliche Dokumente", "type": "file_upload", "required": false, "modalUpload": true, "multiple": true },
             { "key": "comments", "label": "Additional comments", "labelDe": "Zusätzliche Kommentare", "type": "long_text_rich", "required": false }
           ]
         }

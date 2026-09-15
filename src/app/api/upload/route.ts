@@ -21,11 +21,18 @@ export async function POST(req: NextRequest) {
         if (tooLarge) return tooLarge;
 
         const session = await auth();
-        if (!session?.user) {
+        // External assessment forms authenticate with the magic-link session
+        // cookie rather than NextAuth. Their uploads still pass through the
+        // same validation and rate limiting as signed-in users.
+        const externalSession = req.cookies.get('external_session')?.value;
+        if (!session?.user && !externalSession) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const limited = await enforceRateLimit(req, 'write', (session.user as { id?: string }).id);
+        const rateLimitIdentity = session?.user
+            ? (session.user as { id?: string }).id
+            : `external:${externalSession}`;
+        const limited = await enforceRateLimit(req, 'write', rateLimitIdentity);
         if (limited) return limited;
 
         const formData = await req.formData();
@@ -38,7 +45,7 @@ export async function POST(req: NextRequest) {
         const mimeType = resolveAllowedMimeType(file, DEFAULT_STORABLE_MIME_TYPES);
         if (!mimeType) {
             return NextResponse.json(
-                { error: `Unsupported file type: ${file.type || file.name}. Allowed: PDF, PNG, JPEG, WEBP, CSV, XLSX, TXT, ZIP` },
+                { error: `Unsupported file type: ${file.type || file.name}. Allowed: PDF, PNG, JPEG, WEBP, CSV, XLS, XLSX, DOC, DOCX, TXT, ZIP` },
                 { status: 400 }
             );
         }

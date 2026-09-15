@@ -9,10 +9,28 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { updateAssessmentSetup } from "@/app/actions/assessments";
 import type { AssessmentDetail } from "@/lib/assessment-types";
+import { DateField } from "./form-fields/DateField";
 
 function initials(name: string | null) {
     if (!name) return "?";
     return name.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
+}
+
+function formatDateToDDMMYYYY(dateStr: string): string {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return "";
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = String(d.getFullYear());
+    return `${day}/${month}/${year}`;
+}
+
+function formatDDMMYYYYToISO(ddmmyyyy: string): string {
+    const parts = ddmmyyyy.split("/");
+    if (parts.length !== 3) return "";
+    const [day, month, year] = parts;
+    return `${year}-${month}-${day}`;
 }
 
 export function SetupStep({
@@ -31,7 +49,7 @@ export function SetupStep({
     const [title, setTitle] = React.useState(detail.title || detail.template?.name || "");
     const [responsibleId, setResponsibleId] = React.useState(detail.responsibleId || currentUserId);
     const [dueDate, setDueDate] = React.useState(
-        detail.dueDate ? new Date(detail.dueDate).toISOString().slice(0, 10) : ""
+        detail.dueDate ? formatDateToDDMMYYYY(new Date(detail.dueDate).toISOString()) : ""
     );
     const [team, setTeam] = React.useState<string[]>(detail.teamIds ?? []);
     const [, startTransition] = React.useTransition();
@@ -52,7 +70,7 @@ export function SetupStep({
                 const result = await updateAssessmentSetup(detail.id, {
                     title,
                     responsibleId,
-                    dueDate: dueDate || null,
+                    dueDate: dueDate ? formatDDMMYYYYToISO(dueDate) : null,
                     teamIds: team,
                 });
                 if (result.success) toast.success("Saved as draft");
@@ -71,6 +89,32 @@ export function SetupStep({
         return () => registerSave(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [canManage, registerSave, title, responsibleId, dueDate, team]);
+
+    React.useEffect(() => {
+        if (!canManage) return;
+        const interval = window.setInterval(() => {
+            const draftData = { title, responsibleId, dueDate, team };
+            try {
+                localStorage.setItem(`axiom:assessment:${detail.id}:draft`, JSON.stringify(draftData));
+            } catch { /* ignore */ }
+        }, 4000);
+        return () => window.clearInterval(interval);
+    }, [canManage, detail.id, title, responsibleId, dueDate, team]);
+
+    React.useEffect(() => {
+        if (!canManage) return;
+        try {
+            const stored = localStorage.getItem(`axiom:assessment:${detail.id}:draft`);
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                if (parsed.title && !title) setTitle(parsed.title);
+                if (parsed.responsibleId && !responsibleId) setResponsibleId(parsed.responsibleId);
+                if (parsed.dueDate && !dueDate) setDueDate(parsed.dueDate);
+                if (parsed.team && team.length === 0) setTeam(parsed.team);
+            }
+        } catch { /* ignore */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (
         <div className="space-y-6">
@@ -129,12 +173,13 @@ export function SetupStep({
 
                 <div className="grid gap-2">
                     <Label htmlFor="dueDate" className="text-sm font-semibold">Due date</Label>
-                    <Input
+                    <DateField
                         id="dueDate"
-                        type="date"
                         value={dueDate}
+                        onChange={setDueDate}
+                        label="Due date"
                         disabled={!canManage}
-                        onChange={(e) => setDueDate(e.target.value)}
+                        placeholder="dd/mm/yyyy"
                     />
                 </div>
 

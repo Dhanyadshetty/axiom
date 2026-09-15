@@ -31,6 +31,7 @@ import { Label } from "@/components/ui/label";
 import type { AssessmentDetail } from "@/lib/assessment-types";
 import { AddSuppliersControl } from "./add-suppliers-modal";
 import { resendInvitation, assignContactToRequestSupplier } from "@/app/actions/assessments";
+import { getAssessmentReminderDates } from "@/lib/reminder-schedule";
 
 import {
     supplierStatusStyles,
@@ -40,12 +41,14 @@ import {
     formatDateTime,
     truncate,
 } from "./shared-constants";
+import { getSupplierLifecycleStatus } from "@/lib/reminder-schedule";
 
 interface SupplierRowProps {
     supplier: AssessmentDetail["suppliers"][number];
     index: number;
     assessmentRequestId: string;
     referenceDate: Date;
+    dueDate?: Date | string | null;
     onOpenResponse: (supplierId: string, assessmentRequestSupplierId: string) => void;
     onEditResponse: (supplierId: string, assessmentRequestSupplierId: string) => void;
     onSendReminder: (assessmentRequestSupplierId: string) => Promise<void>;
@@ -53,11 +56,21 @@ interface SupplierRowProps {
     onChangeResponsible: (supplier: AssessmentDetail["suppliers"][number]) => void;
 }
 
-function SupplierRow({ supplier, index, assessmentRequestId, referenceDate, onOpenResponse, onEditResponse, onSendReminder, onSendEmail, onChangeResponsible }: SupplierRowProps) {
-    const status = supplierStatusStyles[supplier.status] ?? supplierStatusStyles.pending;
-    const reviewStatus = supplier.status === "submitted" || supplier.status === "completed"
-        ? reviewStatusStyles.not_reviewed
-        : reviewStatusStyles.not_reviewed;
+function SupplierRow({ supplier, index, assessmentRequestId, referenceDate, dueDate, onOpenResponse, onEditResponse, onSendReminder, onSendEmail, onChangeResponsible }: SupplierRowProps) {
+    const lifecycleStatus = getSupplierLifecycleStatus(supplier.status);
+    const status = supplierStatusStyles[lifecycleStatus] ?? supplierStatusStyles.pending;
+    const reviewStatus = lifecycleStatus === "submitted" || lifecycleStatus === "completed"
+        ? reviewStatusStyles.in_review
+        : lifecycleStatus === "rejected"
+            ? reviewStatusStyles.rejected
+            : reviewStatusStyles.not_reviewed;
+    const reminderDates = lifecycleStatus === "sent" || lifecycleStatus === "in_progress"
+        ? getAssessmentReminderDates({
+            sentAt: supplier.sentAt ?? referenceDate,
+            lastReminderSentAt: supplier.lastReminderSentAt ?? supplier.sentAt ?? referenceDate,
+            dueDate,
+          })
+        : null;
     
     const primaryContact = supplier.contacts[0];
     const additionalContactsCount = supplier.contacts.length - 1;
@@ -111,14 +124,10 @@ function SupplierRow({ supplier, index, assessmentRequestId, referenceDate, onOp
                 </Badge>
             </td>
             <td className="px-4 py-3 min-w-[120px] text-slate-500 text-sm">
-                {supplier.status === "sent" || supplier.status === "in_progress"
-                    ? formatDate(new Date(referenceDate.getTime() - 86400000))
-                    : "—"}
+                {reminderDates ? formatDate(reminderDates.lastReminder) : "—"}
             </td>
             <td className="px-4 py-3 min-w-[120px] text-slate-500 text-sm">
-                {supplier.status === "sent" || supplier.status === "in_progress"
-                    ? formatDate(new Date(referenceDate.getTime() + 86400000 * 3))
-                    : "—"}
+                {reminderDates ? formatDate(reminderDates.nextReminder) : "—"}
             </td>
             <td className="px-4 py-3 w-10 text-right">
                 <DropdownMenu>
@@ -238,14 +247,28 @@ export function OverviewPanelNew({ detail, canManage }: { detail: AssessmentDeta
                         aVal = a.status === "submitted" || a.status === "completed" ? "not_reviewed" : "not_reviewed";
                         bVal = b.status === "submitted" || b.status === "completed" ? "not_reviewed" : "not_reviewed";
                         break;
-                    case "lastReminder":
-                        aVal = a.status === "sent" || a.status === "in_progress" ? 1 : 0;
-                        bVal = b.status === "sent" || b.status === "in_progress" ? 1 : 0;
+                    case "lastReminder": {
+                        const aReminder = a.status === "sent" || a.status === "in_progress"
+                            ? getAssessmentReminderDates({ sentAt: a.sentAt ?? referenceDate, lastReminderSentAt: a.lastReminderSentAt ?? a.sentAt ?? referenceDate, dueDate: detail.dueDate }).lastReminder.getTime()
+                            : Number.NEGATIVE_INFINITY;
+                        const bReminder = b.status === "sent" || b.status === "in_progress"
+                            ? getAssessmentReminderDates({ sentAt: b.sentAt ?? referenceDate, lastReminderSentAt: b.lastReminderSentAt ?? b.sentAt ?? referenceDate, dueDate: detail.dueDate }).lastReminder.getTime()
+                            : Number.NEGATIVE_INFINITY;
+                        aVal = aReminder;
+                        bVal = bReminder;
                         break;
-                    case "nextReminder":
-                        aVal = a.status === "sent" || a.status === "in_progress" ? 1 : 0;
-                        bVal = b.status === "sent" || b.status === "in_progress" ? 1 : 0;
+                    }
+                    case "nextReminder": {
+                        const aReminder = a.status === "sent" || a.status === "in_progress"
+                            ? getAssessmentReminderDates({ sentAt: a.sentAt ?? referenceDate, lastReminderSentAt: a.lastReminderSentAt ?? a.sentAt ?? referenceDate, dueDate: detail.dueDate }).nextReminder.getTime()
+                            : Number.NEGATIVE_INFINITY;
+                        const bReminder = b.status === "sent" || b.status === "in_progress"
+                            ? getAssessmentReminderDates({ sentAt: b.sentAt ?? referenceDate, lastReminderSentAt: b.lastReminderSentAt ?? b.sentAt ?? referenceDate, dueDate: detail.dueDate }).nextReminder.getTime()
+                            : Number.NEGATIVE_INFINITY;
+                        aVal = aReminder;
+                        bVal = bReminder;
                         break;
+                    }
                 }
 
                 if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1;
@@ -565,6 +588,7 @@ export function OverviewPanelNew({ detail, canManage }: { detail: AssessmentDeta
                                             index={i}
                                             assessmentRequestId={detail.id}
                                             referenceDate={referenceDate}
+                                            dueDate={detail.dueDate}
                                             onOpenResponse={handleOpenResponse}
                                             onEditResponse={handleEditResponse}
                                             onSendReminder={handleSendReminder}

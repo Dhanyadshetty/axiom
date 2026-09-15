@@ -19,13 +19,16 @@ import {
     AlertTriangle,
     FileText,
     MessageSquare,
+    Eye,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FormRenderer } from "@/components/assessments/FormRenderer";
+import { DocumentPreviewModal } from "@/components/assessments/DocumentPreviewModal";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -33,12 +36,14 @@ import {
     saveExternalAssessmentDraft,
     submitExternalAssessment,
     rejectExternalAssessment,
+    uploadExternalAssessmentDocument,
     type AssessmentStatus,
     type ExternalFormData,
 } from "@/app/actions/external-assessments";
 import { validateFormAnswers, validateFormAnswersDetailed, type FieldValidationError } from "@/lib/assessment-templates/validate";
 import { localizeSchema } from "@/lib/assessment-templates/i18n";
-import type { FormAnswer } from "@/lib/assessment-templates/types";
+import type { FileUploadData, FormAnswer } from "@/lib/assessment-templates/types";
+import { getDocumentUploadLabel } from "@/lib/document-upload-display";
 
 const STATUS_STYLES: Record<AssessmentStatus, { label: string; labelDe: string; className: string; icon: React.ReactNode }> = {
     answer_pending: { label: "Answer pending", labelDe: "Ausstehend", className: "border-amber-200 bg-amber-50 text-amber-700", icon: <span className="h-2 w-2 rounded-full bg-amber-500" /> },
@@ -72,15 +77,6 @@ function getFieldValidationErrors(
 }
 
 export function ExternalAssessmentFormClient({ initialData }: { initialData: ExternalFormData }) {
-    // Guard against missing schema (should not happen but defensive for SSR)
-    if (!initialData?.schema?.sections?.length) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-background">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900" />
-            </div>
-        );
-    }
-
     const router = useRouter();
     const [answers, setAnswers] = React.useState<FormAnswer>(initialData.answers);
     const [status, setStatus] = React.useState<AssessmentStatus>(initialData.status);
@@ -98,6 +94,18 @@ export function ExternalAssessmentFormClient({ initialData }: { initialData: Ext
     const [language, setLanguage] = React.useState<"en" | "de">("en");
     const [fieldValidationErrors, setFieldValidationErrors] = React.useState<Record<string, string>>({});
     const [sectionValidationErrors, setSectionValidationErrors] = React.useState<Record<string, boolean>>({});
+    const [documentUploads, setDocumentUploads] = React.useState<Record<string, { url: string; name?: string | null }>>(
+        Object.fromEntries(
+            initialData.documentRequests
+                .filter((doc) => doc.documentUrl)
+                .map((doc) => [doc.id, { url: doc.documentUrl!, name: doc.name }])
+        )
+    );
+    const [uploadingDocument, setUploadingDocument] = React.useState<string | null>(null);
+    const [previewDocument, setPreviewDocument] = React.useState<{ url: string; name: string } | null>(null);
+    const [previewError, setPreviewError] = React.useState(false);
+    const [hasRestoredDraft, setHasRestoredDraft] = React.useState(false);
+    const draftKey = `axiom:external:${initialData.id}`;
 
     const lang = language === "de" ? "de" : "en";
     const tr = (en: string, de: string) => (lang === "de" ? de : en);
@@ -107,9 +115,79 @@ export function ExternalAssessmentFormClient({ initialData }: { initialData: Ext
     );
 
     const scrollRef = React.useRef<HTMLDivElement>(null);
-    const readonly = status === "submitted" || status === "rejected";
+    const isDraftStatus = status === "answer_pending" || status === "in_progress";
+    const readonly = !isDraftStatus;
 
     const sections = localizedSchema?.sections ?? [];
+
+    // Write recovery data synchronously on every change. This covers reloads
+    // before the debounced server save has completed.
+    React.useEffect(() => {
+        if (!hasRestoredDraft || readonly || !isDraftStatus || !initialData.id) return;
+        try {
+            localStorage.setItem(draftKey, JSON.stringify({ answers, updatedAt: new Date().toISOString() }));
+        } catch { /* Storage can be unavailable or full; server autosave still runs. */ }
+    }, [answers, draftKey, hasRestoredDraft, initialData.id, isDraftStatus, readonly]);
+
+    React.useEffect(() => {
+        if (!hasRestoredDraft || readonly || !isDraftStatus) return;
+        const timeout = window.setTimeout(() => {
+            void saveExternalAssessmentDraft(initialData.assessmentRequestId, initialData.id, answers)
+                .then((res) => {
+                    if (res.ok) {
+                        setStatus(res.status ?? "in_progress");
+                    }
+                })
+                .catch(() => undefined);
+        }, 1200);
+
+        return () => window.clearTimeout(timeout);
+    }, [answers, hasRestoredDraft, initialData.assessmentRequestId, initialData.id, readonly, isDraftStatus]);
+
+    React.useEffect(() => {
+        if (readonly || !isDraftStatus || !initialData.id) return;
+        try {
+            const stored = localStorage.getItem(draftKey);
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                const localDraft = parsed?.answers && typeof parsed.answers === "object" ? parsed : null;
+                const localIsNewer = localDraft?.updatedAt
+                    && (!initialData.draftUpdatedAt || new Date(localDraft.updatedAt) > new Date(initialData.draftUpdatedAt));
+                if (localDraft && localIsNewer && Object.keys(localDraft.answers).length > 0) {
+                    setAnswers((prev) => ({ ...prev, ...localDraft.answers }));
+                }
+            }
+        } catch { /* ignore */ } finally {
+            setHasRestoredDraft(true);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const openDocumentPreview = (url: string, name: string) => {
+        if (url.startsWith("blob:")) {
+            toast.error(tr("This uploaded file is no longer available. Please upload it again.", "Diese hochgeladene Datei ist nicht mehr verfügbar. Bitte laden Sie sie erneut hoch."));
+            return;
+        }
+        setPreviewError(false);
+        setPreviewDocument({ url, name });
+    };
+
+    const downloadDocument = (url: string, name: string) => {
+        if (url.startsWith("blob:")) {
+            toast.error(tr("This uploaded file is no longer available. Please upload it again.", "Diese hochgeladene Datei ist nicht mehr verfügbar. Bitte laden Sie sie erneut hoch."));
+            return;
+        }
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = name;
+        // Storage URLs are durable. A new tab is safe here and preserves the
+        // form if a browser cannot honor download for a cross-origin URL.
+        anchor.target = "_blank";
+        anchor.rel = "noopener noreferrer";
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+    };
 
     // Scrollspy: observe each section within the center scroll container.
     React.useEffect(() => {
@@ -181,9 +259,45 @@ export function ExternalAssessmentFormClient({ initialData }: { initialData: Ext
         }
     };
 
+    const handleDocumentUpload = async (documentRequestId: string | null, file: File) => {
+        const key = documentRequestId ?? `additional-${file.name}`;
+        setUploadingDocument(key);
+        try {
+            const result = await uploadExternalAssessmentDocument(
+                initialData.assessmentRequestId,
+                initialData.id,
+                documentRequestId,
+                file
+            );
+            if (!result.ok || !result.url) {
+                toast.error(result.error ?? tr("Upload failed", "Upload fehlgeschlagen"));
+                return;
+            }
+            if (documentRequestId) {
+                setDocumentUploads((prev) => ({ ...prev, [documentRequestId]: { url: result.url!, name: file.name } }));
+            } else {
+                const current = Array.isArray(answers.additional_documents) ? answers.additional_documents as FileUploadData[] : [];
+                const uploaded: FileUploadData = { name: file.name, url: result.url, size: file.size, type: file.type };
+                setAnswers((prev) => ({ ...prev, additional_documents: [...current, uploaded] }));
+            }
+            toast.success(tr("Document uploaded", "Dokument hochgeladen"));
+        } finally {
+            setUploadingDocument(null);
+        }
+    };
+
     const handleSubmit = async () => {
         setShowErrors(true);
         if (!localizedSchema) return;
+        const missingDocuments = initialData.documentRequests.filter(
+            (doc) => doc.isAnswerRequired && !documentUploads[doc.id]?.url
+        );
+        if (missingDocuments.length > 0) {
+            toast.error(tr("Please upload all required documents", "Bitte laden Sie alle erforderlichen Dokumente hoch"), {
+                description: missingDocuments[0].name,
+            });
+            return;
+        }
         const errors = validateFormAnswers(localizedSchema, answers);
         if (errors.length > 0) {
             const detailed = validateFormAnswersDetailed(localizedSchema, answers);
@@ -316,6 +430,15 @@ export function ExternalAssessmentFormClient({ initialData }: { initialData: Ext
             setSubmitting(false);
         }
     };
+
+    // Keep all hooks above this guard so a missing schema cannot change hook order.
+    if (!localizedSchema?.sections?.length) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-background">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900" />
+            </div>
+        );
+    }
 
     const statusStyle = STATUS_STYLES[status];
 
@@ -620,7 +743,126 @@ export function ExternalAssessmentFormClient({ initialData }: { initialData: Ext
                                     : { valid: true, errors: [] }
                             }
                             validationErrors={fieldValidationErrors}
+                            showRequiredHighlights={showErrors}
                         />
+
+                        {initialData.documentRequests.length > 0 && (
+                            <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm" data-section="document-requests">
+                                <h2 className="text-xl font-bold text-slate-900">{tr("Requested documents", "Angeforderte Dokumente")}</h2>
+                                <div className="mt-4 space-y-4">
+                                    {initialData.documentRequests.map((doc) => {
+                                        const missingRequiredDocument = doc.isAnswerRequired && !documentUploads[doc.id]?.url;
+                                        return (
+                                        <div key={doc.id} className={cn("flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4", missingRequiredDocument ? "border-rose-300 bg-rose-50/60" : "border-slate-200 bg-white")}>
+                                            <div>
+                                                <p className={cn("font-medium", missingRequiredDocument ? "text-rose-800" : "text-slate-800")}>{doc.name}</p>
+                                                {missingRequiredDocument ? (
+                                                    <p className="mt-1 flex items-center gap-1.5 text-xs font-medium text-rose-700">
+                                                        <AlertTriangle className="h-3.5 w-3.5" />
+                                                        {tr("Required: please upload this document", "Erforderlich: Bitte laden Sie dieses Dokument hoch")}
+                                                    </p>
+                                                ) : (
+                                                    <p className="text-xs text-slate-500">{doc.groupLabel}{doc.isAnswerRequired ? " · Required" : " · Optional"}</p>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                {documentUploads[doc.id] && (
+                                                    <div className="flex items-center gap-1.5 text-right">
+                                                        <button
+                                                            type="button"
+                                                            className="text-sm font-medium text-emerald-700 hover:underline max-w-[200px] truncate"
+                                                            onClick={() => openDocumentPreview(documentUploads[doc.id].url, getDocumentUploadLabel(documentUploads[doc.id], doc.name))}
+                                                        >
+                                                            {getDocumentUploadLabel(documentUploads[doc.id], doc.name)}
+                                                        </button>
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-8 w-8 text-slate-500 hover:text-emerald-700"
+                                                            title={tr("Preview document", "Dokumentvorschau")}
+                                                            onClick={() => openDocumentPreview(documentUploads[doc.id].url, getDocumentUploadLabel(documentUploads[doc.id], doc.name))}
+                                                        >
+                                                            <Eye className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-8 w-8 text-slate-500 hover:text-emerald-700"
+                                                            title={tr("Download uploaded file", "Hochgeladene Datei herunterladen")}
+                                                            onClick={() => downloadDocument(documentUploads[doc.id].url, getDocumentUploadLabel(documentUploads[doc.id], doc.name))}
+                                                        >
+                                                            <Download className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                )}
+                                                {!readonly && (
+                                                    <label className="cursor-pointer rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700">
+                                                        {uploadingDocument === doc.id ? "Uploading..." : documentUploads[doc.id] ? "Replace file" : "Upload file"}
+                                                        <input type="file" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void handleDocumentUpload(doc.id, file); event.currentTarget.value = ""; }} />
+                                                    </label>
+                                                )}
+                                            </div>
+                                        </div>
+                                        );
+                                    })}
+                                </div>
+                            </section>
+                        )}
+
+                        {initialData.documentRequests.some((doc) => doc.allowAdditionalAttachments) && (
+                            <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                                <h2 className="text-xl font-bold text-slate-900">{tr("Additional documents", "Zusätzliche Dokumente")}</h2>
+                                <p className="mt-1 text-sm text-slate-500">{tr("You may provide additional documents relevant to this request.", "Sie können zusätzliche relevante Dokumente bereitstellen.")}</p>
+                                {!readonly && (
+                                    <label className="mt-4 inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                                        <FileText className="h-4 w-4" /> {tr("Add additional documents", "Zusätzliche Dokumente hinzufügen")}
+                                        <input type="file" multiple className="hidden" onChange={(event) => { Array.from(event.target.files ?? []).forEach((file) => void handleDocumentUpload(null, file)); event.currentTarget.value = ""; }} />
+                                    </label>
+                                )}
+                                {Array.isArray(answers.additional_documents) && answers.additional_documents.length > 0 && (
+                                    <ul className="mt-4 space-y-2 text-sm text-slate-700">
+                                        {(answers.additional_documents as FileUploadData[]).map((file, idx) => (
+                                            <li key={file.url || idx} className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50/50 p-2.5">
+                                                <div className="flex items-center gap-2 min-w-0">
+                                                    <FileText className="h-4 w-4 text-emerald-600 shrink-0" />
+                                                    <button
+                                                        type="button"
+                                                        className="text-left font-medium text-slate-800 hover:underline truncate"
+                                                        onClick={() => openDocumentPreview(file.url, file.name)}
+                                                    >
+                                                        {file.name}
+                                                    </button>
+                                                </div>
+                                                <div className="flex items-center gap-1 shrink-0">
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-7 w-7 text-slate-500 hover:text-emerald-700"
+                                                        title={tr("Preview document", "Dokumentvorschau")}
+                                                        onClick={() => openDocumentPreview(file.url, file.name)}
+                                                    >
+                                                        <Eye className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-7 w-7 text-slate-500 hover:text-emerald-700"
+                                                        title={tr("Download document", "Dokument herunterladen")}
+                                                        onClick={() => downloadDocument(file.url, file.name)}
+                                                    >
+                                                        <Download className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </section>
+                        )}
                         </>
                     )}
                     </div>
@@ -799,6 +1041,17 @@ export function ExternalAssessmentFormClient({ initialData }: { initialData: Ext
                     </span>
                 </footer>
             )}
+
+            <DocumentPreviewModal
+                open={Boolean(previewDocument)}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setPreviewDocument(null);
+                        setPreviewError(false);
+                    }
+                }}
+                document={previewDocument}
+            />
         </div>
     );
 }

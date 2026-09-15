@@ -69,7 +69,7 @@ export default async function RootLayout({
 return (
     <html lang={initialLanguage} suppressHydrationWarning>
       <body
-        className={`${geistMono.variable} min-h-[100dvh] overflow-hidden bg-background text-foreground antialiased`}
+        className={`${geistMono.variable} min-h-[100dvh] overflow-x-hidden bg-background text-foreground antialiased`}
         suppressHydrationWarning
       >
         <ThemeProvider

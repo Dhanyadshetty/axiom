@@ -14,6 +14,8 @@ export const DEFAULT_STORABLE_MIME_TYPES = new Set([
     "text/plain",
     "application/vnd.ms-excel",
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "application/zip",
 ]);
 
@@ -27,6 +29,8 @@ const MIME_BY_EXTENSION: Record<string, string> = {
     txt: "text/plain",
     xls: "application/vnd.ms-excel",
     xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    doc: "application/msword",
+    docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     zip: "application/zip",
 };
 
@@ -40,6 +44,8 @@ const EXTENSION_BY_MIME: Record<string, string> = {
     "text/plain": "txt",
     "application/vnd.ms-excel": "xls",
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "xlsx",
+    "application/msword": "doc",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
     "application/zip": "zip",
 };
 
@@ -96,8 +102,10 @@ export function hasAllowedFileSignature(mimeType: string, buffer: Buffer) {
                 && buffer.subarray(8, 12).toString("ascii") === "WEBP";
         case "application/zip":
         case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+        case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
             return hasZipSignature(buffer);
         case "application/vnd.ms-excel":
+        case "application/msword":
             return hasZipSignature(buffer)
                 || buffer.subarray(0, 8).equals(Buffer.from([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1]))
                 || looksLikeText(buffer);
@@ -164,13 +172,12 @@ export async function storeUploadedFile(
 
     const azureConnectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
     const azureContainer = process.env.AZURE_STORAGE_CONTAINER || "axiom-docs";
-    const shouldUseAzure = process.env.NODE_ENV === "production" || Boolean(azureConnectionString);
+    // Use Azure whenever configured; local Docker can safely use public/uploads
+    // when no connection string is provided.
+    const shouldUseAzure = Boolean(azureConnectionString);
 
     if (shouldUseAzure) {
-        if (!azureConnectionString) {
-            throw new Error("File storage is not configured. Missing AZURE_STORAGE_CONNECTION_STRING.");
-        }
-
+        if (!azureConnectionString) throw new Error("Azure storage connection is unavailable.");
         const { BlobServiceClient } = await import("@azure/storage-blob");
         const blobServiceClient = BlobServiceClient.fromConnectionString(azureConnectionString);
         const containerClient = blobServiceClient.getContainerClient(azureContainer);

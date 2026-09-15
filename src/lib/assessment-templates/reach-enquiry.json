@@ -60,11 +60,13 @@
       "blocks": [
         {
           "key": "reach_status",
-          "title": "REACH status",
-          "titleDe": "REACH-Status",
+          "title": "Assessment of REACH Relevance for Your Supplied Products",
+          "titleDe": "Bewertung der REACH-Relevanz Ihrer gelieferten Produkte",
           "icon": "flask",
+          "message": "Products are considered REACH affected if they are supplied as substances or mixtures and meet any of the following conditions:\n\n• Contain substances classified as hazardous under the CLP Regulation.\n• Contain SVHCs (Substances of Very High Concern).\n• Include substances listed in Annex XIV (Authorization) or Annex XVII (Restrictions) of the REACH Regulation.\n\nProducts supplied as articles are considered REACH affected if any of the following conditions apply:\n\n• Contain SVHCs in a concentration greater than 0.1% w/w.\n• Involve the intentional release of substances under normal or reasonably foreseeable conditions of use.\n• Contain substances listed in Annex XIV (Authorization) or Annex XVII (Restrictions) of the REACH Regulation.\n\nDepending on whether and to what extent your products are REACH affected, we kindly ask you to provide appropriate supporting documents for the applicable criteria.\n\nAcceptable documents may include:\n\n• Declarations of Conformity\n• Safety Data Sheets (SDS)\n• Technical Data Sheets\n\nEven if your products are not REACH affected, a corresponding confirmation letter is required as evidence.",
+          "messageDe": "Produkte gelten als REACH-betroffen, wenn sie als Stoffe oder Gemische geliefert werden und eine der folgenden Bedingungen erfüllen:\n\n• Sie enthalten Stoffe, die nach der CLP-Verordnung als gefährlich eingestuft sind.\n• Sie enthalten SVHCs (Substanzen mit sehr hoher Besorgnis).\n• Sie enthalten Stoffe, die in Anhang XIV (Genehmigung) oder Anhang XVII (Beschränkungen) der REACH-Verordnung aufgeführt sind.\n\nProdukte, die als Erzeugnisse geliefert werden, gelten als REACH-betroffen, wenn eine der folgenden Bedingungen erfüllt ist:\n\n• Sie enthalten SVHCs in einer Konzentration von mehr als 0,1 % Gew./Gew.\n• Sie führen zu einer absichtlichen Freisetzung von Stoffen unter normalen oder vernünftigerweise vorhersehbaren Verwendungsbedingungen.\n• Sie enthalten Stoffe, die in Anhang XIV (Genehmigung) oder Anhang XVII (Beschränkungen) der REACH-Verordnung aufgeführt sind.\n\nJe nachdem, ob und inwieweit Ihre Produkte durch REACH betroffen sind, bitten wir Sie höflich, für die jeweiligen Kriterien geeignete Nachweise vorzulegen.\n\nAls geeignete Unterlagen kommen in Betracht:\n\n• Konformitätserklärungen\n• Sicherheitsdatenblätter (SDS)\n• Technische Datenblätter\n\nSelbst wenn Ihre Produkte nicht REACH-betroffen sind, ist ein entsprechender Bestätigungsschreiben als Nachweis erforderlich.",
           "fields": [
-            { "key": "reach_aware", "label": "We are aware of REACH obligations (EC 1907/2006)", "labelDe": "Wir kennen die REACH-Verpflichtungen (EG 1907/2006)", "type": "yes_no_confirm", "required": true },
+            { "key": "reach_affected", "label": "Are the products you supply affected by the REACH Regulation?", "labelDe": "Sind die von Ihnen gelieferten Produkte von der REACH-Verordnung betroffen?", "type": "select_single", "required": true, "options": [{ "value": "some_items", "label": "Yes, some items are REACH affected" }, { "value": "none", "label": "No, none of the items are REACH affected" }] },
             { "key": "reach_pre_registered", "label": "Substances we supply are pre-registered / registered with ECHA", "labelDe": "Die von uns gelieferten Stoffe sind bei der ECHA vorregistriert / registriert", "type": "yes_no_confirm", "required": true },
             { "key": "svhc_communicated", "label": "We communicate SVHC information per Article 33 when > 0.1% w/w", "labelDe": "Wir kommunizieren SVHC-Informationen gemäß Artikel 33 bei > 0,1 Gew.-%", "type": "yes_no_confirm", "required": true },
             { "key": "reach_comments", "label": "Comments / evidence", "labelDe": "Kommentare / Nachweise", "type": "long_text_rich", "required": false }
@@ -72,12 +74,24 @@
         },
         {
           "key": "reach_documents",
-          "title": "REACH documentation",
-          "titleDe": "REACH-Dokumentation",
+          "title": "Upload of REACH Compliance Documents",
+          "titleDe": "Hochladen von REACH-Konformitätsdokumenten",
           "icon": "file-text",
+          "message": "Depending on whether and to what extent your products are REACH affected, we kindly ask you to provide appropriate supporting documents for the applicable criteria.\n\nAcceptable documents may include:\n\n• Declarations of Conformity\n• Safety Data Sheets (SDS)\n• Technical Data Sheets\n\nEven if your products are not REACH affected, a corresponding confirmation letter is required as evidence.",
+          "messageDe": "Je nachdem, ob und inwieweit Ihre Produkte durch REACH betroffen sind, bitten wir Sie höflich, für die jeweiligen Kriterien geeignete Nachweise vorzulegen.\n\nAls geeignete Unterlagen kommen in Betracht:\n\n• Konformitätserklärungen\n• Sicherheitsdatenblätter (SDS)\n• Technische Datenblätter\n\nSelbst wenn Ihre Produkte nicht REACH-betroffen sind, ist ein entsprechender Bestätigungsschreiben als Nachweis erforderlich.",
           "fields": [
-            { "key": "reach_declaration", "label": "REACH compliance declaration", "labelDe": "REACH-Compliance-Erklärung", "type": "document_upload", "required": false },
-            { "key": "svhc_statement", "label": "SVHC statement (if applicable)", "labelDe": "SVHC-Erklärung (falls zutreffend)", "type": "document_upload", "required": false }
+            { "key": "reach_compliance_documents", "label": "Upload of REACH Compliance Documents", "labelDe": "REACH-Konformitätsdokumente", "type": "document_upload", "required": false, "modalUpload": true }
+          ]
+        },
+        {
+          "key": "additional_obligations_outside_eu",
+          "title": "Additional Obligations for Suppliers Outside the EU",
+          "titleDe": "Zusätzliche Verpflichtungen für Lieferanten außerhalb der EU",
+          "icon": "globe",
+          "message": "If you are acting as a non-EU supplier and deliver substances or mixtures to us, relevant REACH registration information can be provided – if already available.\n\nThis may in particular include the following details:\n\n• Registration number(s) according to REACH\n• Name and contact details of the Only Representative (according to Article 8 REACH)\n• Proof of proper registration of the supplied substances\n\nAvailable information can be uploaded as documents in the upload section.",
+          "messageDe": "Wenn Sie als Lieferant außerhalb der EU tätig sind und uns Stoffe oder Gemische liefern, kann relevante REACH-Registrierungsinformation bereitgestellt werden – sofern bereits verfügbar.\n\nDies kann insbesondere folgende Details umfassen:\n\n• Registrierungsnummer(n) gemäß REACH\n• Name und Kontaktdaten des Only Representative (gemäß Artikel 8 REACH)\n• Nachweis der ordnungsgemäßen Registrierung der gelieferten Stoffe\n\nVerfügbare Informationen können als Dokumente im Upload-Bereich hochgeladen werden.",
+          "fields": [
+            { "key": "outside_eu_reach_registration", "label": "Upload available REACH registration information", "labelDe": "Verfügbare REACH-Registrierungsinformationen hochladen", "type": "document_upload", "required": false, "modalUpload": true }
           ]
         }
       ]

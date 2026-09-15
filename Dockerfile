@@ -17,6 +17,7 @@ COPY . .
 # Environment variables for build time
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV AUTH_SECRET="dummy_build_secret_for_nextjs_auth"
+ENV NODE_OPTIONS=--max-old-space-size=4096
 RUN npm run build
 
 # Runner stage
