@@ -26,6 +26,22 @@ export const authConfig = {
             const isOnOnboardingPage = nextUrl.pathname === '/onboarding';
             const isOnExternalPage = nextUrl.pathname.startsWith('/external/');
 
+            // Allow public access to static assets, icons, uploads, and health probes
+            const pathname = nextUrl.pathname;
+            if (
+                pathname.startsWith('/icons/') ||
+                pathname.startsWith('/uploads/') ||
+                pathname.startsWith('/api/health') ||
+                pathname.startsWith('/api/cron') ||
+                pathname.startsWith('/api/external') ||
+                pathname === '/favicon.ico' ||
+                pathname === '/manifest.json' ||
+                pathname === '/pma-logo.svg' ||
+                /\.(png|jpg|jpeg|svg|ico|json|css|js|woff|woff2|ttf|eot|webp)$/i.test(pathname)
+            ) {
+                return true;
+            }
+
             // Allow public access to supplier registration
             if (isOnRegisterPage) return true;
 
@@ -35,6 +51,16 @@ export const authConfig = {
             if (isOnLoginPage) {
                 if (isLoggedIn) {
                     const role = auth?.user?.role;
+                    const callbackUrl = nextUrl.searchParams.get('callbackUrl');
+                    const isValidCallback = callbackUrl &&
+                        callbackUrl.startsWith('/') &&
+                        !callbackUrl.startsWith('/login') &&
+                        !callbackUrl.startsWith('/icons') &&
+                        !/\.(png|jpg|jpeg|svg|ico|json|css|js)$/i.test(callbackUrl);
+
+                    if (isValidCallback) {
+                        return Response.redirect(new URL(callbackUrl, nextUrl));
+                    }
                     if (role === 'supplier') return Response.redirect(new URL('/portal', nextUrl));
                     return Response.redirect(new URL('/', nextUrl));
                 }
@@ -42,7 +68,17 @@ export const authConfig = {
             }
 
             if (!isLoggedIn) {
-                return Response.redirect(new URL('/login', nextUrl))
+                const callbackUrl = nextUrl.pathname + nextUrl.search;
+                const loginUrl = new URL('/login', nextUrl);
+                const isStaticOrAuth = callbackUrl === '/' ||
+                    callbackUrl.startsWith('/login') ||
+                    callbackUrl.startsWith('/icons') ||
+                    /\.(png|jpg|jpeg|svg|ico|json|css|js)$/i.test(nextUrl.pathname);
+
+                if (!isStaticOrAuth) {
+                    loginUrl.searchParams.set('callbackUrl', callbackUrl);
+                }
+                return Response.redirect(loginUrl);
             };
 
             // First-login onboarding redirect: send users who haven't completed

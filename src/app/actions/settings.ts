@@ -207,8 +207,7 @@ export async function getPlatformSettingsForLayout() {
             .from(platformSettings)
             .limit(1);
         return settings || { defaultCurrency: 'INR', exchangeRates: null };
-    } catch (error) {
-        console.error("Layout Settings Fetch Error:", error);
+    } catch {
         return { defaultCurrency: 'INR', exchangeRates: null };
     }
 }

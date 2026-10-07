@@ -2,6 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
     isValidEmail,
+    isPhoneNumber,
+    isDataCell,
+    isDataRow,
     suggestMapping,
     CONTACT_STATUSES,
     CONTACT_COLUMNS,
@@ -22,15 +25,59 @@ test('isValidEmail rejects malformed emails', () => {
     assert.equal(isValidEmail('a@b.'), false);
 });
 
-test('suggestMapping maps common headers to known fields', () => {
+test('isPhoneNumber detects phone formats', () => {
+    assert.equal(isPhoneNumber('+49 170 1234567'), true);
+    assert.equal(isPhoneNumber('0151-1234567'), true);
+    assert.equal(isPhoneNumber('+1 (555) 019-2834'), true);
+    assert.equal(isPhoneNumber('Not a phone'), false);
+});
+
+test('isDataCell detects actual data values rather than header titles', () => {
+    assert.equal(isDataCell('user@company.com'), true);
+    assert.equal(isDataCell('+49 170 1234567'), true);
+    assert.equal(isDataCell('Email'), false);
+    assert.equal(isDataCell('Contact Name'), false);
+    assert.equal(isDataCell('Department'), false);
+});
+
+test('isDataRow detects if first row contains raw data instead of headers', () => {
+    const dataRow = ['Jane Doe', 'jane.doe@example.com', '+49 170 1234567', 'Acme'];
+    assert.equal(isDataRow(dataRow), true);
+
+    const headerRow = ['Name', 'Email Address', 'Phone number', 'Supplier'];
+    assert.equal(isDataRow(headerRow), false);
+});
+
+test('suggestMapping maps English and German synonyms to known fields', () => {
+    // English
     assert.equal(suggestMapping('Name'), 'name');
-    assert.equal(suggestMapping('E-Mail'), 'email');
-    assert.equal(suggestMapping('Telephone'), 'phone');
-    assert.equal(suggestMapping('Lieferant'), 'supplier');
+    assert.equal(suggestMapping('Full Name'), 'name');
+    assert.equal(suggestMapping('Email Address'), 'email');
+    assert.equal(suggestMapping('Phone Number'), 'phone');
+    assert.equal(suggestMapping('Supplier Name'), 'supplier');
     assert.equal(suggestMapping('Department'), 'department');
-    assert.equal(suggestMapping('Sprache'), 'language');
+    assert.equal(suggestMapping('Job Title'), 'position');
+    assert.equal(suggestMapping('Responsibility'), 'responsibility');
     assert.equal(suggestMapping('Status'), 'status');
-    assert.equal(suggestMapping('Random gibberish xyz'), IGNORE_COLUMN);
+
+    // German
+    assert.equal(suggestMapping('Ansprechpartner'), 'name');
+    assert.equal(suggestMapping('E-Mail-Adresse'), 'email');
+    assert.equal(suggestMapping('Telefonnummer'), 'phone');
+    assert.equal(suggestMapping('Lieferant'), 'supplier');
+    assert.equal(suggestMapping('Abteilung'), 'department');
+    assert.equal(suggestMapping('Funktion'), 'position');
+    assert.equal(suggestMapping('Zuständigkeit'), 'responsibility');
+    assert.equal(suggestMapping('Zustand'), 'status');
+
+    assert.equal(suggestMapping('Random unrecognized column xyz'), IGNORE_COLUMN);
+});
+
+test('suggestMapping never maps actual data cells or emails containing domain words', () => {
+    assert.equal(suggestMapping('quatsch@funktioniertnicht.com'), IGNORE_COLUMN);
+    assert.equal(suggestMapping('test.user@company.de'), IGNORE_COLUMN);
+    assert.equal(suggestMapping('+49 170 1234567'), IGNORE_COLUMN);
+    assert.equal(suggestMapping('TEST123 Tacto Testlieferant A'), IGNORE_COLUMN);
 });
 
 test('CONTACT_STATUSES is the three canonical statuses', () => {
@@ -47,6 +94,7 @@ test('TEMPLATE_HEADERS covers the user-facing schema', () => {
     assert.ok(labels.includes('Responsibility'));
     assert.ok(labels.includes('Status'));
     assert.ok(labels.includes('Language'));
+    assert.ok(labels.includes('Supplier'));
 });
 
 test('every column has a positive default width', () => {
@@ -62,3 +110,4 @@ test('name column is the only frozen column by default', () => {
     assert.equal(frozen.length, 1);
     assert.equal(frozen[0].key, 'name');
 });
+

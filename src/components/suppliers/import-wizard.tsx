@@ -20,10 +20,25 @@ import {
 } from "lucide-react";
 import { importClassificationSuppliers, type ClassificationImportRow } from "@/app/actions/suppliers";
 import { COUNTRIES } from "@/lib/utils/countryFlags";
+import {
+    ManualEntrySpreadsheet,
+    type ManualSpreadsheetColumn,
+} from "@/components/shared/manual-entry-spreadsheet";
 
 // ---------------------------------------------------------------------------
 // Schema definition (the 11 target columns, in canonical order)
 // ---------------------------------------------------------------------------
+
+const SUPPLIER_MANUAL_COLUMNS: ManualSpreadsheetColumn[] = [
+    { key: "name", label: "Supplier *", required: true, placeholder: "Acme Components GmbH" },
+    { key: "countryCode", label: "Country", placeholder: "DE, Germany, US, etc." },
+    { key: "status", label: "Supplier Status", placeholder: "active, inactive, etc." },
+    { key: "supplierType", label: "Supplier Type", placeholder: "Manufacturer, Distributor, etc." },
+    { key: "commodityGroup", label: "Commodity Group", placeholder: "Electronics, Plastics, etc." },
+    { key: "areaOfNeed", label: "Area of Need", placeholder: "Production, Facility, etc." },
+    { key: "responsibleBuyer", label: "Responsible Buyer", placeholder: "John Doe, etc." },
+    { key: "strategicClassification", label: "Strategic Classification", placeholder: "Core, Emerging, etc." },
+];
 
 const SCHEMA_FIELDS = [
     "Supplier",
@@ -340,6 +355,7 @@ function parseRows(
 export function ImportWizard() {
     const router = useRouter();
     const [step, setStep] = React.useState<1 | 2 | 3 | 4>(1);
+    const [isManualEntry, setIsManualEntry] = React.useState(false);
     const [parsing, setParsing] = React.useState(false);
     const [importing, setImporting] = React.useState(false);
 
@@ -374,10 +390,30 @@ export function ImportWizard() {
 
     const parseSheet = (workbook: XLSX.WorkBook, sheetName: string) => {
         const sheet = workbook.Sheets[sheetName];
+        if (sheet) {
+            let minR = Infinity, maxR = -1, minC = Infinity, maxC = -1;
+            for (const key of Object.keys(sheet)) {
+                if (key.startsWith('!')) continue;
+                try {
+                    const cell = XLSX.utils.decode_cell(key);
+                    if (cell.r < minR) minR = cell.r;
+                    if (cell.r > maxR) maxR = cell.r;
+                    if (cell.c < minC) minC = cell.c;
+                    if (cell.c > maxC) maxC = cell.c;
+                } catch {}
+            }
+            if (maxR >= 0 && maxC >= 0) {
+                sheet['!ref'] = XLSX.utils.encode_range({
+                    s: { r: minR === Infinity ? 0 : minR, c: minC === Infinity ? 0 : minC },
+                    e: { r: maxR, c: maxC },
+                });
+            }
+        }
         const sheetData = XLSX.utils.sheet_to_json(sheet, {
             header: 1,
             defval: "",
             blankrows: false,
+            raw: false,
         }) as unknown[][];
 
         // Find header row: first row that has at least one cell matching a schema field/alias
@@ -668,9 +704,22 @@ export function ImportWizard() {
                         </p>
                         <p className="text-xs text-slate-500">.xlsx, .xls, .csv, .tsv</p>
                     </div>
-                    <span className="inline-flex h-8 cursor-pointer items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium shadow-sm hover:bg-accent hover:text-accent-foreground">
-                        Choose file
-                    </span>
+                    <div className="flex items-center gap-3">
+                        <span className="inline-flex h-8 cursor-pointer items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium shadow-sm hover:bg-accent hover:text-accent-foreground">
+                            Choose file
+                        </span>
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setIsManualEntry(true);
+                            }}
+                            className="inline-flex h-8 cursor-pointer items-center justify-center gap-2 rounded-md bg-[#FFE0CC] px-4 py-2 text-sm font-semibold text-[#C45500] shadow-sm hover:bg-[#FFD4BD]"
+                        >
+                            Manual entry
+                        </button>
+                    </div>
                     <input
                         type="file"
                         accept=".xlsx,.xls,.csv,.tsv"
@@ -966,6 +1015,57 @@ export function ImportWizard() {
                         </Link>
                     </div>
                 </div>
+            </div>
+        );
+    }
+
+    if (isManualEntry) {
+        return (
+            <div className="relative mx-auto max-w-6xl space-y-4">
+                {renderHeader()}
+                <ManualEntrySpreadsheet
+                    title="Supplier Import"
+                    columns={SUPPLIER_MANUAL_COLUMNS}
+                    entityNameSingular="supplier"
+                    entityNamePlural="suppliers"
+                    onBack={() => setIsManualEntry(false)}
+                    onCommit={async (validRows) => {
+                        const payload: ClassificationImportRow[] = validRows.map((r) => {
+                            const countryCode = findCountryCode(r.countryCode || "");
+                            return {
+                                name: r.name,
+                                countryCode: countryCode || r.countryCode || null,
+                                status: normalizeStatus(r.status || "") as
+                                    | "active"
+                                    | "inactive"
+                                    | "blacklisted"
+                                    | null,
+                                supplierType: r.supplierType || null,
+                                areaOfNeed: r.areaOfNeed
+                                    ? r.areaOfNeed.split(/[;,|]/).map((s) => s.trim()).filter(Boolean)
+                                    : [],
+                                commodityGroup: r.commodityGroup
+                                    ? r.commodityGroup.split(/[;,|]/).map((s) => s.trim()).filter(Boolean)
+                                    : [],
+                                responsibleBuyer: r.responsibleBuyer
+                                    ? r.responsibleBuyer.split(/[;,|]/).map((s) => s.trim()).filter(Boolean)
+                                    : [],
+                                strategicClassification:
+                                    (r.strategicClassification || "").trim() || null,
+                                importErrors: [],
+                            };
+                        });
+
+                        const res = await importClassificationSuppliers(payload);
+                        if (res.created > 0 || res.success) {
+                            toast.success(`Successfully imported ${res.created} suppliers.`);
+                            router.push("/suppliers");
+                            return { success: true, count: res.created };
+                        } else {
+                            return { success: false, error: res.error || "Import failed." };
+                        }
+                    }}
+                />
             </div>
         );
     }

@@ -155,7 +155,7 @@ export const assessmentRequestSuppliers = pgTable('assessment_request_suppliers'
     id: uuid('id').defaultRandom().primaryKey(),
     assessmentRequestId: uuid('assessment_request_id').references(() => assessmentRequests.id, { onDelete: 'cascade' }).notNull(),
     supplierId: uuid('supplier_id').references(() => suppliers.id).notNull(),
-    contactId: uuid('contact_id').references(() => contacts.id),
+    contactId: uuid('contact_id').references(() => contacts.id, { onDelete: 'set null' }),
     status: text('status').default('pending'), // pending, sent, in_progress, submitted, completed
     sentAt: timestamp('sent_at'),
     lastReminderSentAt: timestamp('last_reminder_sent_at'),
@@ -173,7 +173,7 @@ export const assessmentRequestSuppliers = pgTable('assessment_request_suppliers'
 export const assessmentRequestSupplierContacts = pgTable('assessment_request_supplier_contacts', {
     id: uuid('id').defaultRandom().primaryKey(),
     assessmentRequestSupplierId: uuid('assessment_request_supplier_id').references(() => assessmentRequestSuppliers.id, { onDelete: 'cascade' }).notNull(),
-    contactId: uuid('contact_id').references(() => contacts.id).notNull(),
+    contactId: uuid('contact_id').references(() => contacts.id, { onDelete: 'cascade' }).notNull(),
     createdAt: timestamp('created_at').defaultNow(),
 }, (table: any) => ({
     arscArsIdx: index('arsc_ars_idx').on(table.assessmentRequestSupplierId),
@@ -186,7 +186,7 @@ export const assessmentResponses = pgTable('assessment_responses', {
     id: uuid('id').defaultRandom().primaryKey(),
     assessmentRequestId: uuid('assessment_request_id').references(() => assessmentRequests.id, { onDelete: 'cascade' }).notNull(),
     supplierId: uuid('supplier_id').references(() => suppliers.id).notNull(),
-    contactId: uuid('contact_id').references(() => contacts.id),
+    contactId: uuid('contact_id').references(() => contacts.id, { onDelete: 'set null' }),
     documentRequestId: uuid('document_request_id').references(() => assessmentDocumentRequests.id),
     responseText: text('response_text'),
     documentUrl: text('document_url'),
@@ -525,13 +525,26 @@ export const contracts = pgTable('contracts', {
 
 export const documents = pgTable('documents', {
     id: uuid('id').defaultRandom().primaryKey(),
-    supplierId: uuid('supplier_id').references(() => suppliers.id).notNull(),
+    supplierId: uuid('supplier_id').references(() => suppliers.id),
     orderId: uuid('order_id').references(() => procurementOrders.id),
     contractId: uuid('contract_id').references(() => contracts.id),
     rfqId: uuid('rfq_id').references(() => rfqs.id),
     name: text('name').notNull(),
-    type: docTypeEnum('type').default('other'),
+    type: text('type').default('other'),
     url: text('url'), // In a real app, this would be an S3/GCS link
+    supplierName: text('supplier_name'),
+    sources: text('sources'),
+    validFrom: text('valid_from'),
+    expiresAt: text('expires_at'),
+    status: text('status').default('Valid'),
+    createdByName: text('created_by_name'),
+    createdById: uuid('created_by_id').references(() => users.id),
+    createdByEmail: text('created_by_email'),
+    createdVia: text('created_via'),
+    archived: boolean('archived').default(false),
+    expiryReminderSentAt: timestamp('expiry_reminder_sent_at'),
+    scheduledReminderAt: timestamp('scheduled_reminder_at'),
+    reminderStatus: text('reminder_status').default('idle'),
     createdAt: timestamp('created_at').defaultNow(),
 });
 

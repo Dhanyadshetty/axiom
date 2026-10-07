@@ -1,6 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildCsvFromSheet, buildWorkbookFromSheet, parseCsvText, parseWorkbook } from '../../src/lib/contacts/import-parser';
+import {
+    buildCsvFromSheet,
+    buildWorkbookFromSheet,
+    parseCsvText,
+    parseWorkbook,
+} from '../../src/lib/contacts/import-parser';
 import * as XLSX from 'xlsx';
 
 test('buildCsvFromSheet produces a CSV header line + sample rows', () => {
@@ -56,20 +61,60 @@ test('parseCsvText parses simple CSV string', () => {
     assert.equal(sheet.rows[1]['Email'], 'c@d.com');
 });
 
-test('parseWorkbook produces suggested mappings for common headers', () => {
+test('parseWorkbook handles header detection when first row contains actual data values like emails', () => {
+    const aoa = [
+        ['quatsch@funktioniertnicht.com', 'quatsch@funktioniertnicht.com', '', 'TEST123 Tacto Testlieferant A', '', 'Sales'],
+        ['simon.mohr@tacto.ai', 'simon.mohr@tacto.ai', '+49 7455 938020', 'TEST456 Tacto Testlieferant', 'German', 'Sales'],
+        ['Oliver Grohe', 'oliver.grohe@grohe-technology.de', '+86 186 2105 0991', 'Grohe Technology GmbH', 'English', 'Sales'],
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Contacts');
+    const buf = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
+
+    const parsed = parseWorkbook(buf);
+    const sheet = parsed.sheets[0];
+
+    // Must NOT use email as column header!
+    assert.equal(sheet.hasHeaderRow, false);
+    assert.equal(sheet.headers[0], 'Column 1');
+    assert.equal(sheet.headers[1], 'Column 2');
+    assert.equal(sheet.headers[2], 'Column 3');
+    assert.equal(sheet.headers[3], 'Column 4');
+
+    // All 3 rows are kept in data
+    assert.equal(sheet.rows.length, 3);
+    assert.equal(sheet.rows[0]['Column 1'], 'quatsch@funktioniertnicht.com');
+});
+
+test('parseWorkbook extracts sample values for each column', () => {
+    const csv = 'Name,Email,Supplier\nAlice,alice@example.com,Acme Corp\nBob,bob@example.com,Acme Corp\nCharlie,charlie@example.com,Beta Inc';
+    const parsed = parseCsvText(csv);
+    const sheet = parsed.sheets[0];
+
+    assert.equal(sheet.columns.length, 3);
+    assert.deepEqual(sheet.columns[0].samples, ['Alice', 'Bob', 'Charlie']);
+    assert.deepEqual(sheet.columns[1].samples, ['alice@example.com', 'bob@example.com', 'charlie@example.com']);
+    assert.deepEqual(sheet.columns[2].samples, ['Acme Corp', 'Beta Inc']);
+});
+
+test('parseWorkbook produces suggested mappings for German and English headers', () => {
     const buf = buildWorkbookFromSheet(
         [
-            { key: 'name', label: 'Name' },
-            { key: 'email', label: 'E-Mail' },
-            { key: 'phone', label: 'Phone' },
+            { key: 'name', label: 'Ansprechpartner' },
+            { key: 'email', label: 'E-Mail-Adresse' },
+            { key: 'phone', label: 'Telefon' },
             { key: 'department', label: 'Abteilung' },
+            { key: 'supplier', label: 'Lieferant' },
         ],
         [],
     );
     const parsed = parseWorkbook(buf);
     const sheet = parsed.sheets[0];
-    assert.equal(sheet.suggestedMapping['Name'], 'name');
-    assert.equal(sheet.suggestedMapping['E-Mail'], 'email');
-    assert.equal(sheet.suggestedMapping['Phone'], 'phone');
+    assert.equal(sheet.suggestedMapping['Ansprechpartner'], 'name');
+    assert.equal(sheet.suggestedMapping['E-Mail-Adresse'], 'email');
+    assert.equal(sheet.suggestedMapping['Telefon'], 'phone');
     assert.equal(sheet.suggestedMapping['Abteilung'], 'department');
+    assert.equal(sheet.suggestedMapping['Lieferant'], 'supplier');
 });

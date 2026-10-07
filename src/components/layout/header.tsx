@@ -1,7 +1,8 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
-import { LogOut, ShieldCheck } from "lucide-react";
+import { LogOut } from "lucide-react";
+import { AxiomLogo } from "@/components/shared/axiom-logo";
 import { LanguageToggle } from "@/components/layout/language-toggle";
 import { NotificationBell } from "@/components/layout/notification-bell";
 import { useLanguage } from "@/components/i18n/language-provider";
@@ -58,7 +59,7 @@ export function Header() {
     <header className="z-30 flex h-16 shrink-0 items-center justify-between gap-4 border-b border-border bg-background/80 px-4 backdrop-blur-sm lg:px-6">
       <div className="flex items-center gap-3">
         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
-          <ShieldCheck className="h-5 w-5" />
+          <AxiomLogo className="h-5 w-5 text-primary-foreground" />
         </div>
         <div className="leading-tight">
           <p className="text-sm font-black tracking-tight text-foreground">Axiom</p>

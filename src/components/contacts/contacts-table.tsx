@@ -69,13 +69,16 @@ import {
     updateContactStatus,
     type ContactRow,
 } from '@/app/actions/contacts-detail';
+
 import { AddContactModal } from '@/components/contacts/add-contact-modal';
-import { ContactsImportModal } from '@/components/contacts/contacts-import-modal';
+import { CreateRequestModal } from '@/components/assessments/create-request-modal';
+import { AddToExistingRequestModal } from '@/components/assessments/add-to-existing-request-modal';
 import {
     AddFilterPopover,
     FilterChipView,
     type FilterChipData,
 } from '@/components/contacts/add-filter-popover';
+import { ContactHoverCard } from '@/components/contacts/contact-hover-card';
 
 export interface ContactsTableProps {
     supplierId?: string;
@@ -121,7 +124,8 @@ export function ContactsTable({
         ]),
     );
     const [addOpen, setAddOpen] = React.useState(false);
-    const [importOpen, setImportOpen] = React.useState(false);
+    const [createRequestModalOpen, setCreateRequestModalOpen] = React.useState(false);
+    const [addToExistingModalOpen, setAddToExistingModalOpen] = React.useState(false);
     const [editing, setEditing] = React.useState<ContactRow | null>(null);
     const [deletingId, setDeletingId] = React.useState<string | null>(null);
     const [bulkDeleting, setBulkDeleting] = React.useState(false);
@@ -389,7 +393,10 @@ export function ContactsTable({
                                 <UserPlus className="h-4 w-4 mr-2 text-slate-600" />
                                 Add Contact
                             </DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => setImportOpen(true)} className="text-xs font-medium cursor-pointer">
+                            <DropdownMenuItem
+                                onSelect={() => router.push(supplierId ? `/contacts/import?supplierId=${supplierId}` : '/contacts/import')}
+                                className="text-xs font-medium cursor-pointer"
+                            >
                                 <Upload className="h-4 w-4 mr-2 text-slate-600" />
                                 Contact import
                             </DropdownMenuItem>
@@ -561,14 +568,14 @@ export function ContactsTable({
                                 </DropdownMenuSubTrigger>
                                 <DropdownMenuSubContent className="w-56 p-1 rounded-xl shadow-xl border border-slate-200 bg-white space-y-0.5 text-xs">
                                     <DropdownMenuItem
-                                        onSelect={() => router.push(`/requests?new=true&contacts=${Array.from(selectedIds).join(',')}`)}
+                                        onSelect={() => setCreateRequestModalOpen(true)}
                                         className="py-2 px-2.5 rounded-lg text-slate-800 hover:bg-slate-100/80 cursor-pointer flex items-center gap-2.5"
                                     >
                                         <FilePlus2 className="h-4 w-4 text-slate-600 shrink-0 stroke-[1.75]" />
                                         <span>Create new Request</span>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
-                                        onSelect={() => router.push(`/requests?addTo=true&contacts=${Array.from(selectedIds).join(',')}`)}
+                                        onSelect={() => setAddToExistingModalOpen(true)}
                                         className="py-2 px-2.5 rounded-lg text-slate-800 hover:bg-slate-100/80 cursor-pointer flex items-center gap-2.5"
                                     >
                                         <FileText className="h-4 w-4 text-slate-600 shrink-0 stroke-[1.75]" />
@@ -655,12 +662,7 @@ export function ContactsTable({
                 } : null}
                 onSuccess={() => { setEditing(null); refresh(); }}
             />
-            <ContactsImportModal
-                open={importOpen}
-                onOpenChange={setImportOpen}
-                supplierId={supplierId}
-                onSuccess={() => { setImportOpen(false); refresh(); }}
-            />
+
             <AlertDialog open={!!deletingId} onOpenChange={(o) => { if (!o) setDeletingId(null); }}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
@@ -689,6 +691,17 @@ export function ContactsTable({
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+            <CreateRequestModal
+                open={createRequestModalOpen}
+                onOpenChange={setCreateRequestModalOpen}
+                contactIds={Array.from(selectedIds)}
+                trigger={null}
+            />
+            <AddToExistingRequestModal
+                open={addToExistingModalOpen}
+                onOpenChange={setAddToExistingModalOpen}
+                contactIds={Array.from(selectedIds)}
+            />
         </div>
     );
 }
@@ -765,7 +778,7 @@ const ContactTableRow = React.memo(function ContactTableRow({
                     <div
                         key={col.key}
                         style={{ width: w, height: ROW_HEIGHT, ...(stickyStyle ?? {}) }}
-                        className={cn('flex shrink-0 items-center px-3 text-xs', frozenClass)}
+                        className={cn('flex shrink-0 items-center text-xs', col.key === 'name' ? 'px-1' : 'px-3', frozenClass)}
                     >
                         <div className="w-full min-w-0 truncate">
                             {renderCellContent(c, col.key, onEdit, onStatusChange, onDelete)}
@@ -792,13 +805,13 @@ const RowActionsMenu = React.memo(function RowActionsMenu({
                 <button
                     type="button"
                     aria-label="Contact actions"
-                    className="h-6 w-6 shrink-0 flex items-center justify-center rounded-md border border-slate-200 bg-white hover:bg-slate-50 opacity-0 group-hover/name:opacity-100 group-hover:opacity-100 data-[state=open]:opacity-100 transition-opacity shadow-2xs cursor-pointer"
+                    className="h-6 w-6 shrink-0 flex items-center justify-center rounded-md border border-slate-200 bg-white hover:bg-slate-50 opacity-0 group-hover/hover-cell:opacity-100 group-hover:opacity-100 data-[state=open]:opacity-100 transition-opacity shadow-2xs cursor-pointer"
                     onClick={(e) => e.stopPropagation()}
                 >
                     <MoreVertical className="h-3.5 w-3.5 text-slate-700" />
                 </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" sideOffset={4} className="w-48 p-1 rounded-xl shadow-lg border border-slate-200/90 bg-white space-y-0.5">
+            <DropdownMenuContent align="start" sideOffset={4} className="w-48 p-1 rounded-xl shadow-lg border border-slate-200/90 bg-white space-y-0.5 z-50">
                 <DropdownMenuItem
                     onSelect={() => onStatusChange(c.id, c.status === 'inactive' ? 'active' : 'inactive')}
                     className="text-xs font-normal py-2 px-2.5 rounded-lg text-slate-800 hover:bg-slate-100/80 cursor-pointer flex items-center gap-2.5"
@@ -828,24 +841,24 @@ function renderCellContent(
     switch (key) {
         case 'name':
             return (
-                <div className="group/name relative flex items-center justify-between w-full min-w-0 pr-1">
+                <ContactHoverCard contact={c} onEdit={onEdit}>
                     <button
                         type="button"
                         onClick={(e) => {
                             e.stopPropagation();
                             onEdit(c);
                         }}
-                        className="truncate text-left font-normal text-slate-900 hover:underline hover:text-slate-700 mr-1.5 cursor-pointer"
-                        title={c.name}
+                        className="truncate text-left font-normal text-slate-900 hover:underline hover:text-slate-700 mr-1.5 cursor-pointer flex-1 min-w-0"
+                        title={c.name || c.email}
                     >
-                        {c.name}
+                        {c.name || c.email}
                     </button>
                     <RowActionsMenu
                         contact={c}
                         onStatusChange={onStatusChange}
                         onDelete={onDelete}
                     />
-                </div>
+                </ContactHoverCard>
             );
         case 'email':
             return c.email ? (

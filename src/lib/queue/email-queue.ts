@@ -83,24 +83,29 @@ export async function enqueueAssessmentEmail(
 ): Promise<{ success: boolean; logId?: string; error?: string }> {
     try {
         // Fetch all required data
-        const [participant, contact, assessmentRequest, buyerUser, supplier] = await Promise.all([
-            db.select().from(assessmentRequestSuppliers).where(eq(assessmentRequestSuppliers.id, participantId)).limit(1),
-            db.select().from(contacts).where(eq(contacts.id, contactId)).limit(1),
-            db.select().from(assessmentRequests).where(eq(assessmentRequests.id, assessmentRequestId)).limit(1),
-            // Get buyer/responsible user
-            db.select().from(users).where(eq(users.id, (await db.select({ responsibleId: assessmentRequests.responsibleId }).from(assessmentRequests).where(eq(assessmentRequests.id, assessmentRequestId)).limit(1))[0]?.responsibleId)).limit(1),
-            db.select().from(suppliers).where(eq(suppliers.id, (await db.select({ supplierId: assessmentRequestSuppliers.supplierId }).from(assessmentRequestSuppliers).where(eq(assessmentRequestSuppliers.id, participantId)).limit(1))[0]?.supplierId)).limit(1),
-        ]);
+        const [participant] = await db.select().from(assessmentRequestSuppliers).where(eq(assessmentRequestSuppliers.id, participantId)).limit(1);
+        const [contact] = await db.select().from(contacts).where(eq(contacts.id, contactId)).limit(1);
+        const [assessmentRequest] = await db.select().from(assessmentRequests).where(eq(assessmentRequests.id, assessmentRequestId)).limit(1);
 
-        if (!participant[0] || !contact[0] || !assessmentRequest[0]) {
+        if (!participant || !contact || !assessmentRequest) {
             return { success: false, error: 'Required records not found' };
         }
 
-        const p = participant[0];
-        const c = contact[0];
-        const ar = assessmentRequest[0];
-        const buyer = buyerUser[0];
-        const sup = supplier[0];
+        let buyer = null;
+        if (assessmentRequest.responsibleId) {
+            const [b] = await db.select().from(users).where(eq(users.id, assessmentRequest.responsibleId)).limit(1);
+            buyer = b ?? null;
+        }
+
+        let sup = null;
+        if (participant.supplierId) {
+            const [s] = await db.select().from(suppliers).where(eq(suppliers.id, participant.supplierId)).limit(1);
+            sup = s ?? null;
+        }
+
+        const p = participant;
+        const c = contact;
+        const ar = assessmentRequest;
 
         // Ensure the recipient's draft form is prefilled with the supplier's
         // latest Properties + the chosen contact's details BEFORE the email is
@@ -253,23 +258,29 @@ export async function processEmailJob(payload: EmailJobPayload): Promise<EmailJo
             .where(eq(emailSendLog.id, logId));
 
         // Fetch data for template
-        const [participant, contact, assessmentRequest, buyerUser, supplier] = await Promise.all([
-            db.select().from(assessmentRequestSuppliers).where(eq(assessmentRequestSuppliers.id, participantId)).limit(1),
-            db.select().from(contacts).where(eq(contacts.id, contactId)).limit(1),
-            db.select().from(assessmentRequests).where(eq(assessmentRequests.id, assessmentRequestId)).limit(1),
-            db.select().from(users).where(eq(users.id, (await db.select({ responsibleId: assessmentRequests.responsibleId }).from(assessmentRequests).where(eq(assessmentRequests.id, assessmentRequestId)).limit(1))[0]?.responsibleId)).limit(1),
-            db.select().from(suppliers).where(eq(suppliers.id, (await db.select({ supplierId: assessmentRequestSuppliers.supplierId }).from(assessmentRequestSuppliers).where(eq(assessmentRequestSuppliers.id, participantId)).limit(1))[0]?.supplierId)).limit(1),
-        ]);
+        const [participant] = await db.select().from(assessmentRequestSuppliers).where(eq(assessmentRequestSuppliers.id, participantId)).limit(1);
+        const [contact] = await db.select().from(contacts).where(eq(contacts.id, contactId)).limit(1);
+        const [assessmentRequest] = await db.select().from(assessmentRequests).where(eq(assessmentRequests.id, assessmentRequestId)).limit(1);
 
-        if (!participant[0] || !contact[0] || !assessmentRequest[0]) {
+        if (!participant || !contact || !assessmentRequest) {
             throw new Error('Required records not found');
         }
 
-        const p = participant[0];
-        const c = contact[0];
-        const ar = assessmentRequest[0];
-        const buyer = buyerUser[0];
-        const sup = supplier[0];
+        let buyer = null;
+        if (assessmentRequest.responsibleId) {
+            const [b] = await db.select().from(users).where(eq(users.id, assessmentRequest.responsibleId)).limit(1);
+            buyer = b ?? null;
+        }
+
+        let sup = null;
+        if (participant.supplierId) {
+            const [s] = await db.select().from(suppliers).where(eq(suppliers.id, participant.supplierId)).limit(1);
+            sup = s ?? null;
+        }
+
+        const p = participant;
+        const c = contact;
+        const ar = assessmentRequest;
 
         // Get magic token
         const [tokenRecord] = await db.select().from(magicTokens)

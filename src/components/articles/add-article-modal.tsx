@@ -100,13 +100,14 @@ export function AddArticleModal({
                     </DialogHeader>
 
                     <div className="space-y-3.5 pt-2">
-                        {/* 1. Article number */}
+                        {/* 1. Article ID */}
                         <div className="space-y-1.5">
                             <Label htmlFor="articleNumber" className="text-xs font-medium text-slate-700">
-                                Article number
+                                Article ID
                             </Label>
                             <Input
                                 id="articleNumber"
+                                placeholder="e.g. 10000100"
                                 value={articleNumber}
                                 onChange={(e) => setArticleNumber(e.target.value)}
                                 className="h-9 text-xs bg-white border-slate-200 focus-visible:ring-1 focus-visible:ring-slate-400"
@@ -114,14 +115,14 @@ export function AddArticleModal({
                             />
                         </div>
 
-                        {/* 2. Description (optional) */}
+                        {/* 2. Article Name */}
                         <div className="space-y-1.5">
                             <Label htmlFor="description" className="text-xs font-medium text-slate-700">
-                                Description
+                                Article Name
                             </Label>
                             <Input
                                 id="description"
-                                placeholder="Enter a short description ..."
+                                placeholder="Enter article name ..."
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                                 className="h-9 text-xs bg-white border-slate-200 focus-visible:ring-1 focus-visible:ring-slate-400 placeholder:text-slate-400"

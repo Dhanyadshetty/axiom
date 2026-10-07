@@ -1,7 +1,8 @@
 'use client'
 
-import { useActionState, useEffect, useState } from 'react';
+import { useActionState, useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { authenticate, verifyAndEnableTwoFactor } from '@/app/actions/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,9 +15,11 @@ import { t } from "@/lib/i18n";
 
 type LoginMode = 'admin' | 'user' | 'supplier';
 
-export default function LoginPage() {
+function LoginForm() {
     const { language } = useLanguage();
     const ta = t(language, "auth");
+    const searchParams = useSearchParams();
+    const callbackUrl = searchParams?.get('callbackUrl') || '';
     const [authResult, formAction, isPending] = useActionState(
         authenticate,
         undefined,
@@ -218,6 +221,7 @@ export default function LoginPage() {
 
                             <form action={formAction} className="space-y-4">
                                 <input type="hidden" name="roleMode" value={loginMode} />
+                                <input type="hidden" name="callbackUrl" value={callbackUrl} />
                                 {!show2FA && !showSetup2FA ? (
                                     <>
                                         <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
@@ -424,5 +428,13 @@ export default function LoginPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={null}>
+            <LoginForm />
+        </Suspense>
     );
 }

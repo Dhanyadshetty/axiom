@@ -8,6 +8,8 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { isValidEmail, type ContactColumnKey, type ContactStatus } from '@/components/contacts/contacts-schema';
 
+
+
 export interface ContactRow {
     id: string;
     name: string;
@@ -133,6 +135,40 @@ export async function listContacts(filter: ContactListFilter = {}): Promise<{ ro
     return { rows, total: Number(countRow[0]?.n ?? 0) };
 }
 
+export async function getContactDetail(id: string): Promise<ContactRow | null> {
+    const session = await auth();
+    if (!session?.user) return null;
+    const [row] = await db
+        .select({
+            id: contacts.id,
+            name: contacts.name,
+            email: contacts.email,
+            phone: contacts.phone,
+            supplierId: contacts.supplierId,
+            supplierName: suppliers.name,
+            supplierNumber: suppliers.supplierNumber,
+            language: contacts.language,
+            department: contacts.department,
+            position: contacts.position,
+            responsibility: contacts.responsibility,
+            status: contacts.status,
+            createdAt: contacts.createdAt,
+            updatedAt: contacts.updatedAt,
+        })
+        .from(contacts)
+        .leftJoin(suppliers, eq(contacts.supplierId, suppliers.id))
+        .where(eq(contacts.id, id))
+        .limit(1);
+
+    if (!row) return null;
+    return {
+        ...row,
+        status: (row.status || 'active') as ContactStatus,
+        createdAt: row.createdAt ? row.createdAt.toISOString() : null,
+        updatedAt: row.updatedAt ? row.updatedAt.toISOString() : null,
+    };
+}
+
 function buildFilterCondition(rule: AdvancedFilterRule) {
     const isSupplier = rule.field === 'supplier';
     const colMap: Record<string, any> = {
@@ -253,11 +289,14 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
 async function resolveSupplierUuid(ref: string): Promise<string | null> {
     if (!ref) return null;
-    const numeric = ref.replace(/[^0-9]/g, '');
+    const clean = ref.trim();
+    if (!clean) return null;
+    const numeric = clean.replace(/[^0-9]/g, '');
     const conds: any[] = [];
-    if (UUID_RE.test(ref)) conds.push(eq(suppliers.id, ref));
-    if (ref !== numeric) conds.push(eq(suppliers.supplierNumber, ref));
-    if (numeric && numeric !== ref) conds.push(eq(suppliers.supplierNumber, numeric));
+    if (UUID_RE.test(clean)) conds.push(eq(suppliers.id, clean));
+    if (clean !== numeric) conds.push(eq(suppliers.supplierNumber, clean));
+    if (numeric && numeric !== clean) conds.push(eq(suppliers.supplierNumber, numeric));
+    conds.push(ilike(suppliers.name, clean));
     if (conds.length) {
         const rows = await db.select({ id: suppliers.id })
             .from(suppliers)
@@ -266,9 +305,9 @@ async function resolveSupplierUuid(ref: string): Promise<string | null> {
         if (rows[0]?.id) return rows[0].id;
     }
     const [created] = await db.insert(suppliers).values({
-        name: `Supplier ${ref}`,
-        contactEmail: `noreply+${ref.replace(/[^a-zA-Z0-9_-]/g, '-')}@placeholder.local`,
-        supplierNumber: ref,
+        name: `Supplier ${clean}`,
+        contactEmail: `noreply+${clean.replace(/[^a-zA-Z0-9_-]/g, '-')}@placeholder.local`,
+        supplierNumber: clean,
     }).returning({ id: suppliers.id });
     return created?.id ?? null;
 }
@@ -353,8 +392,8 @@ export async function deleteContact(id: string) {
         revalidatePath('/requests');
         revalidatePath('/requests/assessments');
         return { success: true } as const;
-    } catch {
-        return { success: false, error: 'Failed to delete contact' } as const;
+    } catch (err) {
+        return { success: false, error: err instanceof Error ? err.message : 'Failed to delete contact' } as const;
     }
 }
 
@@ -363,7 +402,11 @@ export async function bulkDeleteContacts(ids: string[]) {
     if (!session?.user) return { success: false, error: 'Unauthorized' } as const;
     if (!ids.length) return { success: true, count: 0 } as const;
     try {
-        await db.delete(contacts).where(inArray(contacts.id, ids));
+        const CHUNK_SIZE = 500;
+        for (let i = 0; i < ids.length; i += CHUNK_SIZE) {
+            const chunk = ids.slice(i, i + CHUNK_SIZE);
+            await db.delete(contacts).where(inArray(contacts.id, chunk));
+        }
         revalidatePath('/contacts');
         revalidatePath('/requests');
         revalidatePath('/requests/assessments');
@@ -391,17 +434,53 @@ export interface ParsedContactForReview {
     rowIndex: number;
     data: Record<string, string>;
     errors: string[];
+    warnings: string[];
     isDuplicate: boolean;
+    matchedSupplierId?: string | null;
+    matchedSupplierName?: string | null;
+    unmatchedSupplier?: string | null;
 }
 
 export async function prepareContactImport(opts: {
     supplierId: string | null;
     rows: Array<Record<string, string>>;
-}): Promise<{ parsed: ParsedContactForReview[] }> {
+}): Promise<{
+    parsed: ParsedContactForReview[];
+    stats: {
+        total: number;
+        valid: number;
+        withWarnings: number;
+        withErrors: number;
+        unmatchedSuppliersCount: number;
+    };
+}> {
     const session = await auth();
-    if (!session?.user) return { parsed: [] };
+    if (!session?.user) {
+        return {
+            parsed: [],
+            stats: { total: 0, valid: 0, withWarnings: 0, withErrors: 0, unmatchedSuppliersCount: 0 },
+        };
+    }
     const { supplierId, rows } = opts;
 
+    // 1. Fetch DB suppliers for matching
+    const allSuppliers = await db.select({
+        id: suppliers.id,
+        name: suppliers.name,
+        supplierNumber: suppliers.supplierNumber,
+    }).from(suppliers);
+
+    const supplierMap = new Map<string, { id: string; name: string; supplierNumber: string | null }>();
+    for (const s of allSuppliers) {
+        supplierMap.set(s.id.toLowerCase(), s);
+        if (s.supplierNumber) supplierMap.set(s.supplierNumber.toLowerCase(), s);
+        supplierMap.set(s.name.trim().toLowerCase(), s);
+    }
+
+    // Default supplier object if provided
+    const defaultSupplierObj = supplierId ? supplierMap.get(supplierId.toLowerCase()) ?? null : null;
+
+    // 2. Fetch existing DB contacts for duplicate email detection
     const emails = rows.map((r) => r.email?.trim().toLowerCase()).filter(Boolean);
     let existingEmails: Set<string> = new Set();
     if (emails.length) {
@@ -416,25 +495,89 @@ export async function prepareContactImport(opts: {
         existingEmails = new Set(existing.map((r) => r.email.toLowerCase()));
     }
 
+    // Track duplicate emails inside the uploaded batch itself
+    const batchEmailCounts = new Map<string, number>();
+    for (const r of rows) {
+        const em = r.email?.trim().toLowerCase();
+        if (em) {
+            batchEmailCounts.set(em, (batchEmailCounts.get(em) || 0) + 1);
+        }
+    }
+
+    let unmatchedSuppliersCount = 0;
+
     const parsed: ParsedContactForReview[] = rows.map((row, idx) => {
         const errors: string[] = [];
         const warnings: string[] = [];
         const name = row.name?.trim() ?? '';
         const email = row.email?.trim() ?? '';
+        const supplierRef = (row.supplierId || row.supplier || '').trim();
+
         if (!name) errors.push('Missing name');
         if (!email) errors.push('Missing email');
         else if (!isValidEmail(email)) errors.push('Invalid email format');
-        const isDuplicate = !!email && existingEmails.has(email.toLowerCase());
-        if (isDuplicate) warnings.push('Existing contact with same email');
-        return { rowIndex: idx, data: row, errors, warnings, isDuplicate };
+
+        const isDuplicateDb = !!email && existingEmails.has(email.toLowerCase());
+        const isDuplicateBatch = !!email && (batchEmailCounts.get(email.toLowerCase()) || 0) > 1;
+
+        if (isDuplicateDb) warnings.push('Existing contact with same email in database');
+        else if (isDuplicateBatch) warnings.push('Duplicate email appears multiple times in file');
+
+        // Supplier resolution
+        let matchedSupplierId: string | null = defaultSupplierObj?.id ?? null;
+        let matchedSupplierName: string | null = defaultSupplierObj?.name ?? null;
+        let unmatchedSupplier: string | null = null;
+
+        if (supplierRef) {
+            const found = supplierMap.get(supplierRef.toLowerCase());
+            if (found) {
+                matchedSupplierId = found.id;
+                matchedSupplierName = found.name;
+            } else {
+                unmatchedSupplier = supplierRef;
+                unmatchedSuppliersCount++;
+                warnings.push(`Unmatched supplier: "${supplierRef}" (will create or keep unlinked)`);
+            }
+        }
+
+        return {
+            rowIndex: idx,
+            data: row,
+            errors,
+            warnings,
+            isDuplicate: isDuplicateDb || isDuplicateBatch,
+            matchedSupplierId,
+            matchedSupplierName,
+            unmatchedSupplier,
+        };
     });
 
-    return { parsed };
+    const valid = parsed.filter((p) => p.errors.length === 0).length;
+    const withErrors = parsed.filter((p) => p.errors.length > 0).length;
+    const withWarnings = parsed.filter((p) => p.warnings.length > 0).length;
+
+    return {
+        parsed,
+        stats: {
+            total: parsed.length,
+            valid,
+            withWarnings,
+            withErrors,
+            unmatchedSuppliersCount,
+        },
+    };
+}
+
+function normalizeContactStatus(val: unknown): ContactStatus {
+    const s = String(val || '').trim().toLowerCase();
+    if (s === 'inactive' || s === 'deactivated' || s === 'disabled') return 'inactive';
+    if (s === 'on_hold' || s === 'on hold' || s === 'hold' || s === 'pending') return 'on_hold';
+    return 'active';
 }
 
 const commitRowSchema = z.object({
-    name: z.string().trim().min(1),
-    email: z.string().trim().refine(isValidEmail, 'Invalid email'),
+    name: z.string().trim().min(1, 'Name is required'),
+    email: z.string().trim().refine(isValidEmail, 'Invalid email format'),
     phone: z.string().optional().nullable(),
     supplierId: z.string().optional().nullable(),
     supplier: z.string().optional().nullable(),
@@ -442,54 +585,65 @@ const commitRowSchema = z.object({
     department: z.string().optional().nullable(),
     position: z.string().optional().nullable(),
     responsibility: z.string().optional().nullable(),
-    status: z.enum(['active', 'inactive', 'on_hold']).default('active'),
+    status: z.preprocess((val) => normalizeContactStatus(val), z.enum(['active', 'inactive', 'on_hold'])).default('active'),
 });
 
 export async function commitContactImport(opts: {
     supplierId: string | null;
-    rows: Array<z.input<typeof commitRowSchema>>;
+    rows: Array<Record<string, any>>;
 }) {
     const session = await auth();
-    if (!session?.user) return { success: false, error: 'Unauthorized', imported: 0, rejected: 0 } as const;
-
-    const defaultSupplierUuid = opts.supplierId ? await resolveSupplierUuid(opts.supplierId) : null;
-
-    let imported = 0;
-    const rejected: Array<{ index: number; reason: string }> = [];
-    const values: any[] = [];
-
-    for (let idx = 0; idx < opts.rows.length; idx++) {
-        const row = opts.rows[idx];
-        const parsed = commitRowSchema.safeParse(row);
-        if (!parsed.success) {
-            rejected.push({ index: idx, reason: parsed.error.issues[0]?.message ?? 'Invalid row' });
-            continue;
-        }
-        const data = parsed.data;
-        let rowSupplierUuid = defaultSupplierUuid;
-        const rowSupplierRef = (data.supplierId || data.supplier || '').trim();
-        if (rowSupplierRef) {
-            const resolved = await resolveSupplierUuid(rowSupplierRef);
-            if (resolved) rowSupplierUuid = resolved;
-        }
-
-        values.push({
-            name: data.name,
-            email: data.email,
-            phone: data.phone || null,
-            supplierId: rowSupplierUuid,
-            language: data.language || null,
-            department: data.department || null,
-            position: data.position || null,
-            responsibility: data.responsibility || null,
-            status: data.status,
-            source: 'import' as const,
-            createdBy: session.user.id,
-        });
-        imported += 1;
-    }
+    if (!session?.user) return { success: false, error: 'Unauthorized', imported: 0, rejected: [] } as const;
 
     try {
+        const defaultSupplierUuid = opts.supplierId ? await resolveSupplierUuid(opts.supplierId) : null;
+
+        let imported = 0;
+        const rejected: Array<{ index: number; reason: string }> = [];
+        const values: any[] = [];
+
+        for (let idx = 0; idx < opts.rows.length; idx++) {
+            const rawRow = opts.rows[idx];
+            // Normalize name if blank but email is present
+            const candidateName = (rawRow.name || '').trim();
+            const candidateEmail = (rawRow.email || '').trim();
+            const name = candidateName || (candidateEmail ? candidateEmail.split('@')[0] : '');
+
+            const parsed = commitRowSchema.safeParse({
+                ...rawRow,
+                name,
+                email: candidateEmail,
+            });
+
+            if (!parsed.success) {
+                rejected.push({ index: idx, reason: parsed.error.issues[0]?.message ?? 'Invalid row' });
+                continue;
+            }
+
+            const data = parsed.data;
+            let rowSupplierUuid = defaultSupplierUuid;
+            const rowSupplierRef = (data.supplierId || data.supplier || '').trim();
+            if (rowSupplierRef) {
+                const resolved = await resolveSupplierUuid(rowSupplierRef);
+                if (resolved) rowSupplierUuid = resolved;
+            }
+
+            values.push({
+                name: data.name,
+                email: data.email,
+                phone: data.phone || null,
+                supplierId: rowSupplierUuid,
+                language: data.language || null,
+                department: data.department || null,
+                position: data.position || null,
+                responsibility: data.responsibility || null,
+                status: data.status,
+                source: 'import' as const,
+                createdBy: session.user.id,
+            });
+            imported += 1;
+        }
+
         if (values.length) {
             await db.insert(contacts).values(values);
             revalidatePath('/contacts');
@@ -499,9 +653,24 @@ export async function commitContactImport(opts: {
             revalidatePath('/requests');
             revalidatePath('/requests/assessments');
         }
+
+        if (imported === 0 && rejected.length > 0) {
+            return {
+                success: false,
+                error: `Failed to import: ${rejected[0].reason}`,
+                imported: 0,
+                rejected,
+            } as const;
+        }
+
         return { success: true, imported, rejected } as const;
     } catch (error) {
-        return { success: false, error: error instanceof Error ? error.message : 'Insert failed', imported, rejected } as const;
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : 'Insert failed',
+            imported: 0,
+            rejected: [],
+        } as const;
     }
 }
 

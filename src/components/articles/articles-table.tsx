@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useRouter } from 'next/navigation';
 import * as XLSX from 'xlsx';
 import {
     Plus,
@@ -45,7 +46,8 @@ import {
     type FilterableField,
 } from './articles-schema';
 import { AddArticleModal } from './add-article-modal';
-import { ArticlesImportModal } from './articles-import-modal';
+import { CreateRequestModal } from '@/components/assessments/create-request-modal';
+import { AddToExistingRequestModal } from '@/components/assessments/add-to-existing-request-modal';
 import { ArticlesFilterChip, type FilterChipState } from './articles-filter-chip';
 import { AddFilterPopover } from './add-filter-popover';
 import { ColumnsVisibilityDropdown } from './columns-visibility-dropdown';
@@ -64,12 +66,14 @@ export interface ArticlesTableProps {
 }
 
 export function ArticlesTable({ className, initialData = [] }: ArticlesTableProps) {
+    const router = useRouter();
     const [rawArticles, setRawArticles] = React.useState<ArticleItem[]>(initialData);
     const [loading, setLoading] = React.useState(true);
     const [search, setSearch] = React.useState('');
     const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
     const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
-    const [isImportModalOpen, setIsImportModalOpen] = React.useState(false);
+    const [isCreateRequestOpen, setIsCreateRequestOpen] = React.useState(false);
+    const [isAddToExistingRequestOpen, setIsAddToExistingRequestOpen] = React.useState(false);
 
     // Active column visibility
     const [visibleColumns, setVisibleColumns] = React.useState<Set<ArticleColumnKey>>(
@@ -79,12 +83,12 @@ export function ArticlesTable({ className, initialData = [] }: ArticlesTableProp
     // Filter connector: 'and' | 'or' (matches Screenshot 1)
     const [filterConnector, setFilterConnector] = React.useState<'and' | 'or'>('and');
 
-    // Default filters: Article and Category (matches Screenshot 1, 2, 3)
+    // Default filters: Article ID and Category
     const [filterChips, setFilterChips] = React.useState<FilterChipState[]>([
         {
-            id: 'filter-article',
-            fieldKey: 'article',
-            fieldLabel: 'Article',
+            id: 'filter-article-id',
+            fieldKey: 'articleId',
+            fieldLabel: 'Article ID',
             operator: 'is_one_of',
             values: [],
             isRemovable: false,
@@ -100,7 +104,7 @@ export function ArticlesTable({ className, initialData = [] }: ArticlesTableProp
     ]);
 
     // Sorting
-    const [sortField, setSortField] = React.useState<ArticleColumnKey | null>('article');
+    const [sortField, setSortField] = React.useState<ArticleColumnKey | null>('articleId');
     const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('asc');
 
     // Load data from backend
@@ -109,7 +113,7 @@ export function ArticlesTable({ className, initialData = [] }: ArticlesTableProp
         try {
             const res = await listArticles({
                 search,
-                sortBy: sortField || 'article',
+                sortBy: sortField || 'articleId',
                 sortDir: sortDirection,
             });
             setRawArticles(res.rows);
@@ -152,9 +156,9 @@ export function ArticlesTable({ className, initialData = [] }: ArticlesTableProp
 
             const evaluateChip = (chip: FilterChipState): boolean => {
                 let fieldValue: string | number | null | undefined = '';
-                if (chip.fieldKey === 'article' || chip.fieldKey === 'articleNumber') {
+                if (chip.fieldKey === 'articleId' || chip.fieldKey === 'articleNumber' || chip.fieldKey === 'article') {
                     fieldValue = item.articleNumber;
-                } else if (chip.fieldKey === 'description') {
+                } else if (chip.fieldKey === 'articleName' || chip.fieldKey === 'description') {
                     fieldValue = item.description;
                 } else if (chip.fieldKey === 'longText') {
                     fieldValue = item.longText;
@@ -185,7 +189,8 @@ export function ArticlesTable({ className, initialData = [] }: ArticlesTableProp
                             const valLower = v.toLowerCase();
                             return (
                                 strVal === valLower ||
-                                (chip.fieldKey === 'article' && item.articleNumber.toLowerCase() === valLower)
+                                ((chip.fieldKey === 'articleId' || chip.fieldKey === 'article') && item.articleNumber.toLowerCase() === valLower) ||
+                                ((chip.fieldKey === 'articleName' || chip.fieldKey === 'description') && (item.description || '').toLowerCase() === valLower)
                             );
                         });
                     case 'is_none_of':
@@ -194,7 +199,8 @@ export function ArticlesTable({ className, initialData = [] }: ArticlesTableProp
                             const valLower = v.toLowerCase();
                             return (
                                 strVal === valLower ||
-                                (chip.fieldKey === 'article' && item.articleNumber.toLowerCase() === valLower)
+                                ((chip.fieldKey === 'articleId' || chip.fieldKey === 'article') && item.articleNumber.toLowerCase() === valLower) ||
+                                ((chip.fieldKey === 'articleName' || chip.fieldKey === 'description') && (item.description || '').toLowerCase() === valLower)
                             );
                         });
                     case 'blank':
@@ -241,7 +247,7 @@ export function ArticlesTable({ className, initialData = [] }: ArticlesTableProp
         setVisibleColumns((prev) => {
             const next = new Set(prev);
             if (next.has(key)) {
-                if (next.size > 1 && key !== 'article') {
+                if (next.size > 1) {
                     next.delete(key);
                 }
             } else {
@@ -255,8 +261,7 @@ export function ArticlesTable({ className, initialData = [] }: ArticlesTableProp
         if (selectAll) {
             setVisibleColumns(new Set(ARTICLE_COLUMNS.map((c) => c.key)));
         } else {
-            // Keep required primary column 'article'
-            setVisibleColumns(new Set(['article']));
+            setVisibleColumns(new Set());
         }
     };
 
@@ -567,7 +572,7 @@ export function ArticlesTable({ className, initialData = [] }: ArticlesTableProp
                                 <span>Create article</span>
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                                onClick={() => setIsImportModalOpen(true)}
+                                onClick={() => router.push('/articles/import')}
                                 className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-800 cursor-pointer rounded-lg hover:bg-slate-100"
                             >
                                 <Upload className="h-4 w-4 text-slate-600" />
@@ -593,23 +598,29 @@ export function ArticlesTable({ className, initialData = [] }: ArticlesTableProp
                                 />
                             </th>
 
-                            {/* Article Header (matches Screenshot 1) */}
-                            {visibleColumns.has('article') && (
+                            {/* Article ID Header */}
+                            {visibleColumns.has('articleId') && (
                                 <th
-                                    onClick={() => handleSort('article')}
+                                    onClick={() => handleSort('articleId')}
                                     className="px-4 py-2.5 text-[12px] font-semibold text-slate-700 whitespace-nowrap cursor-pointer hover:text-slate-900"
                                 >
                                     <div className="inline-flex items-center gap-1.5">
-                                        <span>Article</span>
+                                        <span>Article ID</span>
                                         <ArrowUpDown className="h-3 w-3 text-slate-400" />
                                     </div>
                                 </th>
                             )}
 
-                            {/* Empty header for description column (matches Screenshot 1) */}
-                            {visibleColumns.has('article') && (
-                                <th className="px-4 py-2.5 text-[12px] font-semibold text-slate-700 whitespace-nowrap min-w-[160px]">
-                                    {/* Empty / Description spacer matching Tacto */}
+                            {/* Article Name Header */}
+                            {visibleColumns.has('articleName') && (
+                                <th
+                                    onClick={() => handleSort('articleName')}
+                                    className="px-4 py-2.5 text-[12px] font-semibold text-slate-700 whitespace-nowrap cursor-pointer hover:text-slate-900 min-w-[200px]"
+                                >
+                                    <div className="inline-flex items-center gap-1.5">
+                                        <span>Article Name</span>
+                                        <ArrowUpDown className="h-3 w-3 text-slate-400" />
+                                    </div>
                                 </th>
                             )}
 
@@ -708,7 +719,7 @@ export function ArticlesTable({ className, initialData = [] }: ArticlesTableProp
                                             'hover:bg-slate-50/80 transition-colors cursor-pointer group text-slate-700',
                                             isSelected && 'bg-slate-50'
                                         )}
-                                        onClick={() => handleSelectRow(item.id, !isSelected)}
+                                        onClick={() => router.push(`/articles/${encodeURIComponent(item.articleNumber || item.id)}`)}
                                     >
                                         <td className="w-10 px-3 py-2 text-center" onClick={(e) => e.stopPropagation()}>
                                             <Checkbox
@@ -719,18 +730,18 @@ export function ArticlesTable({ className, initialData = [] }: ArticlesTableProp
                                             />
                                         </td>
 
-                                        {/* Article Number Column (matches Screenshot 1) */}
-                                        {visibleColumns.has('article') && (
-                                            <td className="px-4 py-2 font-normal text-slate-900 whitespace-nowrap">
+                                        {/* Article ID Column */}
+                                        {visibleColumns.has('articleId') && (
+                                            <td className="px-4 py-2 font-normal text-slate-900 whitespace-nowrap hover:underline hover:text-slate-950">
                                                 {item.articleNumber}
                                             </td>
                                         )}
 
-                                        {/* Article Description Column (matches Screenshot 1: ISOLIERSCHLAUCH, 3-dots menu...) */}
-                                        {visibleColumns.has('article') && (
+                                        {/* Article Name Column */}
+                                        {visibleColumns.has('articleName') && (
                                             <td className="px-4 py-2 font-normal text-slate-800 whitespace-nowrap">
                                                 <div className="flex items-center justify-between gap-3">
-                                                    <span className="truncate">{item.description || ''}</span>
+                                                    <span className="truncate hover:underline">{item.description || ''}</span>
                                                     <div onClick={(e) => e.stopPropagation()}>
                                                         <DropdownMenu>
                                                             <DropdownMenuTrigger asChild>
@@ -865,14 +876,34 @@ export function ArticlesTable({ className, initialData = [] }: ArticlesTableProp
                                 sideOffset={8}
                                 className="w-52 p-1.5 rounded-xl shadow-2xl border border-slate-200 bg-white text-slate-800 z-50 animate-in fade-in zoom-in-95 duration-150"
                             >
-                                {/* Create Request (with ⇆ ArrowLeftRight icon matching screenshot) */}
-                                <DropdownMenuItem
-                                    onClick={handleCreateRequest}
-                                    className="flex items-center gap-2.5 px-3 py-2 text-[13px] text-slate-700 hover:text-slate-900 cursor-pointer rounded-lg hover:bg-slate-100 transition-colors"
-                                >
-                                    <ArrowLeftRight className="h-4 w-4 text-slate-400" />
-                                    <span>Create Request</span>
-                                </DropdownMenuItem>
+                                {/* Request Submenu */}
+                                <DropdownMenuSub>
+                                    <DropdownMenuSubTrigger className="flex items-center justify-between px-3 py-2 text-[13px] text-slate-700 hover:text-slate-900 cursor-pointer rounded-lg hover:bg-slate-100 transition-colors">
+                                        <div className="flex items-center gap-2.5">
+                                            <ArrowLeftRight className="h-4 w-4 text-slate-400" />
+                                            <span>Request</span>
+                                        </div>
+                                    </DropdownMenuSubTrigger>
+                                    <DropdownMenuSubContent
+                                        sideOffset={8}
+                                        className="w-52 p-1.5 rounded-xl shadow-xl border border-slate-200 bg-white"
+                                    >
+                                        <DropdownMenuItem
+                                            onClick={() => setIsCreateRequestOpen(true)}
+                                            className="flex items-center gap-2.5 px-3 py-2 text-[13px] text-slate-700 hover:text-slate-900 cursor-pointer rounded-lg hover:bg-slate-100"
+                                        >
+                                            <FilePlus2 className="h-4 w-4 text-slate-500" />
+                                            <span>Create new Request</span>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            onClick={() => setIsAddToExistingRequestOpen(true)}
+                                            className="flex items-center gap-2.5 px-3 py-2 text-[13px] text-slate-700 hover:text-slate-900 cursor-pointer rounded-lg hover:bg-slate-100"
+                                        >
+                                            <FileText className="h-4 w-4 text-slate-500" />
+                                            <span>Add to existing Request</span>
+                                        </DropdownMenuItem>
+                                    </DropdownMenuSubContent>
+                                </DropdownMenuSub>
 
                                 {/* Create RFQ (with 🤝 Handshake icon matching screenshot) */}
                                 <DropdownMenuItem
@@ -944,11 +975,21 @@ export function ArticlesTable({ className, initialData = [] }: ArticlesTableProp
                 onArticleCreated={handleArticleCreated}
             />
 
-            {/* Import Articles Wizard Modal */}
-            <ArticlesImportModal
-                open={isImportModalOpen}
-                onOpenChange={setIsImportModalOpen}
-                onSuccess={handleImportSuccess}
+
+
+            {/* Create Request Modal */}
+            <CreateRequestModal
+                open={isCreateRequestOpen}
+                onOpenChange={setIsCreateRequestOpen}
+                articleIds={Array.from(selectedIds)}
+                trigger={null}
+            />
+
+            {/* Add to Existing Request Modal */}
+            <AddToExistingRequestModal
+                open={isAddToExistingRequestOpen}
+                onOpenChange={setIsAddToExistingRequestOpen}
+                articleIds={Array.from(selectedIds)}
             />
         </div>
     );

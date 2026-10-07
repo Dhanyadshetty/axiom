@@ -25,14 +25,14 @@ export function ContactsImportModal({
 }: ContactsImportModalProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-5xl max-h-[92vh] overflow-y-auto p-6">
-                <DialogHeader className="pb-2 border-b border-slate-100">
+            <DialogContent className="max-w-5xl max-h-[92vh] overflow-y-auto p-6 md:p-8 rounded-2xl bg-white shadow-2xl border border-slate-200">
+                <DialogHeader className="sr-only">
                     <DialogTitle>Import Contacts</DialogTitle>
                     <DialogDescription>
                         Upload an Excel (.xlsx) or CSV file with contact records.
                     </DialogDescription>
                 </DialogHeader>
-                <div className="pt-2">
+                <div>
                     <ContactsImportWizard
                         embeddedSupplierId={supplierId}
                         onSuccess={() => {

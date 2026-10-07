@@ -70,7 +70,8 @@ export async function authenticate(
             return { status: 'error', message: 'Too many login attempts. Please try again later.' };
         }
 
-        // Determine post-login redirect based on user's role
+        // Determine post-login redirect based on user's role and callbackUrl
+        const formCallbackUrl = String(formData.get('callbackUrl') || '').trim();
         let redirectTo = '/';
         try {
             const [userRecord] = await db
@@ -89,9 +90,22 @@ export async function authenticate(
                 return { status: 'error', message: 'Use the Internal Workspace only with an internal user account.' };
             }
 
-            if (userRecord?.role === 'supplier') redirectTo = '/portal';
-            else if (!userRecord?.onboardingCompleted && userRecord?.role !== 'admin') redirectTo = '/onboarding';
-            else redirectTo = '/';
+            const isValidUrl = formCallbackUrl &&
+                formCallbackUrl.startsWith('/') &&
+                !formCallbackUrl.startsWith('//') &&
+                !formCallbackUrl.startsWith('/login') &&
+                !formCallbackUrl.startsWith('/icons') &&
+                !/\.(png|jpg|jpeg|svg|ico|json|css|js)$/i.test(formCallbackUrl);
+
+            if (isValidUrl) {
+                redirectTo = formCallbackUrl;
+            } else if (userRecord?.role === 'supplier') {
+                redirectTo = '/portal';
+            } else if (!userRecord?.onboardingCompleted && userRecord?.role !== 'admin') {
+                redirectTo = '/onboarding';
+            } else {
+                redirectTo = '/';
+            }
         } catch { /* fallback to '/' */ }
 
         const rememberDevice = formData.get('rememberDevice') === 'true' ||

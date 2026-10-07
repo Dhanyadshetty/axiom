@@ -49,21 +49,21 @@ export default async function RootLayout({
 
   try {
     session = await auth();
-  } catch (error) {
-    console.error("Root layout: auth() failed, continuing without a session", error);
+  } catch {
+    // continuing without a session
   }
 
   try {
     settings = await getPlatformSettingsForLayout();
-  } catch (error) {
-    console.error("Root layout: failed to load platform settings", error);
+  } catch {
+    // fallback settings used
   }
 
   try {
     const cookieStore = await cookies();
     initialLanguage = normalizeLanguage(cookieStore.get(LANGUAGE_COOKIE)?.value);
-  } catch (error) {
-    console.error("Root layout: failed to read language cookie", error);
+  } catch {
+    // fallback language used
   }
 
 return (

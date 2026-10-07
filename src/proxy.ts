@@ -1,32 +1,70 @@
 import { auth } from "./auth";
+import { NextResponse } from "next/server";
 
-// Next.js 16 "proxy" file — the successor to the `middleware` convention.
-// Reuse the real `auth` instance (created in `auth.ts` with the full provider
-// set) and let Next invoke it as middleware. The authorization logic (redirects
-// for unauthenticated users, role-based access) lives in the `authorized`
-// callback in `auth.config.ts`.
-//
-// The external supplier self-assessment flow authenticates via magic-link
-// session cookies (see `/api/external/login`), NOT via NextAuth, so every
-// `/external/**` page and `/api/external/**` API route is excluded from this
-// proxy below.
-export default auth;
+export default auth((req) => {
+  const { nextUrl } = req;
+  const pathname = nextUrl.pathname;
+
+  // Bypass static assets, icons, uploads, health probes, and API webhooks
+  if (
+    pathname.startsWith("/icons") ||
+    pathname.startsWith("/uploads") ||
+    pathname.startsWith("/api/health") ||
+    pathname.startsWith("/api/cron") ||
+    pathname.startsWith("/api/external") ||
+    pathname === "/favicon.ico" ||
+    pathname === "/manifest.json" ||
+    pathname === "/pma-logo.svg" ||
+    /\.(png|jpg|jpeg|svg|ico|json|css|js|woff|woff2|ttf|eot|webp)$/i.test(pathname)
+  ) {
+    return NextResponse.next();
+  }
+
+  const isLoggedIn = !!req.auth?.user;
+  const isOnLoginPage = pathname.startsWith("/login");
+  const isOnRegisterPage = pathname === "/portal/register";
+  const isOnExternalPage = pathname.startsWith("/external/");
+
+  if (isOnRegisterPage || isOnExternalPage || pathname === "/api/health") {
+    return NextResponse.next();
+  }
+
+  if (isOnLoginPage) {
+    if (isLoggedIn) {
+      const callbackUrl = nextUrl.searchParams.get("callbackUrl");
+      const isValidCallback =
+        callbackUrl &&
+        callbackUrl.startsWith("/") &&
+        !callbackUrl.startsWith("/login") &&
+        !callbackUrl.startsWith("/icons") &&
+        !/\.(png|jpg|jpeg|svg|ico|json|css|js)$/i.test(callbackUrl);
+
+      if (isValidCallback) {
+        return NextResponse.redirect(new URL(callbackUrl, nextUrl));
+      }
+      return NextResponse.redirect(new URL("/", nextUrl));
+    }
+    return NextResponse.next();
+  }
+
+  if (!isLoggedIn) {
+    const callbackUrl = pathname + nextUrl.search;
+    const loginUrl = new URL("/login", nextUrl);
+    const isStaticOrAuth =
+      callbackUrl === "/" ||
+      callbackUrl.startsWith("/login") ||
+      callbackUrl.startsWith("/icons") ||
+      /\.(png|jpg|jpeg|svg|ico|json|css|js)$/i.test(pathname);
+
+    if (!isStaticOrAuth) {
+      loginUrl.searchParams.set("callbackUrl", callbackUrl);
+    }
+    return NextResponse.redirect(loginUrl);
+  }
+
+  return NextResponse.next();
+});
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api/auth (NextAuth API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico, manifest.json (static assets)
-    * - external/ (public supplier assessment pages)
-    * - uploads/ (public uploaded documents)
-    * - documents/ (public assessment templates)
-     * - api/external (public supplier magic-link + assessment APIs)
-     * - login, portal/register (public auth pages)
-     * - onboarding (public onboarding page)
-     */
-    "/((?!api/auth|api/external|_next/static|_next/image|favicon.ico|manifest.json|external|uploads|documents|login|portal/register|onboarding).*)",
-  ],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };

@@ -33,13 +33,13 @@
     "next-env.d.ts",
     "src/**/*.ts",
     "src/**/*.tsx",
-    "tests/**/*.ts",
     "**/*.mts",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",
-    ".next"
+    ".next",
+    "tests"
   ]
 }

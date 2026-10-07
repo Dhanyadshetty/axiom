@@ -332,15 +332,20 @@ const Cell = React.memo(function Cell({ supplier, columnId, onCreateEvaluation }
     switch (columnId) {
         case "supplier":
             return (
-                <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center justify-between gap-2 min-w-0 w-full">
                     <Link
                         href={`/suppliers/${supplier.id}/overview`}
-                        className="block min-w-0 flex-1 space-y-0.5 group/supplier"
+                        className="block min-w-0 flex-1 group/supplier"
                     >
-                        <p className="font-semibold text-slate-900 group-hover/supplier:text-primary group-hover/supplier:underline">
+                        <p
+                            className="font-semibold text-slate-900 group-hover/supplier:text-primary group-hover/supplier:underline leading-snug truncate"
+                            title={supplier.name}
+                        >
                             {supplier.name}
                         </p>
-                        <p className="font-mono text-[11px] text-slate-400">#{supplier.id}</p>
+                        <p className="font-mono text-[11px] text-slate-400 truncate mt-0.5" title={`#${supplier.id}`}>
+                            #{supplier.id}
+                        </p>
                     </Link>
                     <SupplierRowMenu
                         supplierId={supplier.id}
@@ -353,7 +358,8 @@ const Cell = React.memo(function Cell({ supplier, columnId, onCreateEvaluation }
             return (
                 <Link
                     href={`/suppliers/${supplier.id}/overview`}
-                    className="font-mono text-[13px] font-medium text-slate-700 hover:text-primary hover:underline"
+                    className="font-mono text-xs font-medium text-slate-700 hover:text-primary hover:underline block truncate"
+                    title={supplier.id}
                 >
                     {supplier.id}
                 </Link>
@@ -362,16 +368,17 @@ const Cell = React.memo(function Cell({ supplier, columnId, onCreateEvaluation }
             return (
                 <Link
                     href={`/suppliers/${supplier.id}/overview`}
-                    className="font-semibold text-slate-900 hover:text-primary hover:underline"
+                    className="font-semibold text-slate-900 hover:text-primary hover:underline block truncate leading-snug"
+                    title={supplier.name}
                 >
                     {supplier.name}
                 </Link>
             );
         case "country":
             return (
-                <span className="flex items-center gap-2">
-                    <span className="text-base leading-none">{flagEmoji(supplier.country)}</span>
-                    <span className="font-medium text-slate-800">
+                <span className="flex items-center gap-2 min-w-0">
+                    <span className="text-base leading-none shrink-0">{flagEmoji(supplier.country)}</span>
+                    <span className="font-medium text-slate-800 truncate" title={countryName(supplier.country)}>
                         {countryName(supplier.country)}
                     </span>
                 </span>
@@ -639,8 +646,8 @@ export function SuppliersModule({
     const rowVirtualizer = useVirtualizer({
         count: sortedRows.length,
         getScrollElement: () => gridScrollRef.current,
-        estimateSize: () => 44,
-        overscan: 14,
+        estimateSize: () => 60,
+        overscan: 12,
     });
 
     const totalColumnWidth = React.useMemo(
@@ -930,7 +937,7 @@ export function SuppliersModule({
                 <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                     <div
                         ref={gridScrollRef}
-                        className="relative flex-1 overflow-auto contain-strict"
+                        className="relative flex-1 overflow-auto contain-strict custom-table-scrollbar show-scrollbar"
                     >
                         <div
                             style={{
@@ -1065,7 +1072,7 @@ export function SuppliersModule({
                                                     contentVisibility: "auto",
                                                 }}
                                             >
-                                                <div className="sticky left-0 z-10 flex w-12 shrink-0 items-start justify-start border-r border-slate-100 bg-white px-3 py-2.5">
+                                                <div className="sticky left-0 z-10 flex w-12 shrink-0 items-center justify-start border-r border-slate-100 bg-white px-3">
                                                     <Checkbox
                                                         checked={selected}
                                                         onCheckedChange={() => {
@@ -1093,10 +1100,10 @@ export function SuppliersModule({
                                                         if (!id) return null;
                                                         const align =
                                                             COLUMN_ALIGN[id] === "right"
-                                                                ? "text-right"
+                                                                ? "justify-end text-right"
                                                                 : COLUMN_ALIGN[id] === "center"
-                                                                  ? "text-center"
-                                                                  : "text-left";
+                                                                  ? "justify-center text-center"
+                                                                  : "justify-start text-left";
                                                         return (
                                                             <div
                                                                 key={id}
@@ -1108,7 +1115,7 @@ export function SuppliersModule({
                                                                     height: vi.size,
                                                                 }}
                                                                 className={cn(
-                                                                    "px-3 py-2.5 align-top",
+                                                                    "px-3.5 py-2.5 flex items-center min-w-0 overflow-hidden",
                                                                     align,
                                                                 )}
                                                             >
@@ -1170,10 +1177,10 @@ export function SuppliersModule({
 }
 
 const COLUMN_WIDTHS: Record<ColumnId, number> = {
-    supplier: 320,
-    supplierId: 130,
-    supplierName: 240,
-    country: 190,
+    supplier: 340,
+    supplierId: 220,
+    supplierName: 280,
+    country: 200,
     isicCode: 140,
     internal: 120,
     orderVolume2025: 170,

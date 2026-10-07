@@ -1,4 +1,5 @@
 export type Language = "en" | "de";
+export type Locale = Language;
 
 export const LANGUAGE_COOKIE = "axiom-lang";
 

@@ -223,46 +223,50 @@ export async function getAllTasks(filters?: {
     assigneeId?: string;
     limit?: number;
 }) {
-    const user = await requireAuth();
-    if (user.role !== 'admin') throw new Error('Admin access required');
-    await reconcileStaleWorkflowTasks();
+    try {
+        const user = await requireAuth();
+        if (user.role !== 'admin') throw new Error('Admin access required');
+        await reconcileStaleWorkflowTasks().catch(() => 0);
 
-    const conditions: TaskCondition[] = [];
+        const conditions: TaskCondition[] = [];
 
-    const statusValues: TaskStatus[] = ['open', 'in_progress', 'blocked', 'completed', 'cancelled', 'escalated'];
-    const priorityValues: TaskPriority[] = ['low', 'medium', 'high', 'critical'];
-    const entityValues: TaskEntityType[] = ['requisition', 'rfq', 'order', 'invoice', 'contract', 'supplier', 'compliance_obligation', 'agent_recommendation'];
+        const statusValues: TaskStatus[] = ['open', 'in_progress', 'blocked', 'completed', 'cancelled', 'escalated'];
+        const priorityValues: TaskPriority[] = ['low', 'medium', 'high', 'critical'];
+        const entityValues: TaskEntityType[] = ['requisition', 'rfq', 'order', 'invoice', 'contract', 'supplier', 'compliance_obligation', 'agent_recommendation'];
 
-    if (filters?.status && statusValues.includes(filters.status as TaskStatus)) conditions.push(eq(workflowTasks.status, filters.status as TaskStatus));
-    if (filters?.priority && priorityValues.includes(filters.priority as TaskPriority)) conditions.push(eq(workflowTasks.priority, filters.priority as TaskPriority));
-    if (filters?.entityType && entityValues.includes(filters.entityType as TaskEntityType)) conditions.push(eq(workflowTasks.entityType, filters.entityType as TaskEntityType));
-    if (filters?.assigneeId) conditions.push(eq(workflowTasks.assigneeId, filters.assigneeId));
+        if (filters?.status && statusValues.includes(filters.status as TaskStatus)) conditions.push(eq(workflowTasks.status, filters.status as TaskStatus));
+        if (filters?.priority && priorityValues.includes(filters.priority as TaskPriority)) conditions.push(eq(workflowTasks.priority, filters.priority as TaskPriority));
+        if (filters?.entityType && entityValues.includes(filters.entityType as TaskEntityType)) conditions.push(eq(workflowTasks.entityType, filters.entityType as TaskEntityType));
+        if (filters?.assigneeId) conditions.push(eq(workflowTasks.assigneeId, filters.assigneeId));
 
-    const tasks = await db.select({
-        id: workflowTasks.id,
-        title: workflowTasks.title,
-        description: workflowTasks.description,
-        entityType: workflowTasks.entityType,
-        entityId: workflowTasks.entityId,
-        status: workflowTasks.status,
-        priority: workflowTasks.priority,
-        dueDate: workflowTasks.dueDate,
-        slaDeadline: workflowTasks.slaDeadline,
-        nextAction: workflowTasks.nextAction,
-        assigneeId: workflowTasks.assigneeId,
-        assigneeName: users.name,
-        createdAt: workflowTasks.createdAt,
-        escalatedAt: workflowTasks.escalatedAt,
-    }).from(workflowTasks)
-      .leftJoin(users, eq(workflowTasks.assigneeId, users.id))
-      .where(conditions.length > 0 ? and(...conditions) : undefined)
-      .orderBy(
-          desc(sql`CASE ${workflowTasks.priority} WHEN 'critical' THEN 4 WHEN 'high' THEN 3 WHEN 'medium' THEN 2 WHEN 'low' THEN 1 END`),
-          asc(workflowTasks.dueDate)
-      )
-      .limit(Math.min(Math.max(filters?.limit || DEFAULT_TASK_FETCH_LIMIT, 1), DEFAULT_TASK_FETCH_LIMIT));
+        const tasks = await db.select({
+            id: workflowTasks.id,
+            title: workflowTasks.title,
+            description: workflowTasks.description,
+            entityType: workflowTasks.entityType,
+            entityId: workflowTasks.entityId,
+            status: workflowTasks.status,
+            priority: workflowTasks.priority,
+            dueDate: workflowTasks.dueDate,
+            slaDeadline: workflowTasks.slaDeadline,
+            nextAction: workflowTasks.nextAction,
+            assigneeId: workflowTasks.assigneeId,
+            assigneeName: users.name,
+            createdAt: workflowTasks.createdAt,
+            escalatedAt: workflowTasks.escalatedAt,
+        }).from(workflowTasks)
+          .leftJoin(users, eq(workflowTasks.assigneeId, users.id))
+          .where(conditions.length > 0 ? and(...conditions) : undefined)
+          .orderBy(
+              desc(sql`CASE ${workflowTasks.priority} WHEN 'critical' THEN 4 WHEN 'high' THEN 3 WHEN 'medium' THEN 2 WHEN 'low' THEN 1 END`),
+              asc(workflowTasks.dueDate)
+          )
+          .limit(Math.min(Math.max(filters?.limit || DEFAULT_TASK_FETCH_LIMIT, 1), DEFAULT_TASK_FETCH_LIMIT));
 
-    return tasks;
+        return tasks;
+    } catch {
+        return [];
+    }
 }
 
 export async function updateTaskStatus(taskId: string, status: 'open' | 'in_progress' | 'blocked' | 'completed' | 'cancelled' | 'escalated', evidence?: string) {

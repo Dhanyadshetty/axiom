@@ -16,7 +16,8 @@ export interface ArticleItem {
 }
 
 export type ArticleColumnKey =
-    | 'article'
+    | 'articleId'
+    | 'articleName'
     | 'longText'
     | 'cnCode'
     | 'category'
@@ -35,7 +36,8 @@ export interface ArticleColumnDef {
 }
 
 export const ARTICLE_COLUMNS: ArticleColumnDef[] = [
-    { key: 'article', label: 'Article', defaultVisible: true, sortable: true },
+    { key: 'articleId', label: 'Article ID', defaultVisible: true, sortable: true },
+    { key: 'articleName', label: 'Article Name', defaultVisible: true, sortable: true },
     { key: 'longText', label: 'Long text', defaultVisible: true, sortable: false },
     { key: 'cnCode', label: 'CN code', defaultVisible: true, sortable: false },
     { key: 'category', label: 'Category', defaultVisible: true, sortable: false, hasTagIcon: true },
@@ -79,9 +81,8 @@ export interface FilterableField {
 }
 
 export const FILTERABLE_FIELDS: FilterableField[] = [
-    { key: 'article', label: 'Article', kind: 'select' },
-    { key: 'articleNumber', label: 'Article number', kind: 'text' },
-    { key: 'description', label: 'Description', kind: 'text' },
+    { key: 'articleId', label: 'Article ID', kind: 'text' },
+    { key: 'articleName', label: 'Article Name', kind: 'text' },
     { key: 'longText', label: 'Long text', kind: 'text' },
     { key: 'cnCode', label: 'CN code', kind: 'text' },
     { key: 'category', label: 'Category', kind: 'select' },

@@ -39,13 +39,36 @@ import {
     BoxSelect,
 } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { AxiomLogo } from "@/components/shared/axiom-logo";
+import { PmaLogo } from "@/components/shared/pma-logo";
 import { NavLink } from "@/components/layout/nav-link";
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { AGENT_REGISTRY } from "@/app/actions/agents/registry";
 import { canAccessAIFleet, canAccessAdminPath } from "@/lib/rbac";
 import { useLanguage } from "@/components/i18n/language-provider";
 import { t } from "@/lib/i18n";
+
+function getUserInitials(name?: string | null, email?: string | null): string {
+    if (name && name.trim()) {
+        const parts = name.trim().split(/\s+/);
+        if (parts.length >= 2) {
+            return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+        }
+        return name.slice(0, 2).toUpperCase();
+    }
+    if (email && email.trim()) {
+        return email.slice(0, 2).toUpperCase();
+    }
+    return "U";
+}
 
 type SessionUser = {
     role?: string | null;
@@ -97,7 +120,6 @@ export function Sidebar({ className }: { className?: string }) {
     // Collapsible sections state
     const [openSections, setOpenSections] = useState<Record<string, boolean>>({
         supplyChain: true,
-        transactions: true,
         tools: true,
         sourcing: false,
         intelligence: true,
@@ -105,8 +127,17 @@ export function Sidebar({ className }: { className?: string }) {
         resources: true,
     });
 
+    const [openSubSections, setOpenSubSections] = useState<Record<string, boolean>>({
+        transactions: true,
+        savings: true,
+    });
+
     const toggleSection = (key: string) => {
         setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
+    };
+
+    const toggleSubSection = (key: string) => {
+        setOpenSubSections((prev) => ({ ...prev, [key]: !prev[key] }));
     };
 
     const handleSearchClick = () => {
@@ -160,68 +191,153 @@ export function Sidebar({ className }: { className?: string }) {
         role === "admin"
             ? adminOperationalLinks.filter((link) => canAccessAdminPath(user, link.href))
             : [];
-    const workspaceLabel =
-        role === "admin"
-            ? ts.adminConsole
-            : role === "supplier"
-            ? ts.supplierPortal
-            : ts.internalWorkspace;
-    const workspaceDescription =
-        role === "admin"
-            ? ts.adminDescription
-            : role === "supplier"
-            ? ts.supplierDescription
-            : ts.internalDescription;
-    const workspaceBadgeClass =
-        role === "admin"
-            ? "border-amber-200 bg-amber-50 text-amber-700"
-            : role === "supplier"
-            ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-            : "border-blue-200 bg-blue-50 text-blue-700";
     const homeLabel = role === "admin" ? ts.adminConsole : role === "supplier" ? ts.supplierPortal : ts.workspace;
     const enabledAgentCount = AGENT_REGISTRY.filter((agent) => agent.isEnabled).length;
+    const router = useRouter();
+    const [orgMenuOpen, setOrgMenuOpen] = useState(false);
+
+    // Sidebar Resizable Width with SSR-safe hydration
+    const [sidebarWidth, setSidebarWidth] = useState<number>(280);
+    const [isDragging, setIsDragging] = useState(false);
+
+    // Sync from localStorage after client mounts to avoid hydration mismatch
+    React.useEffect(() => {
+        try {
+            const saved = localStorage.getItem("axiom_sidebar_width");
+            if (saved) {
+                const parsed = parseInt(saved, 10);
+                if (!isNaN(parsed) && parsed >= 230 && parsed <= 500) {
+                    setSidebarWidth(parsed);
+                }
+            }
+        } catch (_) {}
+    }, []);
+
+    const handleMouseDown = React.useCallback((e: React.MouseEvent) => {
+        e.preventDefault();
+        setIsDragging(true);
+        const startX = e.clientX;
+        const startWidth = sidebarWidth;
+
+        const onMouseMove = (moveEvent: MouseEvent) => {
+            const delta = moveEvent.clientX - startX;
+            const newWidth = Math.max(230, Math.min(500, startWidth + delta));
+            setSidebarWidth(newWidth);
+            try {
+                localStorage.setItem("axiom_sidebar_width", newWidth.toString());
+            } catch (_) {}
+        };
+
+        const onMouseUp = () => {
+            setIsDragging(false);
+            document.removeEventListener("mousemove", onMouseMove);
+            document.removeEventListener("mouseup", onMouseUp);
+            document.body.style.cursor = "";
+            document.body.style.userSelect = "";
+        };
+
+        document.body.style.cursor = "col-resize";
+        document.body.style.userSelect = "none";
+        document.addEventListener("mousemove", onMouseMove);
+        document.addEventListener("mouseup", onMouseUp);
+    }, [sidebarWidth]);
 
     return (
         <div
+            suppressHydrationWarning
+            style={{ width: `${sidebarWidth}px`, minWidth: `${sidebarWidth}px` }}
             className={cn(
-                "flex h-[100dvh] min-h-[100dvh] w-[17rem] min-w-[17rem] flex-col overflow-hidden border-r border-sidebar-border/80 bg-sidebar text-sidebar-foreground xl:w-[18rem] xl:min-w-[18rem]",
+                "relative flex h-[100dvh] min-h-[100dvh] flex-col overflow-hidden border-r border-sidebar-border/80 bg-sidebar text-sidebar-foreground transition-[width] duration-75 ease-out",
+                isDragging && "select-none !transition-none",
                 className
             )}
         >
             <div className="show-scrollbar min-h-0 flex-1 overflow-y-auto pb-6">
-                {/* Header with Org & Workspace */}
-                <div className="mb-1 flex items-center justify-between border-b border-sidebar-border/70 px-4 py-3.5">
-                    <div className="flex items-center gap-2.5">
-                        <div className="h-8 w-8 shrink-0 rounded-lg bg-primary shadow-md shadow-primary/30 flex items-center justify-center">
-                            <AxiomLogo className="h-5 w-5 text-primary-foreground" />
-                        </div>
-                        <div className="flex flex-col leading-none">
-                            <div className="flex items-center gap-1">
-                                <span className="text-[14px] font-bold tracking-tight text-sidebar-foreground truncate max-w-[120px]">
-                                    PRETTL Mech...
-                                </span>
-                                <ChevronDown className="h-3.5 w-3.5 text-sidebar-foreground/60" />
-                            </div>
-                            <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-sidebar-foreground/50 mt-0.5">
-                                Axiom Platform
-                            </span>
-                        </div>
-                    </div>
-                </div>
+                {/* Header with Standalone PMA Logo & Organization Dropdown */}
+                <div className="mb-2 border-b border-sidebar-border/70 px-3 py-2.5">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                        {/* Standalone PMA Logo Badge - clicking does not trigger dropdown */}
+                        <Link
+                            href="/"
+                            title="PRETTL Mechatronics & Actuators"
+                            className="h-8.5 w-14 shrink-0 rounded-lg bg-white shadow-sm flex items-center justify-center px-1.5 py-1 border border-white/20 hover:opacity-90 transition-opacity"
+                        >
+                            <PmaLogo className="h-full w-full object-contain" />
+                        </Link>
 
-                {/* Workspace Badge */}
-                <div className="mx-3 mt-2 rounded-xl border border-sidebar-foreground/10 bg-white/60 px-3 py-2 text-slate-900 shadow-2xs">
-                    <span
-                        className={cn(
-                            "inline-flex rounded-full border px-2 py-0.5 text-[8.5px] font-black uppercase tracking-[0.12em]",
-                            workspaceBadgeClass
-                        )}
-                    >
-                        {workspaceLabel}
-                    </span>
-                    <p className="mt-1 text-[11px] font-medium text-slate-700 leading-tight">
-                        {workspaceDescription}
-                    </p>
+                        {/* Dropdown Menu Trigger only for Company / Menu */}
+                        <DropdownMenu open={orgMenuOpen} onOpenChange={setOrgMenuOpen}>
+                            <DropdownMenuTrigger asChild>
+                                <button
+                                    type="button"
+                                    className="flex flex-1 items-center justify-between min-w-0 rounded-xl p-1 transition-colors hover:bg-sidebar-accent/60 text-left outline-none cursor-pointer group"
+                                    aria-label="Open workspace menu"
+                                >
+                                    <div className="flex flex-col leading-none min-w-0 flex-1 mr-1">
+                                        <span
+                                            title="PRETTL Mechatronics & Actuators"
+                                            className="text-[13px] font-bold tracking-tight text-sidebar-foreground whitespace-nowrap truncate min-w-0"
+                                        >
+                                            PRETTL Mechatronics &amp; Actuators
+                                        </span>
+                                        <span className="text-[9.5px] font-semibold uppercase tracking-[0.14em] text-sidebar-foreground/50 mt-1 whitespace-nowrap truncate">
+                                            Axiom Platform
+                                        </span>
+                                    </div>
+                                    <div className="h-6 w-6 shrink-0 rounded-md flex items-center justify-center text-sidebar-foreground/60 group-hover:text-sidebar-foreground transition-colors">
+                                        <ChevronDown
+                                            className={cn(
+                                                "h-3.5 w-3.5 transition-transform duration-200",
+                                                orgMenuOpen && "rotate-180 text-sidebar-foreground"
+                                            )}
+                                        />
+                                    </div>
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                            align="start"
+                            sideOffset={8}
+                            className="w-[270px] rounded-2xl p-1.5 shadow-2xl border border-slate-200/80 bg-white text-slate-900 z-50 animate-in fade-in-0 zoom-in-95"
+                        >
+                            {/* User details card */}
+                            <div className="flex items-center gap-3 p-2.5">
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-700 font-bold text-sm border border-slate-200">
+                                    {getUserInitials(session?.user?.name, session?.user?.email)}
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-sm font-semibold text-slate-900 truncate">
+                                        {session?.user?.name || "User"}
+                                    </p>
+                                    <p className="text-xs text-slate-500 truncate">
+                                        {session?.user?.email || "user@prettl.com"}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <DropdownMenuSeparator className="my-1 bg-slate-100" />
+
+                            {/* Help & support */}
+                            <DropdownMenuItem
+                                onClick={() => router.push("/support")}
+                                className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-700 cursor-pointer rounded-xl hover:bg-slate-100 focus:bg-slate-100 focus:text-slate-900"
+                            >
+                                <LifeBuoy className="h-4 w-4 text-slate-500" />
+                                <span>Help &amp; support</span>
+                            </DropdownMenuItem>
+
+                            <DropdownMenuSeparator className="my-1 bg-slate-100" />
+
+                            {/* Log out */}
+                            <DropdownMenuItem
+                                onClick={() => signOut({ redirect: true, callbackUrl: "/login" })}
+                                className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-red-600 cursor-pointer rounded-xl hover:bg-red-50 focus:bg-red-50 focus:text-red-600"
+                            >
+                                <LogOut className="h-4 w-4 text-red-600" />
+                                <span>Log out</span>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    </div>
                 </div>
 
                 {/* Quick Navigation Items */}
@@ -334,57 +450,50 @@ export function Sidebar({ className }: { className?: string }) {
                                     <BoxSelect className="mr-2 h-4 w-4" />
                                     {ts.articles || "Articles"}
                                 </NavLink>
+
+                                {/* Transactions Submenu */}
+                                <div>
+                                    <button
+                                        type="button"
+                                        onClick={() => toggleSubSection("transactions")}
+                                        className={cn(navCls, "w-full justify-between cursor-pointer group/tx")}
+                                    >
+                                        <div className="flex items-center">
+                                            <ReceiptText className="mr-2 h-4 w-4" />
+                                            <span>{ts.transactions || "Transactions"}</span>
+                                        </div>
+                                        {openSubSections.transactions ? (
+                                            <ChevronDown className="h-3.5 w-3.5 opacity-60 group-hover/tx:opacity-100 transition-transform" />
+                                        ) : (
+                                            <ChevronRight className="h-3.5 w-3.5 opacity-60 group-hover/tx:opacity-100 transition-transform" />
+                                        )}
+                                    </button>
+
+                                    {openSubSections.transactions && (
+                                        <div className="space-y-0.5 pl-7 pr-1 pt-0.5">
+                                            <NavLink href="/sourcing/orders" className={cn(navCls, "text-[12.5px] py-1 pl-2.5")}>
+                                                {ts.orders || "Orders"}
+                                            </NavLink>
+                                            <NavLink href="/sourcing/goods-receipts" className={cn(navCls, "text-[12.5px] py-1 pl-2.5")}>
+                                                {ts.goodsReceipts || "Goods Receipts"}
+                                            </NavLink>
+                                            <NavLink href="/sourcing/invoices" className={cn(navCls, "text-[12.5px] py-1 pl-2.5")}>
+                                                {ts.invoices || "Invoices"}
+                                            </NavLink>
+                                            <NavLink href="/sourcing/contracts" className={cn(navCls, "text-[12.5px] py-1 pl-2.5")}>
+                                                {ts.quantityContracts || ts.contracts || "Quantity contracts"}
+                                            </NavLink>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Documents inside Supply Chain Data */}
+                                <NavLink href="/documents" className={navCls}>
+                                    <FileText className="mr-2 h-4 w-4" />
+                                    {ts.documents || "Documents"}
+                                </NavLink>
                             </div>
                         )}
-                    </div>
-                )}
-
-                {/* Collapsible: TRANSACTIONS */}
-                {role !== "supplier" && (
-                    <div className="mt-3 px-3">
-                        <button
-                            type="button"
-                            onClick={() => toggleSection("transactions")}
-                            className={sectionButtonCls}
-                        >
-                            <span>{ts.transactions || "Transactions"}</span>
-                            {openSections.transactions ? (
-                                <ChevronDown className="h-3.5 w-3.5 transition-transform" />
-                            ) : (
-                                <ChevronRight className="h-3.5 w-3.5 transition-transform" />
-                            )}
-                        </button>
-
-                        {openSections.transactions && (
-                            <div className="mt-0.5 space-y-0.5 pl-1">
-                                <NavLink href="/sourcing/orders" className={navCls}>
-                                    <ShoppingCart className="mr-2 h-4 w-4" />
-                                    {ts.orders}
-                                </NavLink>
-                                <NavLink href="/sourcing/goods-receipts" className={navCls}>
-                                    <Truck className="mr-2 h-4 w-4" />
-                                    {ts.goodsReceipts}
-                                </NavLink>
-                                <NavLink href="/sourcing/invoices" className={navCls}>
-                                    <ReceiptText className="mr-2 h-4 w-4" />
-                                    {ts.invoices}
-                                </NavLink>
-                                <NavLink href="/sourcing/contracts" className={navCls}>
-                                    <Scale className="mr-2 h-4 w-4" />
-                                    {ts.quantityContracts || ts.contracts}
-                                </NavLink>
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {/* Documents Direct Link */}
-                {role !== "supplier" && (
-                    <div className="mt-2 px-3">
-                        <NavLink href="/docs" className={navCls}>
-                            <FileText className="mr-2 h-4 w-4" />
-                            {ts.documents || "Documents"}
-                        </NavLink>
                     </div>
                 )}
 
@@ -410,10 +519,40 @@ export function Sidebar({ className }: { className?: string }) {
                                     <BarChart3 className="mr-2 h-4 w-4" />
                                     {ts.analytics || "Analytics"}
                                 </NavLink>
-                                <NavLink href="/savings" className={navCls}>
-                                    <PiggyBank className="mr-2 h-4 w-4" />
-                                    {ts.savings}
-                                </NavLink>
+
+                                {/* Savings Submenu */}
+                                <div>
+                                    <button
+                                        type="button"
+                                        onClick={() => toggleSubSection("savings")}
+                                        className={cn(navCls, "w-full justify-between cursor-pointer group/sav")}
+                                    >
+                                        <div className="flex items-center">
+                                            <PiggyBank className="mr-2 h-4 w-4" />
+                                            <span>{ts.savings || "Savings"}</span>
+                                        </div>
+                                        {openSubSections.savings ? (
+                                            <ChevronDown className="h-3.5 w-3.5 opacity-60 group-hover/sav:opacity-100 transition-transform" />
+                                        ) : (
+                                            <ChevronRight className="h-3.5 w-3.5 opacity-60 group-hover/sav:opacity-100 transition-transform" />
+                                        )}
+                                    </button>
+
+                                    {openSubSections.savings && (
+                                        <div className="space-y-0.5 pl-7 pr-1 pt-0.5">
+                                            <NavLink href="/savings" className={cn(navCls, "text-[12.5px] py-1 pl-2.5")}>
+                                                Dashboard
+                                            </NavLink>
+                                            <NavLink href="/savings?tab=findings" className={cn(navCls, "text-[12.5px] py-1 pl-2.5")}>
+                                                Findings
+                                            </NavLink>
+                                            <NavLink href="/savings?tab=opportunities" className={cn(navCls, "text-[12.5px] py-1 pl-2.5")}>
+                                                Opportunities
+                                            </NavLink>
+                                        </div>
+                                    )}
+                                </div>
+
                                 <NavLink href="/inventory" className={navCls}>
                                     <Warehouse className="mr-2 h-4 w-4" />
                                     {ts.inventory}
@@ -596,6 +735,29 @@ export function Sidebar({ className }: { className?: string }) {
                         </button>
                     </div>
                 )}
+            </div>
+
+            {/* Resizable Sidebar Dragger Handle */}
+            <div
+                onMouseDown={handleMouseDown}
+                onDoubleClick={() => {
+                    setSidebarWidth(280);
+                    try {
+                        localStorage.setItem("axiom_sidebar_width", "280");
+                    } catch (_) {}
+                }}
+                title="Drag to resize sidebar (double-click to reset)"
+                className={cn(
+                    "absolute right-0 top-0 bottom-0 w-2 cursor-col-resize z-50 select-none group transition-colors",
+                    isDragging ? "bg-emerald-500/80" : "hover:bg-emerald-500/40"
+                )}
+            >
+                <div
+                    className={cn(
+                        "absolute top-1/2 -translate-y-1/2 right-[2px] h-10 w-[3px] rounded-full transition-colors",
+                        isDragging ? "bg-white" : "bg-sidebar-foreground/20 group-hover:bg-emerald-400"
+                    )}
+                />
             </div>
         </div>
     );

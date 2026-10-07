@@ -23,8 +23,10 @@ export async function POST(req: Request) {
             sheets: parsed.sheets.map((s) => ({
                 name: s.name,
                 headers: s.headers,
+                columns: s.columns,
                 rowCount: s.rows.length,
                 suggestedMapping: s.suggestedMapping,
+                hasHeaderRow: s.hasHeaderRow,
                 rows: s.rows,
                 preview: s.rows.slice(0, 10),
             })),

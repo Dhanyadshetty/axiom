@@ -94,29 +94,18 @@ export function ColumnsVisibilityDropdown({
                 <div className="max-h-72 overflow-y-auto p-1 space-y-0.5">
                     {filteredColumns.map((col) => {
                         const isChecked = visibleColumns.has(col.key);
-                        const isPrimary = col.key === 'article'; // Primary column locked/disabled
 
                         return (
                             <label
                                 key={col.key}
-                                className={cn(
-                                    'flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] transition-colors select-none',
-                                    isPrimary
-                                        ? 'cursor-not-allowed opacity-60 text-slate-400'
-                                        : 'cursor-pointer hover:bg-slate-100 text-slate-700'
-                                )}
+                                className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] transition-colors select-none cursor-pointer hover:bg-slate-100 text-slate-700"
                             >
                                 <Checkbox
                                     checked={isChecked}
-                                    disabled={isPrimary}
-                                    onCheckedChange={() => {
-                                        if (!isPrimary) {
-                                            onToggleColumn(col.key);
-                                        }
-                                    }}
+                                    onCheckedChange={() => onToggleColumn(col.key)}
                                     className="rounded border-slate-300 data-[state=checked]:bg-slate-900 data-[state=checked]:border-slate-900"
                                 />
-                                <span className={cn(isPrimary ? 'text-slate-400 font-medium' : 'text-slate-700')}>
+                                <span className="text-slate-700 font-normal">
                                     {col.label === 'Last update...' ? 'Last updated at' : col.label}
                                 </span>
                             </label>

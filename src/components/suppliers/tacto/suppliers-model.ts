@@ -166,10 +166,10 @@ export interface ColumnDef {
 }
 
 export const SUPPLIER_COLUMNS: Record<ColumnId, ColumnDef> = {
-    supplier: { id: "supplier", label: "Supplier", width: 300, type: "text" },
-    supplierId: { id: "supplierId", label: "Supplier ID", width: 130, type: "text" },
-    supplierName: { id: "supplierName", label: "Supplier Name", width: 240, type: "text" },
-    country: { id: "country", label: "Country", width: 190, type: "country" },
+    supplier: { id: "supplier", label: "Supplier", width: 340, type: "text" },
+    supplierId: { id: "supplierId", label: "Supplier ID", width: 220, type: "text" },
+    supplierName: { id: "supplierName", label: "Supplier Name", width: 280, type: "text" },
+    country: { id: "country", label: "Country", width: 200, type: "country" },
     isicCode: { id: "isicCode", label: "ISIC Code", width: 140, type: "text" },
     internal: { id: "internal", label: "Internal", width: 120, type: "boolean", align: "center" },
     orderVolume2025: { id: "orderVolume2025", label: "Order Volume 2025", width: 170, type: "currency", align: "right" },

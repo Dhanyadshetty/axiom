@@ -330,7 +330,13 @@ If you have any questions, contact your assigned procurement representative.
 Kind regards,
 Axiom Procurement Team`;
 
-export async function createAssessmentRequest(templateId: string, title?: string) {
+export async function createAssessmentRequest(
+    templateId: string,
+    title?: string,
+    contactIds?: string[],
+    supplierIds?: string[],
+    articleIds?: string[]
+) {
     const session = await getUserContext();
     if (!session) return { success: false, error: "Unauthorized" };
     if (session.user.role === "supplier") return { success: false, error: "Suppliers cannot create requests" };
@@ -349,6 +355,92 @@ export async function createAssessmentRequest(templateId: string, title?: string
             createdById: session.user.id,
         }).returning();
 
+        // Attach contacts if provided
+        if (contactIds && contactIds.length > 0) {
+            const selectedContacts = await db
+                .select()
+                .from(contacts)
+                .where(inArray(contacts.id, contactIds));
+
+            for (const c of selectedContacts) {
+                if (!c.supplierId) continue;
+                let [ars] = await db
+                    .select()
+                    .from(assessmentRequestSuppliers)
+                    .where(
+                        and(
+                            eq(assessmentRequestSuppliers.assessmentRequestId, created.id),
+                            eq(assessmentRequestSuppliers.supplierId, c.supplierId)
+                        )
+                    )
+                    .limit(1);
+
+                if (!ars) {
+                    [ars] = await db
+                        .insert(assessmentRequestSuppliers)
+                        .values({
+                            assessmentRequestId: created.id,
+                            supplierId: c.supplierId,
+                            contactId: c.id,
+                            status: "pending",
+                        })
+                        .returning();
+                }
+
+                await linkContactToRequestSupplier(ars.id, c.id);
+            }
+        }
+
+        // Attach direct suppliers if provided
+        if (supplierIds && supplierIds.length > 0) {
+            const existing = await db
+                .select()
+                .from(assessmentRequestSuppliers)
+                .where(eq(assessmentRequestSuppliers.assessmentRequestId, created.id));
+            const existingSids = new Set(existing.map((s) => s.supplierId));
+            const toInsert = supplierIds.filter((sid) => !existingSids.has(sid));
+            if (toInsert.length > 0) {
+                await db.insert(assessmentRequestSuppliers).values(
+                    toInsert.map((sid) => ({
+                        assessmentRequestId: created.id,
+                        supplierId: sid,
+                        status: "pending",
+                    }))
+                );
+            }
+        }
+
+        // Attach suppliers from articles if provided
+        if (articleIds && articleIds.length > 0) {
+            const { articles } = await import("@/db/schema");
+            const selectedArticles = await db
+                .select({ id: articles.id, supplierId: articles.supplierId })
+                .from(articles)
+                .where(inArray(articles.id, articleIds));
+
+            const sids = selectedArticles
+                .map((a) => a.supplierId)
+                .filter((sid): sid is string => !!sid);
+
+            if (sids.length > 0) {
+                const existing = await db
+                    .select()
+                    .from(assessmentRequestSuppliers)
+                    .where(eq(assessmentRequestSuppliers.assessmentRequestId, created.id));
+                const existingSids = new Set(existing.map((s) => s.supplierId));
+                const toInsert = Array.from(new Set(sids)).filter((sid) => !existingSids.has(sid));
+                if (toInsert.length > 0) {
+                    await db.insert(assessmentRequestSuppliers).values(
+                        toInsert.map((sid) => ({
+                            assessmentRequestId: created.id,
+                            supplierId: sid,
+                            status: "pending",
+                        }))
+                    );
+                }
+            }
+        }
+
         await logActivity(
             "CREATE",
             "assessment_request",
@@ -362,6 +454,113 @@ export async function createAssessmentRequest(templateId: string, title?: string
     } catch (error) {
         console.error("Failed to create assessment request:", error);
         return { success: false, error: "Failed to create assessment request" };
+    }
+}
+
+export async function addArticlesToAssessmentRequest(assessmentRequestId: string, articleIds: string[]) {
+    const session = await getUserContext();
+    if (!session) return { success: false, error: "Unauthorized" };
+    if (!articleIds.length) return { success: true };
+
+    try {
+        const { articles } = await import("@/db/schema");
+        const selectedArticles = await db
+            .select({ id: articles.id, supplierId: articles.supplierId })
+            .from(articles)
+            .where(inArray(articles.id, articleIds));
+
+        const sids = selectedArticles
+            .map((a) => a.supplierId)
+            .filter((sid): sid is string => !!sid);
+
+        if (sids.length > 0) {
+            const existing = await db
+                .select()
+                .from(assessmentRequestSuppliers)
+                .where(eq(assessmentRequestSuppliers.assessmentRequestId, assessmentRequestId));
+            const existingSids = new Set(existing.map((s) => s.supplierId));
+            const toInsert = Array.from(new Set(sids)).filter((sid) => !existingSids.has(sid));
+            if (toInsert.length > 0) {
+                await db.insert(assessmentRequestSuppliers).values(
+                    toInsert.map((sid) => ({
+                        assessmentRequestId,
+                        supplierId: sid,
+                        status: "pending",
+                    }))
+                );
+            }
+        }
+
+        await logActivity(
+            "UPDATE",
+            "assessment_request",
+            assessmentRequestId,
+            `Added suppliers from ${selectedArticles.length} article(s)`
+        );
+
+        revalidatePath("/requests");
+        revalidatePath(ASSESSMENT_PAGE);
+        revalidatePath(`${ASSESSMENT_PAGE}/${assessmentRequestId}`);
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to add articles to assessment request:", error);
+        return { success: false, error: "Failed to add articles to request" };
+    }
+}
+
+export async function addContactsToAssessmentRequest(assessmentRequestId: string, contactIds: string[]) {
+    const session = await getUserContext();
+    if (!session) return { success: false, error: "Unauthorized" };
+    if (!contactIds.length) return { success: true };
+
+    try {
+        const selectedContacts = await db
+            .select()
+            .from(contacts)
+            .where(inArray(contacts.id, contactIds));
+
+        for (const c of selectedContacts) {
+            if (!c.supplierId) continue;
+            let [ars] = await db
+                .select()
+                .from(assessmentRequestSuppliers)
+                .where(
+                    and(
+                        eq(assessmentRequestSuppliers.assessmentRequestId, assessmentRequestId),
+                        eq(assessmentRequestSuppliers.supplierId, c.supplierId)
+                    )
+                )
+                .limit(1);
+
+            if (!ars) {
+                [ars] = await db
+                    .insert(assessmentRequestSuppliers)
+                    .values({
+                        assessmentRequestId,
+                        supplierId: c.supplierId,
+                        contactId: c.id,
+                        status: "pending",
+                    })
+                    .returning();
+            }
+
+            await linkContactToRequestSupplier(ars.id, c.id);
+        }
+
+        await logActivity(
+            "UPDATE",
+            "assessment_request",
+            assessmentRequestId,
+            `Added ${selectedContacts.length} contact(s)`
+        );
+
+        revalidatePath("/requests");
+        revalidatePath(ASSESSMENT_PAGE);
+        revalidatePath(`${ASSESSMENT_PAGE}/${assessmentRequestId}`);
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to add contacts to assessment request:", error);
+        return { success: false, error: "Failed to add contacts to request" };
     }
 }
 
@@ -683,8 +882,42 @@ export async function publishAssessment(id: string, notify: boolean) {
             )
             .where(eq(assessmentRequestSuppliers.assessmentRequestId, id));
 
+            const queuedKeys = new Set<string>();
+
             for (const link of participantContactLinks) {
-                await enqueueAssessmentEmail(id, link.participantId, link.contactId, 'invitation');
+                const key = `${link.participantId}:${link.contactId}`;
+                if (!queuedKeys.has(key)) {
+                    queuedKeys.add(key);
+                    await enqueueAssessmentEmail(id, link.participantId, link.contactId, 'invitation');
+                }
+            }
+
+            // Fallback for participants with contactId on assessmentRequestSuppliers or registered contacts in DB
+            for (const participant of suppliersList) {
+                if (participant.contactId) {
+                    const key = `${participant.id}:${participant.contactId}`;
+                    if (!queuedKeys.has(key)) {
+                        queuedKeys.add(key);
+                        await enqueueAssessmentEmail(id, participant.id, participant.contactId, 'invitation');
+                    }
+                } else {
+                    // If no contact was explicitly linked for this participant, query supplier's contacts
+                    const supContacts = await db.select({ id: contacts.id }).from(contacts)
+                        .where(eq(contacts.supplierId, participant.supplierId));
+                    for (const sc of supContacts) {
+                        const key = `${participant.id}:${sc.id}`;
+                        if (!queuedKeys.has(key)) {
+                            queuedKeys.add(key);
+                            try {
+                                await db.insert(assessmentRequestSupplierContacts).values({
+                                    assessmentRequestSupplierId: participant.id,
+                                    contactId: sc.id,
+                                }).onConflictDoNothing();
+                            } catch (_) {}
+                            await enqueueAssessmentEmail(id, participant.id, sc.id, 'invitation');
+                        }
+                    }
+                }
             }
         }
 

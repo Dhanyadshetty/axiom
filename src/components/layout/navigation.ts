@@ -90,16 +90,11 @@ export function getNavigationSections(user: NavigationRole): NavigationSection[]
                         { label: 'Suppliers',        icon: Users,        href: '/suppliers'   },
                         { label: 'Contacts',         icon: ContactRound, href: '/contacts'    },
                         { label: 'Articles',         icon: Package,      href: '/articles'    },
-                    ],
-                },
-                {
-                    id: 'transactions',
-                    title: 'Transactions',
-                    links: [
                         { label: 'Orders',               icon: ShoppingCart,  href: '/sourcing/orders'         },
                         { label: 'Goods Receipts',       icon: Truck,         href: '/sourcing/goods-receipts' },
                         { label: 'Invoices',             icon: FileText,      href: '/sourcing/invoices'       },
                         { label: 'Quantity Contracts',   icon: FileText,      href: '/sourcing/contracts'      },
+                        { label: 'Documents',            icon: FileText,      href: '/documents'               },
                     ],
                 },
                 {

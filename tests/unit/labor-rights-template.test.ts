@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import laborTemplate from '../../src/lib/assessment-templates/esg-supplier-self-assessment-labor-rights.json';
 import humanTemplate from '../../src/lib/assessment-templates/esg-supplier-self-assessment-human-rights.json';
 import pmaTemplate from '../../src/lib/assessment-templates/supplier-self-assessment-pma-code-of-conduct.json';
@@ -43,7 +44,7 @@ test('human rights template matches the LkSG questionnaire layout and wording', 
 
 test('environmental rights template matches the LkSG environmental questionnaire layout and wording', () => {
   const envTemplate = JSON.parse(
-    require('node:fs').readFileSync(
+    fs.readFileSync(
       'src/lib/assessment-templates/esg-supplier-self-assessment-environmental-rights.json',
       'utf8'
     )
@@ -74,7 +75,7 @@ test('environmental rights template matches the LkSG environmental questionnaire
 
 test('egb template includes the general-information LkSG content from the provided text', () => {
   const egbTemplate = JSON.parse(
-    require('node:fs').readFileSync(
+    fs.readFileSync(
       'src/lib/assessment-templates/esg-self-assessment-egb.json',
       'utf8'
     )

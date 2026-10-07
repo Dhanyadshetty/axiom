@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Search, Plus, FileText, Check } from "lucide-react";
+import { Search, Plus, FileText, Check, Users, Layers } from "lucide-react";
 
 import {
     Dialog,
@@ -16,28 +16,65 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createAssessmentRequest } from "@/app/actions/assessments";
+import { createAssessmentRequest, getAssessmentTemplates } from "@/app/actions/assessments";
 import type { AssessmentTemplate } from "@/lib/assessment-types";
 
-export function CreateRequestModal({
-    templates,
-    defaultOpen = false,
-    onOpenChange,
-}: {
-    templates: AssessmentTemplate[];
+export interface CreateRequestModalProps {
+    templates?: AssessmentTemplate[];
     defaultOpen?: boolean;
+    open?: boolean;
     onOpenChange?: (open: boolean) => void;
-}) {
+    contactIds?: string[];
+    supplierIds?: string[];
+    articleIds?: string[];
+    trigger?: React.ReactNode | null;
+    onSuccess?: (requestId: string) => void;
+}
+
+export function CreateRequestModal({
+    templates: initialTemplates,
+    defaultOpen = false,
+    open: controlledOpen,
+    onOpenChange,
+    contactIds,
+    supplierIds,
+    articleIds,
+    trigger,
+    onSuccess,
+}: CreateRequestModalProps) {
     const router = useRouter();
-    const [open, setOpen] = React.useState(defaultOpen);
+    const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen);
+    const isControlled = controlledOpen !== undefined;
+    const open = isControlled ? controlledOpen : uncontrolledOpen;
+
+    const [templates, setTemplates] = React.useState<AssessmentTemplate[]>(initialTemplates ?? []);
     const [query, setQuery] = React.useState("");
     const [selectedId, setSelectedId] = React.useState<string | null>(null);
     const [title, setTitle] = React.useState("");
     const [isPending, startTransition] = React.useTransition();
 
+    React.useEffect(() => {
+        if (initialTemplates && initialTemplates.length > 0) {
+            setTemplates(initialTemplates);
+        } else if (open) {
+            getAssessmentTemplates().then((data) => {
+                if (data && data.length > 0) {
+                    setTemplates(data);
+                }
+            });
+        }
+    }, [initialTemplates, open]);
+
     const setOpenSafe = (v: boolean) => {
-        setOpen(v);
+        if (!isControlled) {
+            setUncontrolledOpen(v);
+        }
         onOpenChange?.(v);
+        if (!v) {
+            setSelectedId(null);
+            setTitle("");
+            setQuery("");
+        }
     };
 
     const filtered = React.useMemo(() => {
@@ -51,10 +88,25 @@ export function CreateRequestModal({
             return;
         }
         startTransition(async () => {
-            const result = await createAssessmentRequest(selectedId, title.trim() || undefined);
+            const result = await createAssessmentRequest(
+                selectedId,
+                title.trim() || undefined,
+                contactIds,
+                supplierIds,
+                articleIds
+            );
             if (result.success && result.id) {
-                toast.success("Draft request created");
+                if (contactIds && contactIds.length > 0) {
+                    toast.success(`Draft request created with ${contactIds.length} contact(s)`);
+                } else if (articleIds && articleIds.length > 0) {
+                    toast.success(`Draft request created for ${articleIds.length} article(s)`);
+                } else if (supplierIds && supplierIds.length > 0) {
+                    toast.success(`Draft request created for ${supplierIds.length} supplier(s)`);
+                } else {
+                    toast.success("Draft request created");
+                }
                 setOpenSafe(false);
+                onSuccess?.(result.id);
                 router.push(`/requests/assessments/${result.id}?step=general`);
                 router.refresh();
             } else {
@@ -65,12 +117,18 @@ export function CreateRequestModal({
 
     return (
         <Dialog open={open} onOpenChange={setOpenSafe}>
-            <DialogTrigger asChild>
-                <Button className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
-                    <Plus className="h-4 w-4" />
-                    Create new
-                </Button>
-            </DialogTrigger>
+            {trigger !== null && (
+                trigger !== undefined ? (
+                    <DialogTrigger asChild>{trigger}</DialogTrigger>
+                ) : (
+                    <DialogTrigger asChild>
+                        <Button className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
+                            <Plus className="h-4 w-4" />
+                            Create new
+                        </Button>
+                    </DialogTrigger>
+                )
+            )}
             <DialogContent className="max-w-xl">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-xl">
@@ -81,6 +139,24 @@ export function CreateRequestModal({
                         You can create a new Request by selecting a template from the list below.
                     </DialogDescription>
                 </DialogHeader>
+
+                {contactIds && contactIds.length > 0 && (
+                    <div className="flex items-center gap-2 rounded-lg bg-emerald-50 border border-emerald-200/60 px-3 py-2 text-xs font-medium text-emerald-900">
+                        <Users className="h-4 w-4 text-emerald-600 shrink-0" />
+                        <span>
+                            Connecting <strong>{contactIds.length}</strong> selected contact{contactIds.length > 1 ? "s" : ""} to this new request.
+                        </span>
+                    </div>
+                )}
+
+                {articleIds && articleIds.length > 0 && (
+                    <div className="flex items-center gap-2 rounded-lg bg-emerald-50 border border-emerald-200/60 px-3 py-2 text-xs font-medium text-emerald-900">
+                        <Layers className="h-4 w-4 text-emerald-600 shrink-0" />
+                        <span>
+                            Connecting <strong>{articleIds.length}</strong> selected article{articleIds.length > 1 ? "s" : ""} and their suppliers to this new request.
+                        </span>
+                    </div>
+                )}
 
                 <div className="space-y-2 py-2">
                     <Label htmlFor="template-search" className="text-sm font-semibold">
@@ -106,18 +182,28 @@ export function CreateRequestModal({
                                 return (
                                     <button
                                         key={t.id}
-                                        onClick={() => { setSelectedId(t.id); setTitle(t.name); }}
+                                        type="button"
+                                        onClick={() => {
+                                            setSelectedId(t.id);
+                                            setTitle(t.name);
+                                        }}
                                         className={`flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors ${
                                             active ? "bg-emerald-50" : "hover:bg-slate-50"
                                         } border-b border-slate-100 last:border-0`}
                                     >
                                         <div className="flex items-center gap-3">
-                                            <span className={`flex h-5 w-5 items-center justify-center rounded-full border ${
-                                                active ? "border-emerald-500 bg-emerald-500 text-white" : "border-slate-300"
-                                            }`}>
+                                            <span
+                                                className={`flex h-5 w-5 items-center justify-center rounded-full border ${
+                                                    active
+                                                        ? "border-emerald-500 bg-emerald-500 text-white"
+                                                        : "border-slate-300"
+                                                }`}
+                                            >
                                                 {active ? <Check className="h-3.5 w-3.5" /> : null}
                                             </span>
-                                            <span className="text-sm font-medium text-slate-800">{t.name}</span>
+                                            <span className="text-sm font-medium text-slate-800">
+                                                {t.name}
+                                            </span>
                                         </div>
                                     </button>
                                 );
@@ -142,7 +228,9 @@ export function CreateRequestModal({
                 </div>
 
                 <div className="flex justify-end gap-2 pt-2">
-                    <Button variant="ghost" onClick={() => setOpenSafe(false)}>Cancel</Button>
+                    <Button variant="ghost" onClick={() => setOpenSafe(false)}>
+                        Cancel
+                    </Button>
                     <Button
                         onClick={handleCreate}
                         disabled={isPending || !selectedId}

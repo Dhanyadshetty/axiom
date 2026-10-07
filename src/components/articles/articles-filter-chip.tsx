@@ -65,8 +65,11 @@ export function ArticlesFilterChip({
         if (filter.fieldKey === 'category') {
             return DEFAULT_ARTICLE_CATEGORIES.map((c) => ({ value: c, label: c, isCategory: true }));
         }
-        if (filter.fieldKey === 'article' || filter.fieldKey === 'articleNumber') {
+        if (filter.fieldKey === 'article' || filter.fieldKey === 'articleId' || filter.fieldKey === 'articleNumber') {
             return SAMPLE_ARTICLES_FILTER_OPTIONS;
+        }
+        if (filter.fieldKey === 'articleName' || filter.fieldKey === 'description') {
+            return SAMPLE_ARTICLES_FILTER_OPTIONS.map((a) => ({ value: a.label, label: a.label }));
         }
         if (filter.fieldKey === 'netWeightUnit') {
             return ['G', 'KG', 'MG', 'LBS', 'OZ'].map((u) => ({ value: u, label: u }));
