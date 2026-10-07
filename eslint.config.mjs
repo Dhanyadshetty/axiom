@@ -15,6 +15,18 @@ const eslintConfig = defineConfig([
     "workshop/**",
     "scratch/**",
     "next-env.d.ts",
+    // Root-level utility/migration scripts (CommonJS, not app code)
+    "*.js",
+    "add-gaps.js",
+    "add-packs.js",
+    "analyze-reorder.js",
+    "append-agents.js",
+    "append-freshness.js",
+    "append-trace.js",
+    "append-trace2.js",
+    "check-duplicates.js",
+    "find-duplicates.js",
+    "replace-script.js",
   ]),
   {
     rules: {
